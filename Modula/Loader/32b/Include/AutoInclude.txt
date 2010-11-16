@@ -1,0 +1,5 @@
+/*
+	Ficher include copié automatiquement.
+	Seul le fichier original doit être modifié.
+*/
+

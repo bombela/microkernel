@@ -1,0 +1,63 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0106 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include "mfpfltk.h"} {} 
+
+Function {Form_Main_Make()} {open
+} {
+  Fl_Window Form_Main {
+    label {MFP FLTK - Bombela} open selected
+    xywh {438 337 705 420} type Double color 32 selection_color 77 labelsize 10 labelcolor 32 resizable visible
+  } {
+    Fl_Box {} {
+      label {Modula BootSector Maker}
+      xywh {60 11 305 39} labelsize 30 labelcolor 7
+    }
+    Fl_Button {} {
+      label Exit
+      callback {Form_Main->hide();}
+      tooltip {Close program} xywh {625 390 70 20} box ROUND_UP_BOX color 7 selection_color 7 labelcolor 32
+    }
+    Fl_Button {} {
+      label {Make bootsector}
+      callback {MakeBootSector();}
+      xywh {15 390 135 20} box ROUND_UP_BOX color 7 selection_color 7 labelcolor 32
+    }
+    Fl_Browser ListBox {
+      label {Partition List (Colored is Modula's compatible) :}
+      xywh {15 70 680 205} type Select labelcolor 55 align 5 textfont 4
+    }
+    Fl_File_Input Input_FloppyDev {
+      label {Floppy device or image file :}
+      xywh {15 300 680 45} labelcolor 7 align 5
+    }
+    Fl_Button {} {
+      label Browse
+      callback {Button_Browse();}
+      xywh {615 350 80 20} box ROUND_UP_BOX color 7 selection_color 7
+    }
+    Fl_Button {} {
+      label Default
+      callback {SetDefaultFloppyDev();}
+      xywh {15 350 80 20} box ROUND_UP_BOX color 7 selection_color 7
+    }
+  }
+} 
+
+Function {Form_Splash_Make()} {open
+} {
+  Fl_Window Form_Splash {
+    label {MFP FLTK - Bombela} open
+    xywh {389 97 640 595} type Double color 7 modal visible
+  } {
+    Fl_Button Splash_Label {
+      callback {Form_Splash->hide();
+NextSplash();}
+      image {Modula.jpg} xywh {0 2 640 480} box NO_BOX
+    }
+    Fl_Browser Splash_Browser {
+      xywh {0 485 640 105}
+    }
+  }
+} 

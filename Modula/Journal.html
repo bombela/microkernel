@@ -1,0 +1,156 @@
+<html>
+<link href="Journal.css" rel="stylesheet" type="text/css">
+<body>
+<h1>Le système d'exploitation MODULA</h1>
+<h2>Changelog</h2>
+<h3>Par Bombela : <a href="mailto:bombela@wanadoo.fr">bombela@wanadoo.fr</a></h3>
+Merci à Ludolpif pour sa relecture.
+
+<h4>17/03/2006</h4>
+<dir>
+<li>IDE</li>
+<ul>
+  <li>La lecture de plusieurs secteur est logicielle, afin d'éviter les disparitées des chipsets IDE.</li>
+</ul>
+<li>FAT32</li>
+<ul>
+  <li>Ça à l'air de marcher !</li>
+</ul>
+<li>gcc4</li>
+<ul>
+  <li>Toujours pas...</li>
+</ul>
+<li>ELF</li>
+<ul>
+  <li>Voilà le prochain module à créer... et vas falloir aussi le sheduler et l'allocateur mémoire...</li>
+</ul>
+</dir>
+
+<h4>02/02/2006</h4>
+<dir>
+<li>OutText.c</li>
+<ul>
+  <li>Log fonctionnel. Création d'un fichier html avec un nom correspondant à la date -> JoursHeuresMinutesSecondes.htm</li>
+</ul>
+<li>io.h</li>
+<ul>
+  <li>Amélioration des fonctions en se basant sur la doc officielle de l'asm inline, ainsi que sur les includes io linux.</li>
+</ul>
+<li>MakeFile</li>
+<ul>
+  <li>Compilation avec gcc 3.3 (précédemment 3.5 mal compilée) en optimisation -02 en architecture i386.</li>
+  <li>Ceci à permis de retirer tous les bugs aléatoires !</li>
+  <li>Il vas valloir passer à gcc 4, du boulot en perspective...</li>
+</ul>
+</dir>
+
+<h4>26/11/2005</h4>
+<dir>
+<li>type.h</li>
+<ul>
+  <li>Définitions de type propre et portable, modification de tous les fichiers sources les modules en conséquences.</li>
+</ul>
+<li>io.h</li>
+<ul>
+  <li>Correction d'une erreur de macro qui provoquais une erreur de compilation avec le module IDE.</li>
+</ul>
+<li>MakeFile</li>
+<ul>
+  <li>Plus aucun warning de compilation.</li>
+  <li>Correction de quelques oubli dans le MakeFile du timer.</li>
+</ul>
+</dir>
+
+<h4>08/06/2005</h4>
+<dir>
+<li>MakeFile</li>
+<ul>
+  <li>Portage des MakeFiles sous Linux ! Ce qui permet d'utiliser les dernières versions de GCC. D'ailleur, la compilations des modules IDE et Fat12 génère quelques warnings.</li>
+  <li>Modifications massive des MakeFiles, il n'y a que la règle all. Clean, property ou autre ne sont plus là. En revanche, les dépendances sont parfaitement gérées. La moindre modification est detectée, les dépendances des modules entres eux parfaitement restituée. Les lignes de commande de compilation, copie, linkage sont cachées. A la place, un listing clair est affiché.</li>
+</ul>
+</dir>
+
+<h4>20/04/2005</h4>
+<dir>
+<li>Loader32.String</li>
+<ul>
+  <li>Création du module "string" ! Dedans, plein de fonctions utiles aux traîtements des chaînes de caractères. Préciséments, les fonctions de recopies, recherche et compagnie. Plus les fonctions de formatages standards.</li>
+</ul>
+</dir>
+
+<h4>11/03/2005</h4>
+<dir> 
+<li>Loader32.Floppy</li>
+<ul>
+  <li>La fonction Floppy_Reset a été rajoutée et est utilisée lors de l'initialisation du pilote. Cela permet une indépendance de la configuration du contrôleur disquette par rapport à l'initialisation faite par le BIOS. De plus, il est maintenant possible de lancer le bootsector ou même le loader à partir d'un chargeur externe, comme lilo par exemple. En effet, il suffit d'insérer la disquette avant de lancer le loader, et le contrôleur disquette sera initialisé correctement avec la fonction reset.</li>
+</ul>
+</dir>
+
+<h4>03/03/2005</h4>
+<dir> 
+<li>Loader32.Io</li>
+<ul>
+  <li>Les fonctions I/O sont enfin des macros.</li>
+</ul>
+<li>Loader32</li>
+<ul>
+  <li>Si sur la disquette, dans le dossier de travail, se trouve le fichier UserProg.bin, il est chargé à l'adresse 0x100000 (1Mo), et exécuté. Le programme UserProg.bin doit se terminer par l'instruction CPU "RET".</li>
+</ul>
+</dir>
+
+<h4>01/03/2005</h4>
+<dir> 
+<li>Loader32 - Test ACPI !</li>
+<ul>
+  <li>Il a été possible de trouver la table ACPI dans la mémoire et de stocker ses 20 premiers ko dans le fichier DUMP.bin, sur la disquette.</li>
+</ul>
+</dir>
+
+<h4>14/02/2005</h4>
+<dir> 
+<li>Loader32.Fat12</li>
+<ul>
+  <li>Plein de bugs corrigés. J'ai l'espoir que ça marche.</li>
+</ul>
+<li>Loader32 - Idées</li>
+<ul>
+  <li>Il faut maintenant transformer les fonctions IO en macros.</li>
+  <li>Et coder la libraire de conversion de nombre en texte.</li>
+  <li>Ensuite, coder la création de sous-dossiers et de nom de fichiers générés avec la date pour les logs HTML.</li>
+  <li>Voir 02/02/2005 pour les modalités.</li>
+</ul>
+</dir>
+
+<h4>13/02/2005</h4>
+<dir> 
+<li>Loader32.Fat12</li>
+<ul>
+  <li>Optimisation intensive.</li>
+  <li>Corrections de bugs très gênant.</li>
+  <li>Il reste encore à finir la fonction CreateEntry et son utilisation par CreateDir.</li>
+</ul>
+</dir>
+
+<h4>02/02/2005</h4>
+<dir> 
+<li>Général</li>
+<ul>
+  <li>Création de ce journal.</li>
+  <li>Au fait, le système à été commencé en février 2004. Il a 1 an !</li>
+</ul>
+<li>Loader32.OutText</li>
+<ul>
+  <li>Options U? et I? ajoutée à OutText. Permet de forcer des 0's devant les nombres.</li>
+</ul>
+<li>Loader32.Fat12</li>
+<ul>
+  <li>Les fonctions de création de dossiers et fichiers ainsi que l'ouverture,lecture,écriture et fermeture fonctionnent correctement dans Fat12.</li>
+</ul>
+<li>Idées</li>
+<ul>
+  <li>Il faut ajouter des fonctions de vérification de l'existence d'un fichier/dossier dans Fat12 : Fat12_IsDir(char *DirName), Fat12_IsFile(char *FileName).</li>
+  <li>Ensuite ajouter une librairie de conversion de nombres en texte (En mémoire, pas à l'écran comme OutText).</li>
+  <li>Ajouter un module de log html, afin de stocker sur une disquette tout ce qui se passe à l'écran. L'idée est de commencer par récupérer le texte de l'écran au chargement du module et de le convertir en html puis de le copier sur disquette. Ensuite, au fur et à mesure du texte qui sort, l'écrire sur la disquette par paquet de 512 octets (Ou plus pour optimiser). Il faut nommer les fichiers de log et leurs dossiers parents en relation avec la date !</li>
+</ul>
+</dir>
+</body></html>
