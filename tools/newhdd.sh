@@ -14,6 +14,8 @@ then
 fi
 
 IMG="$1"
+BASE_DIR="$(dirname "$0")"
+MOUNTHDD="$BASE_DIR/mounthdd.sh"
 
 if [[ -e "$IMG" ]]
 then
@@ -34,30 +36,40 @@ echo "Creating DOS master boot record..."
 sudo parted "$loop" mklabel msdos
 
 echo "Creating following partition scheme:"
-echo "  primary0 ext2, 128MB"
-echo "  primary1 fat32, $SIZE - 128MB"
+echo "  primary0 ext2, 24MB"
+echo "  primary1 fat32, $SIZE - 24MB"
 sudo sfdisk -q --no-reread "$loop" -uM <<EOF
-0,128,83,*
+0,16,83,*
 ,,0C,-
 EOF
 
 echo "Load partitions by the kernel..."
-sudo kpartx -v -a "$loop" && sleep 1
+sudo kpartx -v -a "$loop"
 
 loop_basename="$(basename "$loop")"
 p1="/dev/mapper/${loop_basename}p1"
 p2="/dev/mapper/${loop_basename}p2"
-
-ls -l "$p1"
-ls -l "$p2"
 
 echo "Create file systems..."
 sudo mke2fs -t ext2 -T small -m 0 -v "$p1"
 sudo tune2fs -c 0 -i 0 "$p1"
 sudo mkdosfs -F 32 -v "$p2"
 
-echo "Install grub..."
-sudo grub-install "$p1"
+echo "Mounting filesystems..."
+if $MOUNTHDD mount "$IMG"
+then
+	p1d="$IMG.p1"
+	p2d="$IMG.p2"
+
+	echo "Copying grub files..."
+	sudo cp -R /usr/lib/grub/i386-pc/ "$p1d/grub"
+
+	echo "Installing grub..."
+	sudo grub-setup "$p1"
+else
+	echo "Mount error... oops..."
+fi
+$MOUNTHDD umount "$IMG"
 
 echo "Unload partitions by the kernel..."
 sudo kpartx -v -d "$loop"

@@ -40,5 +40,8 @@ case $1 in
 		sudo umount "$p2d"
 		rmdir "$p1d" "$p2d"
 		;;
+	*)
+		echo "Unknown action"
+		;;
 esac
 

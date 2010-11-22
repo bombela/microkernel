@@ -39,4 +39,7 @@ case $1 in
 		echo "Loop detach $loop..."
 		sudo losetup -d "$loop"
 		;;
+	*)
+		echo "Unknown action"
+		;;
 esac
