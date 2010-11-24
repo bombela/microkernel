@@ -3,7 +3,7 @@
 # newhdd.sh
 # Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
 #
-#
+# grub-firmware-qemu
 
 SIZE=2G
 
@@ -30,7 +30,7 @@ du -h --apparent-size "$IMG"
 
 echo "Loop setup image..."
 loop="$(sudo losetup -v -f "$IMG" | sed 's/^Loop device is //')"
-echo "Lopp device is $loop" 
+echo "Loop device is $loop" 
 
 echo "Creating DOS master boot record..."
 sudo parted "$loop" mklabel msdos
@@ -38,10 +38,30 @@ sudo parted "$loop" mklabel msdos
 echo "Creating following partition scheme:"
 echo "  primary0 ext2, 24MB"
 echo "  primary1 fat32, $SIZE - 24MB"
-sudo sfdisk -q --no-reread "$loop" -uM <<EOF
-0,16,83,*
-,,0C,-
+sudo fdisk "$loop"<<EOF
+n
+p
+1
+
++16M
+a
+1
+n
+p
+2
+
+
+t
+2
+c
+w
 EOF
+
+# sudo sfdisk -q --no-reread "$loop" -uM <<EOF
+# 0,1,0
+# ,16,83,*
+# ,,0C,-
+# EOF
 
 echo "Load partitions by the kernel..."
 sudo kpartx -v -a "$loop"
@@ -60,16 +80,24 @@ if $MOUNTHDD mount "$IMG"
 then
 	p1d="$IMG.p1"
 	p2d="$IMG.p2"
+	grubFolder="${p1d}/grub"
 
 	echo "Copying grub files..."
-	sudo cp -R /usr/lib/grub/i386-pc/ "$p1d/grub"
+	sudo cp -R /usr/lib/grub/i386-pc "$grubFolder"
 
+	sudo touch "${grubFolder}/device.map"
+	sudo chmod 777 "${grubFolder}/device.map"
+	sudo cat > "${grubFolder}/device.map" <<EOF
+(hd0)   $loop
+EOF
 	echo "Installing grub..."
-	sudo grub-setup "$p1"
+	sudo grub-mkimage -O i386-pc --output="${grubFolder}/core.img" --prefix="/grub" ext2 biosdisk part_msdos
+	sudo grub-setup --skip-fs-probe --device-map="${grubFolder}/device.map" --directory="$grubFolder" --root-device='(hd0,1)' '(hd0)'
 else
 	echo "Mount error... oops..."
 fi
 $MOUNTHDD umount "$IMG"
+
 
 echo "Unload partitions by the kernel..."
 sudo kpartx -v -d "$loop"
