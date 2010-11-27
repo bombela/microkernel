@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# configure
+# Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+#
+#
+
+CC=gcc-4.6 CXX=g++-4.6 cmake -DCMAKE_BUILD_TYPE=Debug ..

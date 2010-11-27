@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# autogen
+# Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+#
+#
+
+mkdir build && cd build && ../configure
