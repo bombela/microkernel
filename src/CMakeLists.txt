@@ -49,3 +49,10 @@ add_custom_target(fgdb
 	"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kern0x"
 	DEPENDS kern0x
 	)
+
+add_custom_target(reghdd
+	"${TOOLS_DIRECTORY}/loophdd.sh" set "${TEST_IMG}"
+	)
+add_custom_target(unreghdd
+	"${TOOLS_DIRECTORY}/loophdd.sh" unset "${TEST_IMG}"
+	)
