@@ -17,7 +17,7 @@ SECTIONS
 {
 	/* our kernel is loaded at 0x200000 */
 	. = 0x200000;
-    __b_load = .;
+	__b_load = .;
 
 	/* the multiboot header MUST come early enough in the output
 	   object file */
