@@ -4,6 +4,8 @@
  *
 */
 
+#include <multiboot.h>
+
 extern "C" void _start()
 {
 	// inject asm here, setup a stack etc.
