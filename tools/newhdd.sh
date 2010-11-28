@@ -86,11 +86,14 @@ then
 	sudo cp -R /usr/lib/grub/i386-pc "$grubFolder"
 
 	echo "Generating grub files..."
-	sudo -s "cat > \"${grubFolder}/device.map\"" <<EOF
-(hd0)   $loop
-EOF
 
-	sudo -s "cat > \"${grubFolder}/grub.cfg\"" <<EOF
+	sudo -s <<EOF 
+cat > "${grubFolder}/device.map" <<EOF2
+(hd0)   $loop
+EOF2
+EOF
+	sudo -s <<EOF
+cat > "${grubFolder}/grub.cfg" <<EOF2
 set timeout=0
 
 menuentry 'kern0x' --class microkernel --class os {
@@ -100,6 +103,7 @@ menuentry 'kern0x' --class microkernel --class os {
 	set root='(hd0, 1)'
 	multiboot /kern0x my pretty kernel
 }
+EOF2
 EOF
 	
 	sudo grub-mkimage -O i386-pc --output="${grubFolder}/core.img" \
