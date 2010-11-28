@@ -108,6 +108,15 @@ struct header
 	uint32_t depth;
 };
 
+/* The symbol table for a.out. */
+struct aout_symbol_table
+{
+	uint32_t tabsize;
+	uint32_t strsize;
+	uint32_t addr;
+	uint32_t reserved;
+};
+
 /* The section header table for ELF. */
 struct elf_section_header_table
 {
@@ -136,8 +145,12 @@ struct info
 	uint32_t mods_count;
 	uint32_t mods_addr;
 
-	/* The section header table for ELF. */
-	elf_section_header_table elf_sec;
+	/* The section header table for AOUT or ELF. */
+	union
+	{
+		aout_symbol_table        aout_sym;
+		elf_section_header_table elf_sec;
+	};
 
 	/* Memory Mapping buffer */
 	uint32_t mmap_length;
