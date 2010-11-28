@@ -14,17 +14,25 @@ fi
 KERNEL="$1"
 HDDIMG="$2"
 
+cat >gdbexec <<EOF
+	sym "$KERNEL"
+EOF
+
 if [[ -n "$HDDIMG" ]]
 then
-	gdb -s "$KERNEL"
+	cat >>gdbexec <<EOF
+	target remote | exec kvm -gdb stdio -hda "$HDDIMG"
+EOF
 else
-	cat >gdbexec <<EOF
-	sym "$KERNEL"
+	cat >>gdbexec <<EOF
 	target remote | exec kvm -gdb stdio -kernel "$KERNEL"
-	break *0x201000
+EOF
+fi
+
+cat >>gdbexec <<EOF
 	break kernel_main
 	continue
 	layout split
 EOF
-	gdb -tui -x gdbexec
-fi
+
+gdb -tui -x gdbexec
