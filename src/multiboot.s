@@ -19,17 +19,16 @@ _start:
 	pushl $0
 	popf
 	
-	sti
-
 	/* call main with multiboot magic & address */
 	push %ebx /* multiboot structure address */
 	push %eax /* multiboot magic */
+
 	call kernel_main
 
+	/* should never reach here */
+	
 	/* stop interruptions */
 	cli
-
-	/* should never reach here */
 1:
 	hlt
 	jmp 1b

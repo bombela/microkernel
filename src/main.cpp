@@ -24,16 +24,16 @@ SECTION(".multiboot") ALIGNED(8) multiboot::header_short multiboot_header = {
 
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
-	// inject asm here, setup a stack etc.
-	
 	#define VideoMem	0xB8000
 
 	for (int i = 0; i < 200; i++)
 	{
-		char* vmem = (char*) VideoMem;
-		vmem[0] = 'l';
-		vmem[1] = 'o';
-		vmem[2] = 'l';
-		vmem[3] = 'o';
+		char* vmem = (char*) VideoMem + (2 * 80) * 3;
+		char* hello = "Bonjour le monde...";
+		while (*hello)
+		{
+			*vmem++ = *hello++;
+			*vmem++ = 5;
+		}
 	}
 }
