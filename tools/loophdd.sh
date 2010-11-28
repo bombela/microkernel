@@ -16,12 +16,21 @@ IMG="$2"
 
 case $1 in
 	set)
-		echo "Loop setup image $IMG..."
-		loop="$(sudo losetup -v -f "$IMG" | sed 's/^Loop device is //')"
-		echo "Loop device is $loop" 
+		echo "Find loop device for $IMG..."
+		loop="$(sudo losetup -j "$IMG" | sed 's/:.*$//')"
+		if [[ -z "$loop" ]]
+		then
+			echo "Not found, loop setup image $IMG..."
+			loop="$(sudo losetup -v -f "$IMG" | sed 's/^Loop device is //')"
 
-		echo "Load partitions by the kernel..."
-		sudo kpartx -v -a "$loop"
+			echo "Loop device is $loop" 
+
+			echo "Load partitions by the kernel..."
+			sudo kpartx -v -a "$loop"
+		else
+			echo "Loop device is $loop" 
+			exit 1
+		fi
 		;;
 	unset)
 		echo "Find loop device for $IMG..."

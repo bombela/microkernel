@@ -5,14 +5,15 @@
 #
 #
 
-if [[ $# -ne 2 ]]
+if [[ $# -lt 2 ]]
 then
-	echo "usage: $0 mount|umount hdd.img"
+	echo "usage: $0 mount|umount hdd.img [only_boot]"
 	exit 1
 fi
 
 ACTION=$1
 IMG="$2"
+ONLYBOOT="$3"
 		
 p1d="$IMG.p1"
 p2d="$IMG.p2"
@@ -31,14 +32,23 @@ case $1 in
 		p1="/dev/mapper/${loop_basename}p1"
 		p2="/dev/mapper/${loop_basename}p2"
 
-		mkdir "$p1d" "$p2d"
-		sudo mount "$p1" "$p1d"
-		sudo mount "$p2" "$p2d"
+		echo "Mouting $p1 to $p1d..."
+		mkdir "$p1d" && sudo mount "$p1" "$p1d"
+
+		if [[ -z "$ONLYBOOT" ]]
+		then
+			echo "Mouting $p2 to $p2d..."
+			mkdir "$p2d" && sudo mount "$p2" "$p2d"
+		fi
 		;;
 	umount)
-		sudo umount "$p1d"
-		sudo umount "$p2d"
-		rmdir "$p1d" "$p2d"
+		if [[ -d "$p2d" ]]
+		then
+			echo "Unmounting $p2d..."
+			sudo umount "$p2d" && rmdir "$p2d"
+		fi
+		echo "Unmounting $p1d..."
+		sudo umount "$p1d" && rmdir "$p1d"
 		;;
 	*)
 		echo "Unknown action"

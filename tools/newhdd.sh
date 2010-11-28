@@ -85,14 +85,28 @@ then
 	echo "Copying grub files..."
 	sudo cp -R /usr/lib/grub/i386-pc "$grubFolder"
 
-	sudo touch "${grubFolder}/device.map"
-	sudo chmod 777 "${grubFolder}/device.map"
-	sudo cat > "${grubFolder}/device.map" <<EOF
+	echo "Generating grub files..."
+	sudo -s "cat > \"${grubFolder}/device.map\"" <<EOF
 (hd0)   $loop
 EOF
+
+	sudo -s "cat > \"${grubFolder}/grub.cfg\"" <<EOF
+set timeout=0
+
+menuentry 'kern0x' --class microkernel --class os {
+	insmod part_msdos
+	insmod ext2
+	set root='(hd0, 1)'
+	linux /kern0x my pretty kernel
+}
+EOF
+	
+	sudo grub-mkimage -O i386-pc --output="${grubFolder}/core.img" \
+		--prefix="/grub" ext2 biosdisk part_msdos
+	
 	echo "Installing grub..."
-	sudo grub-mkimage -O i386-pc --output="${grubFolder}/core.img" --prefix="/grub" ext2 biosdisk part_msdos
-	sudo grub-setup --skip-fs-probe --device-map="${grubFolder}/device.map" --directory="$grubFolder" --root-device='(hd0,1)' '(hd0)'
+	sudo grub-setup --skip-fs-probe --device-map="${grubFolder}/device.map" \
+		--directory="$grubFolder" --root-device='(hd0,1)' '(hd0)'
 else
 	echo "Mount error... oops..."
 fi
