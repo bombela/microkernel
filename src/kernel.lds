@@ -52,6 +52,16 @@ SECTIONS
 		/* Defines the end symbol */
 		__e_text = .;
 	}
+	
+	/* Beginning of the ctors section */
+	.ctors . :
+	{
+		__b_ctors = .;
+		/* This section includes the C++ static call to constructors */
+		*(.ctors*)
+		/* Defines the end symbol */
+		__e_ctors = .;
+	}
 
 	/* Beginning of the data section */
 	.data . :

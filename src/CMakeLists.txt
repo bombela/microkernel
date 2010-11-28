@@ -56,3 +56,12 @@ add_custom_target(reghdd
 add_custom_target(unreghdd
 	"${TOOLS_DIRECTORY}/loophdd.sh" unset "${TEST_IMG}"
 	)
+
+add_custom_command(OUTPUT kern0x.S kern0x.dump
+	COMMAND objdump -x "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kern0x" > kern0x.dump
+	COMMAND objdump -D "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kern0x" > kern0x.S
+	DEPENDS kern0x
+	)
+add_custom_target(dumpkern
+	DEPENDS kern0x.S
+	)

@@ -37,3 +37,6 @@ _start:
 .size kernel_boot_stack, KERNEL_BOOT_STACK_SIZE
 kernel_boot_stack:
 	.space KERNEL_BOOT_STACK_SIZE
+
+.section ".ctors", "aw"
+	.space 1
