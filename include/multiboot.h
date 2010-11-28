@@ -83,6 +83,18 @@ namespace multiboot {
 /* Is there video information? */
 #define MULTIBOOT_INFO_VIDEO_INFO               0x00000800
 
+struct short_header
+{
+	/* Must be MULTIBOOT_MAGIC - see above. */
+	uint32_t magic;
+
+	/* Feature flags. */
+	uint32_t flags;
+
+	/* The above fields plus this one must equal 0 mod 2^32. */
+	uint32_t checksum;
+};
+
 struct header
 {
 	/* Must be MULTIBOOT_MAGIC - see above. */

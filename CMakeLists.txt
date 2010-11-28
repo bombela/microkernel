@@ -18,6 +18,8 @@ endif()
 # CONFIGURATION
 ###############################################################################
 
+enable_language(ASM-ATT)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 set(TOOLS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tools")
 

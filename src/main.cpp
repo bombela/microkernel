@@ -6,7 +6,23 @@
 
 #include <multiboot.h>
 
-extern "C" void _start()
+namespace kernel {
+
+const uint32_t STACK_SIZE = 0x4000;
+
+const uint32_t MULTIBOOT_HEADER_FLAGS =
+	(MULTIBOOT_PAGE_ALIGN bitor MULTIBOOT_MEMORY_INFO);
+
+// multiboot specification header
+/*ALIGNED(8) multiboot::short_header multiboot_header = {
+	MULTIBOOT_HEADER_MAGIC,
+	MULTIBOOT_HEADER_FLAGS,
+	-(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
+}; */
+
+} // namespace kernel
+
+extern "C" void _startlol()
 {
 	// inject asm here, setup a stack etc.
 
