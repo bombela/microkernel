@@ -14,24 +14,26 @@ const uint32_t MULTIBOOT_HEADER_FLAGS =
 	(MULTIBOOT_PAGE_ALIGN bitor MULTIBOOT_MEMORY_INFO);
 
 // multiboot specification header
-/*ALIGNED(8) multiboot::short_header multiboot_header = {
+SECTION(".multiboot") ALIGNED(8) multiboot::header_short multiboot_header = {
 	MULTIBOOT_HEADER_MAGIC,
 	MULTIBOOT_HEADER_FLAGS,
 	-(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
-}; */
+};
 
 } // namespace kernel
 
-extern "C" void _startlol()
+extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
 	// inject asm here, setup a stack etc.
+	
+	#define VideoMem	0xB8000
 
-	// stop cpu.
-	asm("\
-			cli \n\
-			hlt \n\
-			");
-
-	// should never reach here.
-	while (1) ;
+	for (int i = 0; i < 200; i++)
+	{
+		char* vmem = (char*) VideoMem;
+		vmem[0] = 'l';
+		vmem[1] = 'o';
+		vmem[2] = 'l';
+		vmem[3] = 'o';
+	}
 }
