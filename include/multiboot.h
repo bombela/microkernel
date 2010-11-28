@@ -93,6 +93,12 @@ struct header_short
 
 	/* The above fields plus this one must equal 0 mod 2^32. */
 	uint32_t checksum;
+
+	constexpr header_short(uint32_t flags):
+		magic(MULTIBOOT_HEADER_MAGIC),
+		flags(flags),
+		checksum(-MULTIBOOT_HEADER_MAGIC - flags)
+	{}
 };
 
 struct header
