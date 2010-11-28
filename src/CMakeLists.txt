@@ -32,13 +32,19 @@ add_custom_target(cpykern
 add_custom_target(run kvm -hda "${TEST_IMG}")
 add_dependencies(run cpykern)
 
-add_custom_target(rungdb
+add_custom_target(gdb
 	"${TOOLS_DIRECTORY}/gdb.sh"
 	"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kern0x" "${TEST_IMG}"
 	DEPENDS kern0x
 	)
+add_dependencies(gdb cpykern)
 
-add_custom_target(gdb
+add_custom_target(frun
+	"kvm" -kernel "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kern0x"
+	DEPENDS kern0x
+	)
+
+add_custom_target(fgdb
 	"${TOOLS_DIRECTORY}/gdb.sh"
 	"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kern0x"
 	DEPENDS kern0x
