@@ -96,8 +96,9 @@ set timeout=0
 menuentry 'kern0x' --class microkernel --class os {
 	insmod part_msdos
 	insmod ext2
+	insmod multiboot
 	set root='(hd0, 1)'
-	linux /kern0x my pretty kernel
+	multiboot /kern0x my pretty kernel
 }
 EOF
 	
