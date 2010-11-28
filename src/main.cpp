@@ -11,7 +11,7 @@ namespace kernel {
 const uint32_t STACK_SIZE = 0x4000;
 
 // multiboot specification header
-SECTION(".multiboot") ALIGNED(8) multiboot::header_short
+SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 	multiboot_header(MULTIBOOT_PAGE_ALIGN bitor MULTIBOOT_MEMORY_INFO);
 
 } // namespace kernel
