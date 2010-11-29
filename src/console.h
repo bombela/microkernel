@@ -9,9 +9,21 @@ namespace kernel {
   
   namespace std {
 
+    enum console_color {
+      jail,
+      black,
+      blue,
+      cyan,
+      red,
+      violet, /* TO RETRANSLATE */
+      orange,
+      white,
+      grey /* I STOP HERE*/
+    };
+
     class console {
     public:
-    console() : _kX(0), _kY(1), _kattr(0x07) { print("Constructeur Console\n"); }
+    console() : _kX(0), _kY(1), _kattr(white) { print("Constructeur Console\n"); }
       ~console() {}
 
       void print(char *);
