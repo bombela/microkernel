@@ -11,7 +11,7 @@
 #define MULTIBOOT_H
 
 #include <kernel/types.h>
-#include <kernel/attributes.h>
+#include <attributes.h>
 
 namespace multiboot {
 

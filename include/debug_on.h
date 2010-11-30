@@ -5,10 +5,10 @@
 */
 
 #include <debug.h>
-#include <utility.h>
+#include <basename.h>
 
 #undef dbg
 
-#define dbg(...) kernel::debug::printf(__FILE__ ":% % - " \
+#define dbg(...) do { kernel::debug::printf(__FILE__ ":% % - " \
 		+ utility::basename(__FILE__), __LINE__, __PRETTY_FUNCTION__); \
-		kernel::debug::printf(__VA_ARGS__)
+		kernel::debug::printf(__VA_ARGS__); } while (0)

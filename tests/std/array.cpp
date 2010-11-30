@@ -4,18 +4,45 @@
  *
 */
 
-#include <kernel/array.hpp>
-
 #include <test.h>
+
+#include <kernel/std/array.hpp>
 #include <iostream>
 
 using namespace kernel::std;
 
 BOOST_AUTO_TEST_CASE(construction)
 {
-	array<int, 42> top;
+	// inplace array
+	// equivalent: int a[42];
+	array<int, 42> a;
+
+	BOOST_ASSERT(1 == 2);
+	assert(2 == 3);
+
+	// inplace array
+	// equivalent: int b[42];
+	array<int, 42, buffer::inplace> b;
+
+	// absolute array
+	// closely equivalent: int (const *c)[42] = 0x300;
+	array<int, 42, buffer::absolute, 0x300> c;
+
+	// dynamic array
+	// closely equivalent: int (*d)[42];
+	array<int, 42, buffer::dynamic> d;
+
+	// dynamic array
+	// closely equivalent: int (*e)[42] = 0x300;
+	array<int, 42, buffer::dynamic> e(0x300);
 }
 
-BOOST_AUTO_TEST_CASE(destruction)
+/*
+BOOST_AUTO_TEST_CASE(inplace)
 {
-}
+	array<int, 42> a;
+	a[0] = 1;
+	
+	const array<int, 42> b;
+	int l = b[0];
+}*/

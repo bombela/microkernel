@@ -13,4 +13,14 @@
 
 #define UNUSED __attribute__ ((unused))
 
+// hack for keep alive BOOST_ASSERT!
+#include <stdlib.h>
+#include <debug.h>
+#include <basename.h>
+#undef BOOST_ASSERT
+#define BOOST_ASSERT(__expr) do { if (not (__expr)) \
+	kernel::debug::printf(__FILE__ ":% % - /!\\ ASSERTION ERROR /!\\ (" \
+			#__expr ")\n" + utility::basename(__FILE__), \
+			__LINE__, __PRETTY_FUNCTION__); abort(); } while (0)
+
 #endif /* TEST_H */
