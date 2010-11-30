@@ -9,9 +9,27 @@
 #define DEBUG_H
 
 #include <iostream>
+#include <is_printable.hpp>
+#include <enable_if.hpp>
 
 namespace kernel {
 namespace debug {
+
+namespace details {
+
+template <typename S, typename T>
+void print_helper(S& os, const T& v,
+		typename enable_if<not is_printable<T, S>::value>::type = 0) {
+	os << "<some type>";
+}
+
+template <typename S, typename T>
+void print_helper(S& os, const T& v,
+		typename enable_if<is_printable<T, S>::value>::type = 0) {
+	os << v;
+}
+
+} // namespace details
 
 template <typename... Args>
 void printf(const char* fmt)
@@ -26,7 +44,8 @@ void printf(const char* fmt, const T& arg1, const Args&... args)
 	{
 		if (*fmt == '%' && *++fmt != '%')
 		{
-			std::cout << arg1;
+			//std::cout << arg1;
+			details::print_helper(std::cout, arg1);
 			printf(fmt, args...);
 			return;
 		}
