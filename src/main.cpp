@@ -5,6 +5,7 @@
 */
 
 #include <multiboot.h>
+#include "console.h"
 
 #define VideoMem	0xB8000
 
@@ -16,24 +17,26 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 } // namespace kernel
 
-#define msg(msg, line) \
-	do { \
-		for (int i = 0; i < 200; i++) \
-		{ \
-			char* vmem = (char*) VideoMem + (2 * 80) * (line); \
-			const char* hello = msg; \
-			while (*hello) \
-			{ \
-				*vmem++ = *hello++; \
-				*vmem++ = 5; \
-			} \
-		} \
-	} while(0)
+/* #define msg(msg, line)			\
+ 	do { \
+ 		for (int i = 0; i < 1; i++) \
+ 		{ \
+ 			char* vmem = (char*) VideoMem + (2 * 80) * (line); \
+ 			const char* hello = msg; \
+ 			while (*hello) \
+ 			{ \
+ 				*vmem++ = *hello++; \
+ 				*vmem++ = 5; \
+ 			} \
+ 		} \
+		} while(0)
+*/
+kernel::std::console console;
 
 struct Toto
 {
-	Toto() { msg("constructor", 4); }
-	~Toto() { msg("destructor", 5); }
+	Toto() { console.write("constructor\n"); }
+	~Toto() { console.write("destructor\n"); }
 };
 
 void* __dso_handle = 0;
@@ -45,8 +48,8 @@ void* cleanup_self[20];
 
 extern "C" int __cxa_atexit(void (*func)(), void* self)
 {
-	msg("__cxa_atexit", 6);
-	
+	console.write("__cxa_atexit\n");
+  
 	typedef void (*func_ptr)();
 	func_ptr* fend = cleanup;
 	int i = 0;
@@ -66,27 +69,30 @@ Toto toto;
 template <typename T, int L>
 struct Titi
 {
-	const char* _name;
+        const char* _name;
 
 	template <typename U>
 	Titi(const char* name, U arg1):
 		_name(name),
 		var(arg1)
 	{
-		msg("                                            constructor style", L);
-		msg(name, L);
+		console.write("constructor style ");
+		console.write(name);
+		console.write("\n");
 	}
 
 	Titi(const char* name):
 		_name(name)
 	{
-		msg("                                            constructor", L);
-		msg(name, L);
+		console.write("constructor ");
+		console.write(name);
+		console.write(" --\n");
 	}
 
 	~Titi() {
-		msg("                                            destructor", L + 1);
-		msg(_name, L + 1);
+		console.write("destructor ");
+		console.write(_name);
+		console.write(" --\n");
 	}
 	T var;
 };
@@ -94,7 +100,8 @@ struct Titi
 Titi<int, 10> a("int");
 Titi<char, 12> b("char");
 
-Titi< Titi<float, 14>, 16> c("Titi<float>", "float");
+//Titi< Titi<float, 14>, 16> c("Titi<float>", "float");
+
 
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
@@ -110,17 +117,23 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	}
 
 	{
-		msg("call constructors", 23);
 		typedef void (*func_ptr)();
 		extern func_ptr __b_ctors[];
 		extern func_ptr __e_ctors[];
 
+		//console.write("call constructors (never displayed)\n");
 		for (func_ptr* i = __e_ctors - 1; i >= __b_ctors; --i)
 			(*i)();
 	}
 
+	for (int i=0; i< 5;++i) {
+	  console.setColor((kernel::std::console_color)i);
+	  console.write("coucou\n");
+	}
+	console.setColor(kernel::std::realwhite);
+
 	{
-		msg("call destructor", 24);
+		console.write("call destructor\n");
 		func_ptr* i = cleanup;
 		int j = 0;
 		while (*i)

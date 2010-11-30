@@ -5,21 +5,25 @@ namespace kernel {
   namespace std {
 
  
-    void console::print(char *string) {
+    void console::write(char *string) {
       while (*string != 0) {
-	putcar(*string);
+	write(*string);
 	string++;
       }
     }
 
-    void console::print(const char *string) {
+    void console::write(const char *string) {
       int i = 0;
       while (string[i]){
-	putcar(string[i]);
+	write(string[i]);
 	i++;
       }
     }
     
+    void console::setColor(console_color c) {
+      _kattr = c;
+    }
+
     void console::scrollup(unsigned int n) {
       unsigned char *video, *tmp;
 
@@ -42,7 +46,7 @@ namespace kernel {
 
     }
 
-    void console::putcar(char c) {
+    void console::write(char c) {
       unsigned char *video;
       
       if (c == 10) {

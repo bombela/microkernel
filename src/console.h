@@ -10,27 +10,35 @@ namespace kernel {
   namespace std {
 
     enum console_color {
-      jail,
-      black,
+      black=0x00,
       blue,
+      green,
       cyan,
       red,
-      violet, /* TO RETRANSLATE */
+      purple,
       orange,
       white,
-      grey /* I STOP HERE*/
+      grey,
+      lightblue,
+      lightgreen,
+      lightcyan,
+      lightred,
+      lightpurple,
+      yellow,
+      realwhite
     };
 
     class console {
     public:
-    console() : _kX(0), _kY(1), _kattr(white) { print("Constructeur Console\n"); }
+    console() : _kX(0), _kY(1), _kattr(realwhite) { write("Constructeur Console\n"); }
       ~console() {}
 
-      void print(char *);
-      void print(const char *);
+      void write(char *);
+      void write(const char *);
+      void setColor(console_color);
 
     private:
-      void putcar(char);
+      void write(char);
       void scrollup(unsigned int);
 
       char _kX; /* = 0; */
