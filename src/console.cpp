@@ -1,4 +1,4 @@
-#include "console.h"
+#include <kernel/console.h>
 
 namespace kernel {
 

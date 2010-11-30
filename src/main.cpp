@@ -5,9 +5,7 @@
 */
 
 #include <kernel/multiboot.h>
-#include "console.h"
-
-#define VideoMem	0xB8000
+#include <kernel/console.h>
 
 namespace kernel {
 
@@ -17,20 +15,6 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 } // namespace kernel
 
-/* #define msg(msg, line)			\
- 	do { \
- 		for (int i = 0; i < 1; i++) \
- 		{ \
- 			char* vmem = (char*) VideoMem + (2 * 80) * (line); \
- 			const char* hello = msg; \
- 			while (*hello) \
- 			{ \
- 				*vmem++ = *hello++; \
- 				*vmem++ = 5; \
- 			} \
- 		} \
-		} while(0)
-*/
 kernel::std::console console;
 
 struct Toto
@@ -100,22 +84,11 @@ struct Titi
 Titi<int, 10> a("int");
 Titi<char, 12> b("char");
 
-//Titi< Titi<float, 14>, 16> c("Titi<float>", "float");
+Titi< Titi<float, 14>, 16> c("Titi<float>", "float");
 
 
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
-	for (int i = 0; i < 200; i++)
-	{
-		char* vmem = (char*) VideoMem + (2 * 80) * 3;
-		const char* hello = "Bonjour le monde...";
-		while (*hello)
-		{
-			*vmem++ = *hello++;
-			*vmem++ = 5;
-		}
-	}
-
 	{
 		typedef void (*func_ptr)();
 		extern func_ptr __b_ctors[];
