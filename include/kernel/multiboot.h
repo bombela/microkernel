@@ -10,8 +10,8 @@
 #ifndef MULTIBOOT_H
 #define MULTIBOOT_H
 
-#include <types.h>
-#include <attributes.h>
+#include <kernel/types.h>
+#include <kernel/attributes.h>
 
 namespace multiboot {
 

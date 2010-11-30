@@ -4,6 +4,10 @@
 #
 #
 
+###############################################################################
+# COMPILER FLAGS
+###############################################################################
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=gnu++0x -m32 -fPIC")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostdlib -nostdinc")
@@ -12,12 +16,28 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_ASM-ATT_FLAGS "${CMAKE_ASM-ATT_FLAGS} --32")
 endif()
 
+###############################################################################
+# CONFIGURATION
+###############################################################################
+
+include_directories("${CMAKE_SOURCE_DIR}/include")
+
+###############################################################################
+# RULES
+###############################################################################
+
 set(SRCS
 	kernel.lds
 	multiboot.s
 	main.cpp
 	console.cpp
 	)
+
+set_property(SOURCE ${src} APPEND
+	PROPERTY COMPILE_DEFINITIONS ${KERNEL_DEFINES_DEBUG}
+	)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 add_executable(kern0x ${SRCS})
 target_link_libraries(kern0x gcc)

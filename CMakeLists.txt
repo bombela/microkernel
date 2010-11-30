@@ -20,16 +20,44 @@ endif()
 
 enable_language(ASM-ATT)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 set(TOOLS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tools")
 
 set(TEST_IMG "${CMAKE_CURRENT_BINARY_DIR}/test.img"
 	CACHE FILEPATH "hdd image used for testing")
 
-include_directories("include")
+set(KERNEL_ALL_DEBUG CACHE BOOL "All debug messages")
+set(KERNEL_ALL_CHECK CACHE BOOL "All runtime assertions")
+
+set(KERNEL_DEFINES_DEBUG)
+macro(kern0x_add_define defname shortdoc)
+	set(def_debug "KERNEL_${defname}_DEBUG")
+	set(def_check "KERNEL_${defname}_CHECK")
+
+	set(${def_debug} CACHE BOOL "${shortdoc} debug messages")
+	if (KERNEL_ALL_DEBUG OR ${def_debug})
+		message(STATUS "${shortdoc} debug messages     ON")
+		list(APPEND KERNEL_DEFINES_DEBUG "${def_debug}=\"debug_on.h\"")
+	else()
+		list(APPEND KERNEL_DEFINES_DEBUG "${def_debug}=\"debug_off.h\"")
+	endif()
+	
+	set(${def_check} CACHE BOOL "${shortdoc} runtime assertions")
+	if (KERNEL_ALL_CHECK OR ${def_check})
+		message(STATUS "${shortdoc} runtime assertions ON")
+		list(APPEND KERNEL_DEFINES_CHECK "${def_check}=\"check_on.h\"")
+	else()
+		list(APPEND KERNEL_DEFINES_CHECK "${def_check}=\"check_off.h\"")
+	endif()
+endmacro()
+
+kern0x_add_define(STD_ARRAY "std::array")
+kern0x_add_define(STD_LIST  "std::list")
 
 ###############################################################################
 # SUBDIRS
 ###############################################################################
 
 add_subdirectory(src)
+
+enable_testing()
+add_subdirectory(tests)

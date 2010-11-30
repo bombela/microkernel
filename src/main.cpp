@@ -4,7 +4,7 @@
  *
 */
 
-#include <multiboot.h>
+#include <kernel/multiboot.h>
 #include "console.h"
 
 #define VideoMem	0xB8000
