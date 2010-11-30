@@ -17,9 +17,6 @@ BOOST_AUTO_TEST_CASE(construction)
 	// equivalent: int a[42];
 	array<int, 42> a;
 
-	BOOST_ASSERT(1 == 2);
-	assert(2 == 3);
-
 	// inplace array
 	// equivalent: int b[42];
 	array<int, 42, buffer::inplace> b;
@@ -37,12 +34,16 @@ BOOST_AUTO_TEST_CASE(construction)
 	array<int, 42, buffer::dynamic> e(0x300);
 }
 
-/*
 BOOST_AUTO_TEST_CASE(inplace)
 {
 	array<int, 42> a;
+	
 	a[0] = 1;
+	BOOST_ASSERT(a[0] == 1);
+	
+	a[41] = 2;
+	BOOST_ASSERT(a[41] == 2);
 	
 	const array<int, 42> b;
-	int l = b[0];
-}*/
+	UNUSED int i = b[0];
+}

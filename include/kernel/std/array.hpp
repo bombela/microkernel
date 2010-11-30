@@ -50,8 +50,10 @@ class array
 
 		T& operator[](size_t idx)
 		{
+			//assert(idx < SIZE);
 			dbg("operator[](%)", idx);
-			//assert(idx >= SIZE);
+			static T a;
+			return a;
 			return _buffer.buffer[idx];
 		}
 
