@@ -64,6 +64,7 @@ include_directories("${CMAKE_SOURCE_DIR}/include")
 
 foreach(src
 		array.cpp
+		is_printable.cpp
 		)
 	kern0x_add_test(${src})
 endforeach()
