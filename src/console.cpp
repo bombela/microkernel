@@ -7,16 +7,15 @@ namespace kernel {
  
     void console::write(char *string) {
       while (*string != 0) {
-	write(*string);
-	string++;
+    	write(*string);
+    	string++;
       }
     }
 
     void console::write(const char *string) {
-      int i = 0;
-      while (string[i]){
-	write(string[i]);
-	i++;
+      while (*string != 0) {
+	write(*string);
+	string++;
       }
     }
     
