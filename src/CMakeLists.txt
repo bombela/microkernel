@@ -16,6 +16,7 @@ set(SRCS
 	kernel.lds
 	multiboot.s
 	main.cpp
+	console.cpp
 	)
 
 add_executable(kern0x ${SRCS})
