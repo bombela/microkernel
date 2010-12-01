@@ -105,7 +105,7 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	  console.setColor((kernel::std::console_color)i);
 	  console.write("coucou\n");
 	}
-	console.setColor(kernel::std::realwhite);
+	console.setColor(kernel::std::console_color::realwhite);
 
 	for (int i = 0; i < 1000; ++i)
 	{
@@ -113,8 +113,8 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 		console.write("B");
 		console.write("c");
 	}
-
-	kernel::die();
+	console.write("\n");
+	//kernel::die();
 	
 	{
 		console.write("call destructor\n");
