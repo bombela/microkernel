@@ -11,4 +11,5 @@
 
 #define dbg(...) do { kernel::debug::printf(__FILE__ ":% % - " \
 		+ utility::basename(__FILE__), __LINE__, __PRETTY_FUNCTION__); \
-		kernel::debug::printf(__VA_ARGS__); } while (0)
+		kernel::debug::printf(__VA_ARGS__); \
+		kernel::debug::printf("\n"); } while (0)
