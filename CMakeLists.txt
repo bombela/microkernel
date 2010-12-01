@@ -51,6 +51,7 @@ macro(kern0x_add_define defname shortdoc)
 endmacro()
 
 kern0x_add_define(STD_ARRAY "std::array")
+kern0x_add_define(STD_STACK "std::stack")
 kern0x_add_define(STD_LIST  "std::list")
 
 ###############################################################################
