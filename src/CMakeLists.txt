@@ -33,7 +33,7 @@ set(SRCS
 	console.cpp
 	)
 
-set_property(SOURCE ${src} APPEND
+set_property(SOURCE ${SRCS} APPEND
 	PROPERTY COMPILE_DEFINITIONS ${KERNEL_DEFINES}
 	)
 
