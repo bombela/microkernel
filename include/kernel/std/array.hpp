@@ -43,7 +43,7 @@ struct dynamic {
 
 } // namespace buffer
 
-template <typename T, int SIZE,
+template <typename T, size_t SIZE,
 		 template<typename, size_t, uintptr_t> class BUFFER = buffer::inplace,
 		 uintptr_t ADDR = 0>
 class array
