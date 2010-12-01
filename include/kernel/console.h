@@ -8,7 +8,7 @@
 
 namespace kernel {
   namespace std {
-    enum class console_color : char{
+    enum class color : char{
       black=0,
       blue,
       green,
@@ -29,25 +29,23 @@ namespace kernel {
 
     struct vga_char {
       char c;
-      console_color attr;
+      color attr;
     } PACKED;
 
     class console {
     public:
-    console() : _kX(0), _kY(1), _kattr(console_color::realwhite) { write("Constructeur Console\n"); }
+    console() : _idx(ROW), _color(color::white) { write("Constructeur Console\n"); }
       ~console() {}
 
       void write(const char *);
-      void setColor(const console_color);
+      void setColor(const color);
 
     private:
       void write(const char);
-      void scrollup(const unsigned int);
 
-      char _kX;
-      char _kY;
-      console_color _kattr;
-      array<vga_char, (2*ROW) * LINE, buffer::absolute, RAMSCREEN> _video_mem;
+      int _idx;
+      color _color;
+      array<vga_char, ROW * LINE, buffer::absolute, RAMSCREEN> _video_mem;
 
     };
     

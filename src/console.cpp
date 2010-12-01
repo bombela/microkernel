@@ -9,56 +9,39 @@ namespace kernel {
       }
     }
     
-    void console::setColor(const console_color c) {
-      _kattr = c;
-    }
-
-    void console::scrollup(const size_t n) {
-      bool t = false;
-      for(auto i = _video_mem.begin(); i!=_video_mem.end(); i++)
-	{
-	  if (i!=_video_mem.end()-ROW && !t)
-	    *i = *(i+ROW);
-	  else
-	    *i = {0, console_color::white};
-	  if (i==_video_mem.end()-ROW)
-	    t= true;
-	}
-
-      _kY -= n;
-      if (_kY < 0)
-	_kY = 0;
-      
+    void console::setColor(const color c) {
+      _color = c;
     }
 
     void console::write(const char c) {
       switch (c) {
       case '\n': {
-	_kX = 0;
-	_kY++;
+	_idx = (((_idx/ROW)+1)*ROW);
 	break;
       }
       case '\t': {
-	_kX = _kX + 8 - (_kX % 8);
+	_idx = _idx + 8 - (_idx % 8);
 	break;
       }
       case '\r': {
-	_kX = 0;
+	_idx = ((_idx/ROW)*ROW);
 	break;
       }
       default: {
-	auto it_vmem = _video_mem.begin() + (_kY * ROW) + (_kX);
-	*it_vmem = {c, _kattr};
-	_kX++;
-	if (_kX > 79) {
-	  _kX = 0;
-	  _kY++;
-	}
+	auto it_vmem = _video_mem.begin() + _idx;
+	*it_vmem = {c, _color};
+	_idx++;
+      }
       }
 
-      }
-      if (_kY > 24)
-	scrollup(_kY - 24);
+    if (_idx > ((LINE-1)*ROW))
+	{
+	  array<vga_char, ROW * (LINE-1), buffer::absolute, RAMSCREEN> new_video_mem(_video_mem.begin()+ROW, _video_mem.end());
+	  auto i=_video_mem.end()-ROW;
+	  for(; i != _video_mem.end(); ++i)
+	    *i={0, color::white};
+	  _idx -= ROW;
+	}
     }
 
   } /* std */
