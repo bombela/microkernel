@@ -75,6 +75,15 @@ class array
 
 		constexpr size_t size() const { return SIZE; }
 
+		typedef       T* iterator;
+		typedef const T* const_iterator;
+
+		iterator begin() { return &_buffer.buffer[0]; }
+		iterator end() { return &_buffer.buffer[SIZE - 1]; }
+		
+		const_iterator begin() const { return &_buffer.buffer[0]; }
+		const_iterator end() const { return &_buffer.buffer[SIZE - 1]; }
+
 	private:
 		BUFFER<T, SIZE, ADDR> _buffer;
 };

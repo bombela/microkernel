@@ -104,8 +104,24 @@ BOOST_AUTO_TEST_CASE(iteration)
 {
 	array<int, 42> a;
 
-	for (int i = 0; i < 42; ++i)
+	for (unsigned i = 0; i < a.size(); ++i)
 		a[i] = i * 2;
-	for (int i = 0; i < 42; ++i)
-		BOOST_ASSERT(a[i] == i * 2);
+	for (unsigned i = 0; i < a.size(); ++i)
+		BOOST_ASSERT(a[i] == static_cast<int>(i * 2));
 }
+
+BOOST_AUTO_TEST_CASE(iterator)
+{
+	array<int, 42> a;
+
+	for (unsigned i = 0; i < a.size(); ++i)
+		a[i] = i * 3;
+
+	int i = 0;
+	for (auto c : a)
+	{
+		BOOST_ASSERT(c == i * 3);
+		++i;
+	}
+}
+
