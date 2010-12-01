@@ -1,9 +1,6 @@
 #include <kernel/console.h>
-
 namespace kernel {
-
   namespace std {
-
  
     void console::write(char *string) {
       while (*string != 0) {
@@ -23,21 +20,13 @@ namespace kernel {
       _kattr = c;
     }
 
-    void console::scrollup(unsigned int n) {
-      unsigned char *video, *tmp;
+    void console::scrollup(size_t n) {
+      size_t index;
 
-      for (video = (unsigned char *) RAMSCREEN;
-	   video < (unsigned char *) SCREENLIM; video += 2) {
-	tmp = (unsigned char *) (video + n * 160);
-
-	if (tmp < (unsigned char *) SCREENLIM) {
-	  *video = *tmp;
-	  *(video + 1) = *(tmp + 1);
-	} else {
-	  *video = 0;
-	  *(video + 1) = 0x07;
-	}
-      }
+      for (index=0; index<_video_mem.size()-ROW; ++index)
+	_video_mem[index] = _video_mem[index+ROW];
+      for(;index<_video_mem.size();++index)
+	_video_mem[index]=0;
 
       _kY -= n;
       if (_kY < 0)
@@ -46,8 +35,8 @@ namespace kernel {
     }
 
     void console::write(char c) {
-      unsigned char *video;
-      
+      size_t index;
+
       if (c == 10) {
 	_kX = 0;
 	_kY++;
@@ -56,10 +45,9 @@ namespace kernel {
       } else if (c == 13) {
 	_kX = 0;
       } else {
-	video = (unsigned char *) (RAMSCREEN + 2 * _kX + 160 * _kY);
-	*video = c;
-	*(video + 1) = _kattr;
-	
+	index = 2 * _kX + 160 * _kY;
+	_video_mem[index] = c;
+	_video_mem[index+1] = _kattr;
 	_kX++;
 	if (_kX > 79) {
 	  _kX = 0;
