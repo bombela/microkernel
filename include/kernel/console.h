@@ -2,8 +2,10 @@
 #define __H_CONSOLE__
 
 #define RAMSCREEN 0xB8000
-#define SIZESCREEN 0xFA0
-#define SCREENLIM 0xB8FA0
+#define LINE 25
+#define ROW 80
+/* #define SIZESCREEN 0xFA0 */
+/* #define SCREENLIM 0xB8FA0 */
 
 namespace kernel {
   
