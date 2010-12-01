@@ -4,7 +4,7 @@
 #include <kernel/std/array.hpp>
 
 #define RAMSCREEN 0xB8000
-#define LINE 50
+#define LINE 25
 #define ROW 160
 /* #define SIZESCREEN 0xFA0 */
 /* #define SCREENLIM 0xB8FA0 */
