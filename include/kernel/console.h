@@ -1,9 +1,13 @@
 #ifndef __H_CONSOLE__
 #define __H_CONSOLE__
 
+#include <kernel/std/array.hpp>
+
 #define RAMSCREEN 0xB8000
-#define SIZESCREEN 0xFA0
-#define SCREENLIM 0xB8FA0
+#define LINE 50
+#define ROW 160
+/* #define SIZESCREEN 0xFA0 */
+/* #define SCREENLIM 0xB8FA0 */
 
 namespace kernel {
   
@@ -41,9 +45,10 @@ namespace kernel {
       void write(char);
       void scrollup(unsigned int);
 
-      char _kX; /* = 0; */
-      char _kY; /* = 8; */
-      char _kattr; /* = 0x07; */
+      char _kX;
+      char _kY;
+      char _kattr;
+      array<char, (ROW * LINE), buffer::absolute, RAMSCREEN> _video_mem;
 
     };
     
