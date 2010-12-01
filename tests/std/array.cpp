@@ -110,6 +110,24 @@ BOOST_AUTO_TEST_CASE(iteration)
 		BOOST_ASSERT(a[i] == static_cast<int>(i * 2));
 }
 
+BOOST_AUTO_TEST_CASE(iterator_simple)
+{
+	array<int, 3> a { 1, 2, 3 };
+
+	auto it = a.begin();
+	BOOST_ASSERT(*it == 1);
+	++it;
+	BOOST_ASSERT(*it == 2);
+	++it;
+	BOOST_ASSERT(*it == 3);
+	++it;
+	BOOST_ASSERT(it == a.end());
+
+	int i = 1;
+	for (auto it = a.begin(); it != a.end(); ++it)
+		BOOST_ASSERT(*it == i++);
+}
+
 BOOST_AUTO_TEST_CASE(iterator)
 {
 	array<int, 42> a;
@@ -118,6 +136,10 @@ BOOST_AUTO_TEST_CASE(iterator)
 		a[i] = i * 3;
 
 	int i = 0;
+	for (auto it = a.begin(); it != a.end(); ++it)
+		BOOST_ASSERT(*it == i++ * 3);
+
+	i = 0;
 	for (auto c : a)
 	{
 		BOOST_ASSERT(c == i * 3);
@@ -213,4 +235,21 @@ BOOST_AUTO_TEST_CASE(dynamic_affect)
 	b = a;
 	for (unsigned i = 0; i < a.size(); ++i)
 		BOOST_ASSERT(a[i] == b[i]);
+}
+
+
+BOOST_AUTO_TEST_CASE(iterator_defer)
+{
+	struct Titi { 
+		int getVal() const { return val; };
+		Titi(int v): val(v) {}
+		int val;
+		Titi():val(-1){}
+	};
+	array<Titi, 4> a { 90, 100, 23, 1 };
+
+	BOOST_ASSERT(a.begin()->getVal() == 90);
+	auto it = a.begin() + 2;
+	BOOST_ASSERT(it->getVal() == 23);
+	BOOST_ASSERT((it = it + 1)->getVal() == 1);
 }

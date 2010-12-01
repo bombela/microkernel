@@ -122,7 +122,7 @@ class array
 
 		constexpr size_t size() const { return SIZE; }
 
-//#ifndef KERNEL_STD_ARRAY_CHECK
+#ifndef KERNEL_STD_ARRAY_CHECK
 		typedef       T* iterator;
 		typedef const T* const_iterator;
 
@@ -130,22 +130,68 @@ class array
 		iterator end() { return &_buffer.buffer[SIZE]; }
 		const_iterator begin() const { return &_buffer.buffer[0]; }
 		const_iterator end() const { return &_buffer.buffer[SIZE]; }
-/*#else
-		class iterator
+#else
+		template <typename ARRAY, typename REF, typename PTR>
+		class iterator_impl
 		{
 			public:
-				constexpr iterator(T* item): _item(item) {}
+				constexpr iterator_impl(ARRAY* a, size_t idx):
+					_array(a), _idx(idx) {}
+				iterator_impl(const iterator_impl&) = default;
+				iterator_impl& operator=(const iterator_impl&) = default;
+
+				iterator_impl& operator++() {
+					++_idx; return *this;
+				}
+				iterator_impl operator++(int) {
+					auto tmp = *this; ++_idx; return tmp;
+				}
+				iterator_impl& operator+=(int add) {
+					_idx += add;
+					return *this;
+				}
+				iterator_impl operator+(int add) const {
+					auto ret = *this;
+					return ret += add;
+				}
+
+				iterator_impl& operator--() {
+					--_idx; return *this; }
+				iterator_impl operator--(int) {
+					auto tmp = *this; --_idx; return tmp;
+				}
+				iterator_impl& operator-=(int add) {
+					_idx -= add;
+					return *this;
+				}
+				iterator_impl operator-(int add) const {
+					auto ret = *this;
+					return ret -= add;
+				}
+				
+				bool operator==(iterator_impl from) const {
+					return _array == from._array and _idx == from._idx; }
+				bool operator!=(iterator_impl from) const {
+					return not (*this == from); }
+
+				REF operator*() { return (*_array)[_idx]; }
+				REF operator*() const { return (*_array)[_idx]; }
+
+				PTR operator->() { return &(*_array)[_idx]; }
+				PTR operator->() const { return &(*_array)[_idx]; }
 			private:
-				T* _item;
+				ARRAY* _array;
+				size_t _idx;
 		};
 		
-		iterator begin() { return iterator(&_buffer.buffer[0]); }
-		iterator end() { return iterator(&_buffer.buffer[SIZE - 1]); }
-		const_iterator begin() const {
-			return const_iterator(&_buffer.buffer[0]); }
-		const_iterator end() const {
-			return const_iterator(&_buffer.buffer[SIZE - 1]); }
-#endif*/
+		typedef iterator_impl<      array,       T&,       T*> iterator;
+		typedef iterator_impl<const array, const T&, const T*> const_iterator;
+		
+		iterator begin() { return iterator(this, 0); }
+		iterator end() { return iterator(this, SIZE); }
+		const_iterator begin() const { return const_iterator(this, 0); }
+		const_iterator end() const { return const_iterator(this, SIZE); }
+#endif
 
 	private:
 		BUFFER<T, SIZE, ADDR> _buffer;

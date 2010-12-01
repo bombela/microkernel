@@ -18,7 +18,7 @@ namespace debug {
 namespace details {
 
 template <typename S, typename T>
-void print_helper(S& os, const T& v,
+void print_helper(S& os, const T&,
 		typename enable_if<not is_printable<T, S>::value>::type = 0) {
 	os << "<something>";
 }
