@@ -28,7 +28,7 @@ set(TEST_IMG "${CMAKE_CURRENT_BINARY_DIR}/test.img"
 set(KERNEL_ALL_DEBUG CACHE BOOL "All debug messages")
 set(KERNEL_ALL_CHECK CACHE BOOL "All runtime assertions")
 
-set(KERNEL_DEFINES_DEBUG)
+set(KERNEL_DEFINES)
 macro(kern0x_add_define defname shortdoc)
 	set(def_debug "KERNEL_${defname}_DEBUG")
 	set(def_check "KERNEL_${defname}_CHECK")

@@ -7,6 +7,8 @@
 #include <kernel/multiboot.h>
 #include <kernel/console.h>
 
+#include <kernel/std/array.hpp>
+
 namespace kernel {
 
 // multiboot specification header
