@@ -14,7 +14,6 @@ namespace debug {
 template <typename... Args>
 void printf(const char* fmt, Args...)
 {
-	#error not implemented
 }
 
 } // namespace debug

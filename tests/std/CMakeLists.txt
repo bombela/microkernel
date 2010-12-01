@@ -15,6 +15,14 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 ###############################################################################
+# UTILITIES_SRCS
+###############################################################################
+
+set(UTILITIES_SRCS
+	${CMAKE_SOURCE_DIR}/src/basename.cpp
+	)
+
+###############################################################################
 # BOOST CONFIGURATION
 ###############################################################################
 
@@ -39,7 +47,7 @@ if (Boost_FOUND)
 			PROPERTY COMPILE_DEFINITIONS ${KERNEL_DEFINES}
 			)
 
-		add_executable(${name} ${src})
+		add_executable(${name} ${src} ${UTILITIES_SRCS})
 		add_test(${name} ${name})
 	endmacro()
 else()

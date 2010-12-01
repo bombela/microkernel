@@ -106,8 +106,6 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	}
 	console.setColor(kernel::std::realwhite);
 
-	kernel::std::array<int, 3> a = { 1,2,3 };
-	
 	{
 		console.write("call destructor\n");
 		func_ptr* i = cleanup;

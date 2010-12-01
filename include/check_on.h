@@ -4,7 +4,7 @@
  *
 */
 
-#include <die.h>
+#include <kernel/die.h>
 
 #undef assert
 #define assert(__expr) do { if (not (__expr)) { \

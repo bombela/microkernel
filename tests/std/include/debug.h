@@ -44,7 +44,6 @@ void printf(const char* fmt, const T& arg1, const Args&... args)
 	{
 		if (*fmt == '%' && *++fmt != '%')
 		{
-			//std::cout << arg1;
 			details::print_helper(std::cout, arg1);
 			printf(fmt, args...);
 			return;

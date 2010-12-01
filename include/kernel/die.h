@@ -12,14 +12,7 @@
 
 namespace kernel {
 
-NORETURN void die() {
-	asm(R("
-		cli
-	1:
-		hlt
-		jmp 1b
-	"))
-}
+NORETURN void die();
 
 } // namespace kernel
 

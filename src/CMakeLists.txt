@@ -31,6 +31,8 @@ set(SRCS
 	multiboot.s
 	main.cpp
 	console.cpp
+	basename.cpp
+	die.cpp
 	)
 
 set_property(SOURCE ${SRCS} APPEND
