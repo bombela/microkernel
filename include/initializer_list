@@ -1,0 +1,50 @@
+/*
+ * initializer_list
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+ * Needed by the compiler.
+*/
+
+#pragma once
+#ifndef INITIALIZER_LIST_H
+#define INITIALIZER_LIST_H
+
+namespace std
+{
+
+template<class T>
+class initializer_list
+{
+	public:
+		typedef T 		    value_type;
+		typedef const T& 	reference;
+		typedef const T& 	const_reference;
+		typedef size_t 		size_type;
+		typedef const T* 	iterator;
+		typedef const T* 	const_iterator;
+
+		constexpr initializer_list(): _array(0), _size(0) { }
+
+		constexpr size_type      size()  { return _size; }
+		constexpr const_iterator begin() { return _array; }
+		constexpr const_iterator end()   { return begin() + size(); }
+	
+	private:
+		iterator   _array;
+		size_type  _size;
+
+		// Called by the compiler himself!
+		constexpr initializer_list(const_iterator array, size_type size)
+			: _array(array), _size(size) { }
+};
+
+// Standards begin/end pair, used by for(:) and co.
+template<class T>
+constexpr const T* begin(initializer_list<T> il) { return il.begin(); }
+
+template<class T>
+constexpr const T* end(initializer_list<T> il) { return il.end(); }
+
+}
+
+#endif /* INITIALIZER_LIST_H */
