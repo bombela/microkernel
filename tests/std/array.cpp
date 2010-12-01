@@ -136,7 +136,6 @@ BOOST_AUTO_TEST_CASE(iterator)
 
 BOOST_AUTO_TEST_CASE(inplace_easy_init)
 {
-	// TODO
 	array<int, 5> a { 10, 42, 100, 34, 13, 0 };
 
 	int valid[] = { 10, 42, 100, 34, 13, 3 };
@@ -145,32 +144,73 @@ BOOST_AUTO_TEST_CASE(inplace_easy_init)
 		BOOST_ASSERT(a[i] == valid[i]);
 }
 
-BOOST_AUTO_TEST_CASE(absolute_easy_init)
-{
-	// TODO
-}
-
 BOOST_AUTO_TEST_CASE(iterator_complex)
 {
-	// TODO
-	array<float, 42> a;
+	array<float, 4> a { 90, 100, 23, 1 };
 
-	auto it = a.begin();
+	auto b = a.begin();
+	BOOST_ASSERT(*b == 90);
+	BOOST_ASSERT(*b++ == 90);
+	BOOST_ASSERT(*b == 100);
+	BOOST_ASSERT(*++b == 23);
+	b += 1;
+	BOOST_ASSERT(*b == 1);
+	b = b + 1;
+	BOOST_ASSERT(b == a.end());
+
+	auto c = a.end();
+	BOOST_ASSERT(*--c == 1);
+	BOOST_ASSERT(*c-- == 1);
+	BOOST_ASSERT(*c == 23);
+	c -= 1;
+	BOOST_ASSERT(*c == 100);
+	c = c - 1;
+	BOOST_ASSERT(*c == 90);
+
+	BOOST_ASSERT(*(b - 2) == 23);
+	BOOST_ASSERT(*(c + 2) == 23);
+	BOOST_ASSERT((b - 2) == (c + 2));
 }
 
 BOOST_AUTO_TEST_CASE(inplace_cpy)
 {
-	// TODO
-	array<int, 42> a;
-	array<int, 42> b;
+	array<int, 3> a { 2, 10, 50 };
+	array<int, 3> b(a);
+
+	BOOST_ASSERT(b[0] == 2);
+	BOOST_ASSERT(b[1] == 10);
+	BOOST_ASSERT(b[2] == 50);
 }
 
 BOOST_AUTO_TEST_CASE(inplace_affect)
 {
-	// TODO
+	array<int, 3> a { 2, 10, 50 };
+	array<int, 3> b = { 1, 1, 3 };
+
+	b = a;
+	BOOST_ASSERT(b[0] == 2);
+	BOOST_ASSERT(b[1] == 10);
+	BOOST_ASSERT(b[2] == 50);
+}
+
+BOOST_AUTO_TEST_CASE(inplace_it_init)
+{
+	array<int, 6> a { 10, 42, 100, 34, 13, 0 };
+	array<int, 5> b(a.begin(), a.end());
+
+	for (unsigned i = 0; i < b.size(); ++i)
+		BOOST_ASSERT(a[i] == b[i]);
 }
 
 BOOST_AUTO_TEST_CASE(dynamic_affect)
 {
-	// TODO
+	int buf[4] = { 1, 2, 3, 10 };
+	array<int, 4, buffer::dynamic> a(&buf);
+
+	int buf2[4] = { 31, 42, 13, 610 };
+	array<int, 4, buffer::dynamic> b(&buf2);
+
+	b = a;
+	for (unsigned i = 0; i < a.size(); ++i)
+		BOOST_ASSERT(a[i] == b[i]);
 }

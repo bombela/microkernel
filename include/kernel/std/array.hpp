@@ -87,6 +87,22 @@ class array
 				(*this)[i++] = item;
 			}
 		}
+		template <typename IT>
+			array(IT begin, IT end)
+			{
+				dbg("constructor(begin %, end %)", begin, end);
+				size_t i = 0;
+				while (begin != end)
+				{
+					if (i >= SIZE)
+					{
+						dbg("constructor(begin %, end %)"
+								" list too big, truncated!", begin, end);
+						break;
+					}
+					(*this)[i++] = *begin++;
+				}
+			}
 
 		reference operator[](size_t idx)
 		{
