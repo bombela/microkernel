@@ -200,6 +200,7 @@ class array
 } // namespace std
 } // namespace kernel
 
+#include <check_off.h>
 #include <debug_off.h>
 
 #endif /* ARRAY_H */
