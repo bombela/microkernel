@@ -123,5 +123,54 @@ BOOST_AUTO_TEST_CASE(iterator)
 		BOOST_ASSERT(c == i * 3);
 		++i;
 	}
+	BOOST_ASSERT(i == 42);
+
+	i = 0;
+	for (const auto c : a)
+	{
+		BOOST_ASSERT(c == i * 3);
+		++i;
+	}
+	BOOST_ASSERT(i == 42);
 }
 
+BOOST_AUTO_TEST_CASE(inplace_easy_init)
+{
+	// TODO
+	array<int, 5> a { 10, 42, 100, 34, 13, 0 };
+
+	int valid[] = { 10, 42, 100, 34, 13, 3 };
+
+	for (unsigned i = 0; i < a.size(); ++i)
+		BOOST_ASSERT(a[i] == valid[i]);
+}
+
+BOOST_AUTO_TEST_CASE(absolute_easy_init)
+{
+	// TODO
+}
+
+BOOST_AUTO_TEST_CASE(iterator_complex)
+{
+	// TODO
+	array<float, 42> a;
+
+	auto it = a.begin();
+}
+
+BOOST_AUTO_TEST_CASE(inplace_cpy)
+{
+	// TODO
+	array<int, 42> a;
+	array<int, 42> b;
+}
+
+BOOST_AUTO_TEST_CASE(inplace_affect)
+{
+	// TODO
+}
+
+BOOST_AUTO_TEST_CASE(dynamic_affect)
+{
+	// TODO
+}

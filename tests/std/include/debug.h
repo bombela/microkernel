@@ -20,7 +20,7 @@ namespace details {
 template <typename S, typename T>
 void print_helper(S& os, const T& v,
 		typename enable_if<not is_printable<T, S>::value>::type = 0) {
-	os << "<some type>";
+	os << "<something>";
 }
 
 template <typename S, typename T>
