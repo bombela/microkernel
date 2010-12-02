@@ -5,6 +5,8 @@
 */
 
 #include <kernel/die.h>
+#include <debug.h>
+#include <basename.h>
 
 #undef assert
 #define assert(__expr) do { if (not (__expr)) { \

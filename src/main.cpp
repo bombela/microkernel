@@ -112,18 +112,14 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 		console.write("A");
 		console.write("B");
 		console.write("c");
-<<<<<<< HEAD
 	}*/
 
-=======
-	}
 	console.write("\n");
 
 	console.write("test\ntiti\ttoto\ntutu\rtata\n");
 
 	// //kernel::die();
 	
->>>>>>> a0e401b8311f9cae82130dcde927b954a7aed95a
 	{
 		console.write("call destructor\n");
 		func_ptr* i = cleanup;
