@@ -29,17 +29,17 @@ namespace io {
 
 namespace out {
 
-inline void byte(uint16_t port, uint8_t data)
+inline void byte(uint8_t data, uint16_t port)
 {
 	asm volatile ("outb %b0, %w1" :: "a"(data), "Nd"(port));
 }
 
-inline void word(uint16_t port, uint16_t data)
+inline void word(uint16_t data, uint16_t port)
 {
 	asm volatile ("outw %w0, %w1" :: "a"(data), "Nd"(port));
 }
 
-inline void dword(uint16_t port, uint32_t data)
+inline void dword(uint32_t data, uint16_t port)
 {
 	asm volatile ("outl %d0, %w1" :: "a"(data), "Nd"(port));
 }
