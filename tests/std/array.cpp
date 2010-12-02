@@ -237,7 +237,6 @@ BOOST_AUTO_TEST_CASE(dynamic_affect)
 		BOOST_ASSERT(a[i] == b[i]);
 }
 
-
 BOOST_AUTO_TEST_CASE(iterator_defer)
 {
 	struct Titi { 
@@ -252,4 +251,16 @@ BOOST_AUTO_TEST_CASE(iterator_defer)
 	auto it = a.begin() + 2;
 	BOOST_ASSERT(it->getVal() == 23);
 	BOOST_ASSERT((it = it + 1)->getVal() == 1);
+}
+
+BOOST_AUTO_TEST_CASE(iterator_equality)
+{
+	typedef array<int, 3> my_array;
+
+	my_array a = { 1, 2, 3 };
+
+	my_array::const_iterator it1 = static_cast<const my_array&>(a).begin();
+	my_array::iterator       it2 = a.begin();
+
+	BOOST_ASSERT(it1 == it2);
 }
