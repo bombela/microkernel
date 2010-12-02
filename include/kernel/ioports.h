@@ -16,6 +16,11 @@ namespace out {
 
 inline void byte(uint16_t port, uint8_t data)
 {
+	/*
+	 * "a" stand for accumalator (%eax)
+	 * "N" stand for 8 bits unsigned value (i386 sepcific for ioports)
+	 * "d" stand for the d register (with N: %dl)
+	 */
 	asm volatile ("outb %b0, %w1" :: "a"(data), "Nd"(port));
 }
 
