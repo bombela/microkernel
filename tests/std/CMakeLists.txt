@@ -74,6 +74,7 @@ foreach(src
 		array.cpp
 		is_printable.cpp
 		stack.cpp
+		range.cpp
 		)
 	kern0x_add_test(${src})
 endforeach()

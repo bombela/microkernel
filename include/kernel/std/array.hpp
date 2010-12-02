@@ -132,61 +132,77 @@ class array
 		const_iterator end() const { return &_buffer.buffer[SIZE]; }
 #else
 		template <typename ARRAY, typename REF, typename PTR>
-		class iterator_impl
+		struct iterator_impl
 		{
-			public:
-				constexpr iterator_impl(ARRAY* a, size_t idx):
-					_array(a), _idx(idx) {}
-				iterator_impl(const iterator_impl&) = default;
-				iterator_impl& operator=(const iterator_impl&) = default;
+			ARRAY* _array;
+			size_t _idx;
 
-				iterator_impl& operator++() {
-					++_idx; return *this;
-				}
-				iterator_impl operator++(int) {
-					auto tmp = *this; ++_idx; return tmp;
-				}
-				iterator_impl& operator+=(int add) {
-					_idx += add;
-					return *this;
-				}
-				iterator_impl operator+(int add) const {
-					auto ret = *this;
-					return ret += add;
+			constexpr iterator_impl(ARRAY* a, size_t idx):
+				_array(a), _idx(idx) {}
+			iterator_impl(const iterator_impl&) = default;
+			iterator_impl& operator=(const iterator_impl&) = default;
+
+			template <typename IT>
+				iterator_impl(const IT& from): _array(from._array), _idx(from._idx) {}
+			
+			template <typename IT>
+				iterator_impl& operator=(const IT& from) {
+					_array = from._array; _idx = from._idx; return *this;
 				}
 
-				iterator_impl& operator--() {
-					--_idx; return *this; }
-				iterator_impl operator--(int) {
-					auto tmp = *this; --_idx; return tmp;
-				}
-				iterator_impl& operator-=(int add) {
-					_idx -= add;
-					return *this;
-				}
-				iterator_impl operator-(int add) const {
-					auto ret = *this;
-					return ret -= add;
-				}
-				
-				bool operator==(iterator_impl from) const {
-					return _array == from._array and _idx == from._idx; }
-				bool operator!=(iterator_impl from) const {
-					return not (*this == from); }
+			iterator_impl& operator++() {
+				++_idx; return *this;
+			}
+			iterator_impl operator++(int) {
+				auto tmp = *this; ++_idx; return tmp;
+			}
+			iterator_impl& operator+=(int add) {
+				_idx += add;
+				return *this;
+			}
+			iterator_impl operator+(int add) const {
+				auto ret = *this;
+				return ret += add;
+			}
 
-				REF operator*() { return (*_array)[_idx]; }
-				REF operator*() const { return (*_array)[_idx]; }
+			iterator_impl& operator--() {
+				--_idx; return *this; }
+			iterator_impl operator--(int) {
+				auto tmp = *this; --_idx; return tmp;
+			}
+			iterator_impl& operator-=(int add) {
+				_idx -= add;
+				return *this;
+			}
+			iterator_impl operator-(int add) const {
+				auto ret = *this;
+				return ret -= add;
+			}
 
-				PTR operator->() { return &(*_array)[_idx]; }
-				PTR operator->() const { return &(*_array)[_idx]; }
-			private:
-				ARRAY* _array;
-				size_t _idx;
+			bool operator==(const iterator_impl& from) const {
+				return _array == from._array and _idx == from._idx; }
+			bool operator!=(const iterator_impl& from) const {
+				return not (*this == from); }
+
+			REF operator*() { return (*_array)[_idx]; }
+			REF operator*() const { return (*_array)[_idx]; }
+
+			PTR operator->() { return &(*_array)[_idx]; }
+			PTR operator->() const { return &(*_array)[_idx]; }
 		};
 		
 		typedef iterator_impl<      array,       T&,       T*> iterator;
 		typedef iterator_impl<const array, const T&, const T*> const_iterator;
 		
+		friend bool operator==(const iterator& a, const const_iterator& b) {
+			return a._array == b._array and a._idx == b._idx; }
+		friend bool operator!=(const iterator& a, const const_iterator& b) {
+			return not (a == b); }
+		friend bool operator==(const const_iterator& a, const iterator& b) {
+			return a._array == b._array and a._idx == b._idx; }
+		friend bool operator!=(const const_iterator& a, const iterator& b) {
+			return not (a == b); }
+
 		iterator begin() { return iterator(this, 0); }
 		iterator end() { return iterator(this, SIZE); }
 		const_iterator begin() const { return const_iterator(this, 0); }
