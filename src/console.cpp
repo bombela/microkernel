@@ -1,5 +1,6 @@
 #include <kernel/console.h>
 #include <kernel/ioports.h>
+#include <kernel/std/algo.hpp>
 
 namespace kernel {
 	namespace std {
@@ -62,10 +63,8 @@ namespace kernel {
 			
 			if (_idx > ((LINE-1)*ROW))
 				{
-					array<vga_char, ROW * (LINE-1), buffer::absolute, RAMSCREEN> new_video_mem(_video_mem.begin()+ROW, _video_mem.end());
-					auto i=_video_mem.end()-ROW;
-					for(; i != _video_mem.end(); ++i)
-						*i={0, color::white};
+					kernel::std::copy(_video_mem.begin()+ROW, _video_mem.end(), _video_mem.begin());
+					kernel::std::fill(_video_mem.end()-ROW, _video_mem.end(), vga_char{0, color::white});
 					_idx -= ROW;
 				}
 		}		
