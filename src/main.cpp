@@ -102,18 +102,28 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	}
 
 	for (int i=0; i< 5;++i) {
-	  console.setColor((kernel::std::console_color)i);
+	  console.setColor((kernel::std::color)i);
 	  console.write("coucou\n");
 	}
-	console.setColor(kernel::std::realwhite);
+	console.setColor(kernel::std::color::white);
 
 	/*for (int i = 0; i < 1000; ++i)
 	{
 		console.write("A");
 		console.write("B");
 		console.write("c");
+<<<<<<< HEAD
 	}*/
 
+=======
+	}
+	console.write("\n");
+
+	console.write("test\ntiti\ttoto\ntutu\rtata\n");
+
+	// //kernel::die();
+	
+>>>>>>> a0e401b8311f9cae82130dcde927b954a7aed95a
 	{
 		console.write("call destructor\n");
 		func_ptr* i = cleanup;

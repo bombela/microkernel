@@ -2,19 +2,14 @@
 #define __H_CONSOLE__
 
 #include <kernel/std/array.hpp>
-
 #define RAMSCREEN 0xB8000
 #define LINE 25
-#define ROW 160
-/* #define SIZESCREEN 0xFA0 */
-/* #define SCREENLIM 0xB8FA0 */
+#define ROW 80
 
 namespace kernel {
-  
   namespace std {
-
-    enum console_color {
-      black=0x00,
+    enum class color : char{
+      black=0,
       blue,
       green,
       cyan,
@@ -32,23 +27,25 @@ namespace kernel {
       realwhite
     };
 
+    struct vga_char {
+      char c;
+      color attr;
+    } PACKED;
+
     class console {
     public:
-    console() : _kX(0), _kY(1), _kattr(realwhite) { write("Constructeur Console\n"); }
+    console() : _idx(ROW), _color(color::white) { write("Constructeur Console\n"); }
       ~console() {}
 
-      void write(char *);
       void write(const char *);
-      void setColor(console_color);
+      void setColor(const color);
 
     private:
-      void write(char);
-      void scrollup(unsigned int);
+      void write(const char);
 
-      char _kX;
-      char _kY;
-      char _kattr;
-      array<char, (ROW * LINE), buffer::absolute, RAMSCREEN> _video_mem;
+      int _idx;
+      color _color;
+      array<vga_char, ROW * LINE, buffer::absolute, RAMSCREEN> _video_mem;
 
     };
     
