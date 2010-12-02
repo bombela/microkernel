@@ -263,4 +263,17 @@ BOOST_AUTO_TEST_CASE(iterator_equality)
 	my_array::iterator       it2 = a.begin();
 
 	BOOST_ASSERT(it1 == it2);
+	BOOST_ASSERT(it2 == it1);
+}
+
+BOOST_AUTO_TEST_CASE(iterator_const)
+{
+	typedef array<int, 3> my_array;
+
+	my_array a = { 1, 2, 3 };
+	my_array::const_iterator it1 = a.begin();
+	my_array::iterator       it2 = a.begin();
+
+	BOOST_ASSERT(it1 == it2);
+	BOOST_ASSERT(it2 == it1);
 }
