@@ -1,7 +1,9 @@
 #ifndef __H_CONSOLE__
 #define __H_CONSOLE__
 
+// TODO if array debug or assert check reentrency
 #include <kernel/std/array.hpp>
+
 #define RAMSCREEN 0xB8000
 #define LINE 25
 #define ROW 80
