@@ -144,6 +144,11 @@ class array
 
 			template <typename IT>
 				iterator_impl(const IT& from): _array(from._array), _idx(from._idx) {}
+			
+			template <typename IT>
+				iterator_impl& operator=(const IT& from) {
+					_array = from._array; _idx = from._idx; return *this;
+				}
 
 			iterator_impl& operator++() {
 				++_idx; return *this;

@@ -276,4 +276,8 @@ BOOST_AUTO_TEST_CASE(iterator_const)
 
 	BOOST_ASSERT(it1 == it2);
 	BOOST_ASSERT(it2 == it1);
+
+	it1 = it2;
+	BOOST_ASSERT(it1 == it2);
+	BOOST_ASSERT(it2 == it1);
 }
