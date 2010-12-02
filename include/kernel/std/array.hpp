@@ -8,11 +8,11 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#include KERNEL_STD_ARRAY_DEBUG
-#include KERNEL_STD_ARRAY_CHECK
-
 #include <kernel/types.h>
 #include <initializer_list>
+
+#include KERNEL_STD_ARRAY_DEBUG
+#include KERNEL_STD_ARRAY_CHECK
 
 namespace kernel {
 namespace std {
@@ -200,6 +200,7 @@ class array
 } // namespace std
 } // namespace kernel
 
+#include <check_off.h>
 #include <debug_off.h>
 
 #endif /* ARRAY_H */
