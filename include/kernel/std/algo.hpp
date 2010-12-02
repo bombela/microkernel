@@ -8,18 +8,20 @@
 #ifndef ALGO_H
 #define ALGO_H
 
+#include <kernel/std/range.hpp>
+
 namespace kernel {
 namespace std {
 
 template <typename IT, typename T>
-	void fill (IT first, IT last, const T& value)
+	void fill(IT first, IT last, const T& value)
 	{
 		while (first != last)
 			*first++ = value;
 	}
 
 template <typename C, typename T>
-	void fill (C& container, const T& value)
+	void fill(C& container, const T& value)
 	{
 		fill(begin(container), end(container), value);
 	}
