@@ -26,6 +26,19 @@ template <typename C, typename T>
 		fill(begin(container), end(container), value);
 	}
 
+template <typename IT1, typename IT2>
+	void copy(IT1 first, IT1 last, IT2 out)
+	{
+		while (first != last)
+			*out++ = *first++;
+	}
+
+template <typename C1, typename C2>
+	void copy(const C1& src, C2& out)
+	{
+		copy(begin(src), end(src), begin(out));
+	}
+
 } // namespace std
 } // namespace kernel
 
