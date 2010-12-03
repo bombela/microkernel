@@ -281,3 +281,20 @@ BOOST_AUTO_TEST_CASE(iterator_const)
 	BOOST_ASSERT(it1 == it2);
 	BOOST_ASSERT(it2 == it1);
 }
+
+BOOST_AUTO_TEST_CASE(init_fill)
+{
+	array<int, 42> a(fill(99));
+
+	for (auto i : a)
+		BOOST_ASSERT(i == 99);
+}
+
+BOOST_AUTO_TEST_CASE(init_fill_dynamic)
+{
+	int data[42];
+	array<int, 42, kernel::std::buffer::dynamic> a(&data, fill(98));
+
+	for (auto i : a)
+		BOOST_ASSERT(i == 98);
+}

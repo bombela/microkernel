@@ -9,6 +9,7 @@
 #define ARRAY_H
 
 #include <kernel/types.h>
+#include <kernel/std/algo.hpp>
 #include <initializer_list>
 
 #include KERNEL_STD_ARRAY_DEBUG
@@ -54,6 +55,19 @@ struct dynamic {
 };
 
 } // namespace buffer
+
+inline namespace details {
+
+template <typename T>
+struct fill_info { const T& value; };
+
+} // namespace details
+
+template <typename T>
+details::fill_info<T> fill(const T& value)
+{
+	return details::fill_info<T>{value};
+}
 
 template <typename T, size_t SIZE,
 		 template<typename, size_t, uintptr_t> class BUFFER = buffer::inplace,
@@ -103,6 +117,20 @@ class array
 					(*this)[i++] = *begin++;
 				}
 			}
+		array(const details::fill_info<T>& fill_info)
+		{
+			dbg("constructor(fill %)", fill_info.value);
+			fill(*this, fill_info.value);
+		}
+		array(uintptr_t addr, const details::fill_info<T>& fill_info): _buffer(addr) {
+			dbg("constructor(uintptr_t % fill %)", addr, fill_info.value);
+			fill(*this, fill_info.value);
+		}
+		array(void* addr, const details::fill_info<T>& fill_info):
+			_buffer(reinterpret_cast<uintptr_t>(addr)) {
+			dbg("constructor(void* % fill %)", addr, fill_info.value);
+			fill(*this, fill_info.value);
+		}
 
 		reference operator[](size_t idx)
 		{
