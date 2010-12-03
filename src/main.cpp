@@ -101,18 +101,18 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 			(*i)();
 	}
 
-	for (int i=0; i< 5;++i) {
-	  console.setColor((kernel::std::color)i);
-	  console.write("coucou\n");
-	}
-	console.setColor(kernel::std::color::white);
+	// for (int i=0; i< 5;++i) {
+	//   console.setColor((kernel::std::color)i);
+	//   console.write("coucou\n");
+	// }
+	// console.setColor(kernel::std::color::white);
 
-	/*for (int i = 0; i < 1000; ++i)
+	for (int i = 0; i < 1000; ++i)
 	{
 		console.write("A");
 		console.write("B");
 		console.write("c");
-	}*/
+	}
 
 	console.write("\n");
 

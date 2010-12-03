@@ -5,6 +5,13 @@
 #include <kernel/std/array.hpp>
 
 #define RAMSCREEN 0xB8000
+
+#define BIOSCURSORROW 0x0451
+#define VGA_CMD_PORT 0x3D4
+#define VGA_DTA_PORT 0x3D5
+#define VGA_SET_CURSOR_HIGH 0xE
+#define VGA_SET_CURSOR_LOW 0xF
+
 #define LINE 25
 #define ROW 80
 
@@ -36,14 +43,17 @@ namespace kernel {
 
     class console {
     public:
-    console() : _idx(ROW), _color(color::white) { write("Constructeur Console\n"); }
+      console();
       ~console() {}
 
       void write(const char *);
+      void write(const char);
       void setColor(const color);
 
     private:
-      void write(const char);
+      void putChar(const char);
+      void printnb(const int num);
+      void updateVgaCursor();
 
       int _idx;
       color _color;
