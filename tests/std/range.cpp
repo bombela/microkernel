@@ -4,9 +4,6 @@
  *
 */
 
-// Disable the gnu range access to prevent any conflit.
-#define _GLIBCXX_RANGE_ACCESS_H
-
 #include <test.h>
 
 #include <kernel/std/range.hpp>

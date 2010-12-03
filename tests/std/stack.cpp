@@ -8,6 +8,8 @@
 
 #include <kernel/std/stack.hpp>
 
+#include <kernel/ioports.h>
+
 using namespace kernel::std;
 
 BOOST_AUTO_TEST_CASE(construction)

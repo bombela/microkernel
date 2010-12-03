@@ -16,40 +16,13 @@
 namespace kernel {
 namespace std {
 
-namespace allocator {
-
-template <typename T, size_t SIZE,
-		 template<typename, size_t, uintptr_t> class BUFFER = buffer::inplace,
-		 uintptr_t ADDR = 0>
-class array
-{
-	public:
-
-	private:
-		::kernel::std::array<T, SIZE, BUFFER, ADDR> _array;
-};
-
-} // namespace allocator
-
-template <typename T, typename Allocator = allocator::array<T, 8> >
-class vector
-{
-	public:
-		vector(const Allocator& allocator = Allocator()):
-			_allocator(allocator) {}
-
-	private:
-		Allocator _allocator;
-};
-
-template <typename T, typename Container = std::vector<T>>
+template <typename T, size_t SIZE = 8>
 class stack
 {
 	public:
 		typedef T value_type;
 
-		constexpr stack(const Container& ctnr = Container()):
-			_container(ctnr), _idx(0) {}
+		constexpr stack(): _idx(0) {}
 		
 		value_type&       top() { }
 		const value_type& top() const { }
@@ -59,8 +32,8 @@ class stack
 		bool   empty() const { return size() == 0; }
 		
 	private:
-		Container _container;
-		size_t    _idx;
+		array<T, SIZE, buffer::inplace> _container;
+		size_t                          _idx;
 };
 
 } // namespace std

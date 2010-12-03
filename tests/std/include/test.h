@@ -8,6 +8,9 @@
 #ifndef TEST_H
 #define TEST_H
 
+// Disable the gnu range access to prevent any conflit.
+#define _GLIBCXX_RANGE_ACCESS_H
+
 #define BOOST_TEST_MODULE kern0xstd
 #include <boost/test/unit_test.hpp>
 
