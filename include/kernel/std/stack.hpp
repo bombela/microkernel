@@ -22,18 +22,31 @@ class stack
 	public:
 		typedef T value_type;
 
-		constexpr stack(): _idx(0) {}
+		stack(): _size(0) { dbg("stack()"); }
 		
-		value_type&       top() { }
-		const value_type& top() const { }
+		value_type&       top() {
+			assert(size() > 0);
+			return _array[_size - 1];
+		}
+		const value_type& top() const {
+			assert(size() > 0);
+			return _array[_size - 1];
+		}
 
-		void pop() { }
-		size_t size()  const { return _idx; }
+		void pop() { assert(size() > 0); --_size; }
+		value_type pop_get() { value_type r = top(); pop(); return r; }
+	
+		void push(const T& v) {
+			assert(size() < _array.size());
+			_array[_size++] = v;
+		}
+
+		size_t size()  const { return _size; }
 		bool   empty() const { return size() == 0; }
 		
 	private:
-		array<T, SIZE, buffer::inplace> _container;
-		size_t                          _idx;
+		array<T, SIZE, buffer::inplace> _array;
+		size_t                          _size;
 };
 
 } // namespace std
