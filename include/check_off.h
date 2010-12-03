@@ -6,3 +6,5 @@
 
 #undef assert
 #define assert(...)
+
+#undef CHECK_ON

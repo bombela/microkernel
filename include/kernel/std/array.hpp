@@ -37,7 +37,7 @@ template <typename T, size_t SIZE, uintptr_t ADDR>
 struct dynamic {
 	static_assert(ADDR == 0, "ADDR shouldn't be used!");
 	T* buffer;
-#ifdef KERNEL_STD_ARRAY_CHECK
+#ifdef CHECK_ON
 	constexpr dynamic(): buffer(nullptr) { }
 #else
 	constexpr dynamic() = default;
@@ -122,7 +122,7 @@ class array
 
 		constexpr size_t size() const { return SIZE; }
 
-#ifndef KERNEL_STD_ARRAY_CHECK
+#ifndef CHECK_ON
 		typedef       T* iterator;
 		typedef const T* const_iterator;
 
@@ -142,7 +142,7 @@ class array
 			iterator_impl(const iterator_impl&) = default;
 			iterator_impl& operator=(const iterator_impl&) = default;
 
-			template <typename IT>
+		  template <typename IT>
 				iterator_impl(const IT& from): _array(from._array), _idx(from._idx) {}
 			
 			template <typename IT>
@@ -184,16 +184,26 @@ class array
 			bool operator!=(const iterator_impl& from) const {
 				return not (*this == from); }
 
+			bool operator>(const iterator_impl& from) const {
+				return _array == from._array and _idx > from._idx; }
+			bool operator<(const iterator_impl& from) const {
+				return _array == from._array and _idx < from._idx; }
+
+			bool operator>=(const iterator_impl& from) const {
+				return _array == from._array and _idx >= from._idx; }
+			bool operator<=(const iterator_impl& from) const {
+				return _array == from._array and _idx <= from._idx; }
+
 			REF operator*() { return (*_array)[_idx]; }
 			REF operator*() const { return (*_array)[_idx]; }
 
 			PTR operator->() { return &(*_array)[_idx]; }
 			PTR operator->() const { return &(*_array)[_idx]; }
 		};
-		
+
 		typedef iterator_impl<      array,       T&,       T*> iterator;
 		typedef iterator_impl<const array, const T&, const T*> const_iterator;
-		
+
 		friend bool operator==(const iterator& a, const const_iterator& b) {
 			return a._array == b._array and a._idx == b._idx; }
 		friend bool operator!=(const iterator& a, const const_iterator& b) {
@@ -202,6 +212,24 @@ class array
 			return a._array == b._array and a._idx == b._idx; }
 		friend bool operator!=(const const_iterator& a, const iterator& b) {
 			return not (a == b); }
+
+		friend bool operator<(const iterator& a, const const_iterator& b) {
+			return a._array == b._array and a._idx < b._idx; }
+		friend bool operator>(const iterator& a, const const_iterator& b) {
+			return a._array == b._array and a._idx > b._idx; }
+		friend bool operator<(const const_iterator& a, const iterator& b) {
+			return a._array == b._array and a._idx < b._idx; }
+		friend bool operator>(const const_iterator& a, const iterator& b) {
+			return a._array == b._array and a._idx > b._idx; }
+
+		friend bool operator<=(const iterator& a, const const_iterator& b) {
+			return a._array == b._array and a._idx <= b._idx; }
+		friend bool operator>=(const iterator& a, const const_iterator& b) {
+			return a._array == b._array and a._idx >= b._idx; }
+		friend bool operator<=(const const_iterator& a, const iterator& b) {
+			return a._array == b._array and a._idx <= b._idx; }
+		friend bool operator>=(const const_iterator& a, const iterator& b) {
+			return a._array == b._array and a._idx >= b._idx; }
 
 		iterator begin() { return iterator(this, 0); }
 		iterator end() { return iterator(this, SIZE); }
