@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(fill_iter)
 	kernel::std::fill(a.begin(), a.end(), 4);
 
 	for (auto v : a)
-		BOOST_ASSERT(v == 4);
+		BOOST_CHECK(v == 4);
 }
 
 BOOST_AUTO_TEST_CASE(fill_range)
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(fill_range)
 	kernel::std::fill(a, 9);
 
 	for (auto v : a)
-		BOOST_ASSERT(v == 9);
+		BOOST_CHECK(v == 9);
 }
 
 BOOST_AUTO_TEST_CASE(copy_iter)
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(copy_iter)
 	kernel::std::copy(a.begin(), a.end(), b.begin());
 
 	for (unsigned i = 0; i < a.size(); ++i)
-		BOOST_ASSERT(a[i] == b[i]);
+		BOOST_CHECK(a[i] == b[i]);
 }
 
 BOOST_AUTO_TEST_CASE(copy_range)
@@ -53,5 +53,5 @@ BOOST_AUTO_TEST_CASE(copy_range)
 	kernel::std::copy(a, b);
 
 	for (unsigned i = 0; i < a.size(); ++i)
-		BOOST_ASSERT(a[i] == b[i]);
+		BOOST_CHECK(a[i] == b[i]);
 }

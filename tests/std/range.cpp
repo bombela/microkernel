@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	my_array a { 1, 2, 3 };
 
 	my_array::iterator it = begin(a);
-	BOOST_ASSERT(*it == 1);
+	BOOST_CHECK(*it == 1);
 	
 }
 
@@ -29,5 +29,5 @@ BOOST_AUTO_TEST_CASE(readonly)
 	my_array a;
 
 	const my_array::const_iterator& it2 = end(static_cast<const my_array&>(a));
-	BOOST_ASSERT(it2 == a.end());
+	BOOST_CHECK(it2 == a.end());
 }
