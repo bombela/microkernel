@@ -15,6 +15,22 @@
 #define LINE 25
 #define ROW 80
 
+/*
+ * Enable REENTRENT check if array compiling with debug/check on.
+ * Attention, reentrant check is totally not thread-safe, but it's only a way
+ * for help checking the console code itself, or external console state
+ * modification, so it's only an help for testing developpement code.
+ */
+#include KERNEL_STD_ARRAY_DEBUG
+#include KERNEL_STD_ARRAY_CHECK
+
+#if defined(DEBUG_ON) || defined(CHECK_ON)
+#	define REENTRENT_ON
+#endif
+
+#include <check_off.h>
+#include <debug_off.h>
+
 namespace kernel {
   namespace std {
     enum class color : char{
@@ -65,11 +81,16 @@ namespace kernel {
       color _color;
       array<vga_char, ROW * LINE, buffer::absolute, RAMSCREEN> _video_mem;
 
+#ifdef REENTRENT_ON
+	  int _reentrance;
+#endif
     };
     
 
   } /* std */
 
 } /* kernel */
+
+#undef REENTRENT_ON
 
 #endif /* __H_CONSOLE__ */

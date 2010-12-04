@@ -6,3 +6,5 @@
 
 #undef dbg
 #define dbg(...)
+
+#undef DEBUG_ON

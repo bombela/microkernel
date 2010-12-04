@@ -13,3 +13,7 @@
 		+ utility::basename(__FILE__), __LINE__, __PRETTY_FUNCTION__); \
 		kernel::debug::printf(__VA_ARGS__); \
 		kernel::debug::printf("\n"); } while (0)
+
+#ifndef DEBUG_ON
+#	define DEBUG_ON
+#endif

@@ -1,7 +1,19 @@
+
 #include <kernel/console.h>
 #include <kernel/ioports.h>
 #include <kernel/std/algo.hpp>
 #include <new>
+
+// Enable REENTRENT check if array compiling with debug/check on.
+#include KERNEL_STD_ARRAY_DEBUG
+#include KERNEL_STD_ARRAY_CHECK
+
+#if defined(DEBUG_ON) || defined(CHECK_ON)
+#	define REENTRENT_ON
+#endif
+
+#include <check_off.h>
+#include <debug_off.h>
 
 #include KERNEL_CONSOLE_DEBUG
 #include KERNEL_CONSOLE_CHECK
@@ -27,7 +39,12 @@ namespace kernel {
 			return reinterpret_cast<console&>(instance);
 		}
 
-		console::console() : _idx(0), _color(color::white)
+		console::console():
+			_idx(0),
+			_color(color::white)
+#ifdef REENTRENT_ON
+			,_reentrance(0)
+#endif
 		{
 			unsigned char *curRow = (unsigned char *)BIOSCURSORROW;
 			if (*curRow <= 25)
@@ -38,19 +55,35 @@ namespace kernel {
 		void console::write(const char *string)
 		{
 			assert(init == 0);
+#ifdef REENTRENT_ON
+			if (_reentrance)
+				return;
+			_reentrance = 1;
+#endif
 			while (*string != 0)
 				{
 					putChar(*string);
 					string++;
 				}
 			updateVgaCursor();
+#ifdef REENTRENT_ON
+			_reentrance = 0;
+#endif
 		}
 
 		void console::write(const char c)
 		{
 			assert(init == 0);
+#ifdef REENTRENT_ON
+			if (_reentrance)
+				return;
+			_reentrance = 1;
+#endif
 			putChar(c);
 			updateVgaCursor();
+#ifdef REENTRENT_ON
+			_reentrance = 0;
+#endif
 		}
     
 		void console::setColor(const color c)
