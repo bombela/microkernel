@@ -32,6 +32,7 @@ set(SRCS
 	multiboot.s
 	main.cpp
 	console.cpp
+	vga_console.cpp
 	basename.cpp
 	die.cpp
 	cxxruntime.cpp

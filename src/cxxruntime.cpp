@@ -4,7 +4,7 @@
  *
 */
 
-#include <kernel/console.h>
+#include <array.hpp>
 #include <new>
 
 #include KERNEL_CXXRUNTIME_DEBUG
@@ -106,7 +106,7 @@ namespace cxxruntime {
 
 void call_static_constructors()
 {
-	kernel::std::console::getInstance().write("call constructors\n");
+	dbg("call constructors\n");
 	for (func_ptr* i = __e_ctors - 1; i >= __b_ctors; --i)
 		(*i)();
 }

@@ -8,12 +8,15 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+//#include <kernel/console.h>
+
 namespace kernel {
 namespace debug {
 
 template <typename... Args>
 void printf(const char* fmt, Args...)
 {
+	//kernel::std::console::getInstance().write(fmt);
 }
 
 } // namespace debug

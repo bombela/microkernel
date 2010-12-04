@@ -19,12 +19,13 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 } // namespace kernel
 
-kernel::std::console& console = kernel::std::console::getInstance();
+#if 0
+kernel::std::console& mainconsole = kernel::std::console::getInstance();
 
 struct Toto
 {
-	Toto() { console.write("constructor\n"); }
-	~Toto() { console.write("destructor\n"); }
+	Toto() { mainconsole.write("constructor\n"); }
+	~Toto() { mainconsole.write("destructor\n"); }
 };
 
 Toto toto;
@@ -39,23 +40,23 @@ struct Titi
 		_name(name),
 		var(arg1)
 	{
-		console.write("constructor style ");
-		console.write(name);
-		console.write("\n");
+		mainconsole.write("constructor style ");
+		mainconsole.write(name);
+		mainconsole.write("\n");
 	}
 
 	Titi(const char* name):
 		_name(name)
 	{
-		console.write("constructor ");
-		console.write(name);
-		console.write(" --\n");
+		mainconsole.write("constructor ");
+		mainconsole.write(name);
+		mainconsole.write(" --\n");
 	}
 
 	~Titi() {
-		console.write("destructor ");
-		console.write(_name);
-		console.write(" --\n");
+		mainconsole.write("destructor ");
+		mainconsole.write(_name);
+		mainconsole.write(" --\n");
 	}
 	T var;
 };
@@ -65,30 +66,33 @@ struct Titi
 
 //Titi< Titi<float, 14>, 16> c("Titi<float>", "float");
 
+#endif
+
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
-	kernel::std::console::initInstance();
-	kernel::std::console& console = kernel::std::console::getInstance();
+	/*kernel::std::console::initInstance();
+	kernel::std::console& mainconsole = kernel::std::console::getInstance();
 
-	console.write("welcome dude\n");
+	mainconsole.write("welcome dude\n");
 
 
 
-	console.write("coucou\n");
+	mainconsole.write("coucou\n");*/
 	// for (int i=0; i< 5;++i) {
-	//   console.setColor((kernel::std::color)i);
-	//   console.write("coucou\n");
+	//   mainconsole.setColor((kernel::std::color)i);
+	//   mainconsole.write("coucou\n");
 	// }
-	// console.setColor(kernel::std::color::white);
+	// mainconsole.setColor(kernel::std::color::white);
 
+	/*
 	for (int i = 0; i < 10; ++i)
 	{
-		console.write("A");
-		console.write("B");
-		console.write("c");
+		mainconsole.write("A");
+		mainconsole.write("B");
+		mainconsole.write("c");
 	}
 
-	console.write("\n");
+	mainconsole.write("\n");
 
-	console.write("test\ntiti\ttoto\ntutu\rtata\n");
+	mainconsole.write("test\ntiti\ttoto\ntutu\rtata\n");*/
 }
