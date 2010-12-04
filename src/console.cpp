@@ -2,9 +2,28 @@
 #include <kernel/ioports.h>
 #include <kernel/std/algo.hpp>
 
+// support for placement new TODO put it in the new header
+inline void* operator new(size_t, void* p) noexcept { return p; }
+inline void* operator new[](size_t, void* p) noexcept { return p; }
+
 namespace kernel {
 	namespace std {
+
+		namespace {
+			char instance[sizeof (console)];
+		}
+
+		void console::initInstance()
+		{
+			static int init;
+			new (&instance) console();
+		}
 		
+		console& console::getInstance()
+		{
+			return reinterpret_cast<console&>(instance);
+		}
+
 		console::console() : _idx(0), _color(color::white)
 		{
 			unsigned char *curRow = (unsigned char *)BIOSCURSORROW;

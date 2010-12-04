@@ -43,14 +43,20 @@ namespace kernel {
 
     class console {
     public:
-      console();
-      ~console() {}
+	  
+      static void initInstance();
+      static console& getInstance();
 
       void write(const char *);
       void write(const char);
       void setColor(const color);
 
     private:
+      console();
+      ~console() = default;
+	  console(const console& from) = delete;
+	  console& operator=(const console& from) = delete;
+
       void putChar(const char);
       void printnb(const int num);
       void updateVgaCursor();

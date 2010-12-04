@@ -18,7 +18,7 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 } // namespace kernel
 
-kernel::std::console console;
+kernel::std::console& console = kernel::std::console::getInstance();
 
 struct Toto
 {
@@ -26,14 +26,37 @@ struct Toto
 	~Toto() { console.write("destructor\n"); }
 };
 
-void* __dso_handle = 0;
+// support for static inside function
+
+// TODO
+// it's a 64bits int, we can do what we want with it.
+typedef uint64_t __guard;
+
+// TODO implement fully
+/*extern "C" void __cxa_guard_acquire(__guard*)
+{
+	// acquire mutex
+}*/
+
+// TODO implement fully
+/*extern "C" void __cxa_guard_release(__guard*)
+{
+	// release mutex
+}*/
+
+// support for placement new
+inline void* operator new(size_t, void* p) throw() { return p; }
+inline void* operator new[](size_t, void* p) throw() { return p; }
+
+// support for global initalisatoin
+//void* __dso_handle = 0;
 
 typedef void (*func_ptr)();
 func_ptr cleanup[20] = { 0 };
 
 void* cleanup_self[20];
 
-extern "C" int __cxa_atexit(void (*func)(), void* self)
+/*extern "C" int __cxa_atexit(void (*func)(), void* self)
 {
 	console.write("__cxa_atexit\n");
   
@@ -49,9 +72,9 @@ extern "C" int __cxa_atexit(void (*func)(), void* self)
 	*++fend = 0;
 	cleanup_self[i] = self;
 	return 0;
-}
+}*/
 
-Toto toto;
+//Toto toto;
 
 template <typename T, int L>
 struct Titi
@@ -84,30 +107,36 @@ struct Titi
 	T var;
 };
 
-Titi<int, 10> a("int");
-Titi<char, 12> b("char");
+//Titi<int, 10> a("int");
+//Titi<char, 12> b("char");
 
-Titi< Titi<float, 14>, 16> c("Titi<float>", "float");
+//Titi< Titi<float, 14>, 16> c("Titi<float>", "float");
 
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
+	kernel::std::console::initInstance();
+	kernel::std::console& console = kernel::std::console::getInstance();
+
+	console.write("welcome dude\n");
 	{
 		typedef void (*func_ptr)();
 		extern func_ptr __b_ctors[];
 		extern func_ptr __e_ctors[];
 
-		//console.write("call constructors (never displayed)\n");
+		console.write("call constructors\n");
+		// will also initialize the global console& ref.
 		for (func_ptr* i = __e_ctors - 1; i >= __b_ctors; --i)
 			(*i)();
 	}
 
+	console.write("coucou\n");
 	// for (int i=0; i< 5;++i) {
 	//   console.setColor((kernel::std::color)i);
 	//   console.write("coucou\n");
 	// }
 	// console.setColor(kernel::std::color::white);
 
-	for (int i = 0; i < 1000; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
 		console.write("A");
 		console.write("B");
