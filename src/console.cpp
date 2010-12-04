@@ -49,7 +49,7 @@ namespace kernel {
 			unsigned char *curRow = (unsigned char *)BIOSCURSORROW;
 			if (*curRow <= 25)
 				_idx = (*curRow)*ROW;
-			write("Constructeur Console\n");
+			dbg("Console() curRow %\n", _idx / ROW);
 		}
   
 		void console::write(const char *string)

@@ -10,7 +10,10 @@
 
 #include <kernel/types.h>
 #include <kernel/std/algo.hpp>
-#include <initializer_list>
+
+#ifndef USE_EXTERNAL_STL
+#	include <initializer_list>
+#endif
 
 #include KERNEL_STD_ARRAY_DEBUG
 #include KERNEL_STD_ARRAY_CHECK
