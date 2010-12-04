@@ -33,6 +33,7 @@ set(SRCS
 	console.cpp
 	basename.cpp
 	die.cpp
+	c++runtime.cpp
 	)
 
 set_property(SOURCE ${SRCS} APPEND

@@ -3,21 +3,27 @@
 #include <kernel/std/algo.hpp>
 #include <new>
 
+#include KERNEL_CONSOLE_DEBUG
+#include KERNEL_CONSOLE_CHECK
+
 namespace kernel {
 	namespace std {
 
 		namespace {
 			char instance[sizeof (console)];
+			int init = 1;
 		}
 
 		void console::initInstance()
 		{
-			static int init;
+			assert(init == 1);
 			new (&instance) console();
+			init = 0;
 		}
 		
 		console& console::getInstance()
 		{
+			assert(init == 0);
 			return reinterpret_cast<console&>(instance);
 		}
 
@@ -31,6 +37,7 @@ namespace kernel {
   
 		void console::write(const char *string)
 		{
+			assert(init == 0);
 			while (*string != 0)
 				{
 					putChar(*string);
@@ -41,12 +48,14 @@ namespace kernel {
 
 		void console::write(const char c)
 		{
+			assert(init == 0);
 			putChar(c);
 			updateVgaCursor();
 		}
     
 		void console::setColor(const color c)
 		{
+			assert(init == 0);
 			_color = c;
 		}
 

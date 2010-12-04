@@ -53,6 +53,8 @@ endmacro()
 kern0x_add_define(STD_ARRAY "std::array")
 kern0x_add_define(STD_STACK "std::stack")
 kern0x_add_define(STD_LIST  "std::list")
+kern0x_add_define(CXXRUNTIME  "C++ runtime support")
+kern0x_add_define(CONSOLE  "standard console")
 
 ###############################################################################
 # SUBDIRS
