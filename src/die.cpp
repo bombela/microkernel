@@ -17,6 +17,8 @@
 #include <kernel/std/array.hpp>
 
 #include <attributes.h>
+#include <kernel/console.h>
+#include <kernel/vga_console.h>
 
 namespace kernel {
 
@@ -25,8 +27,8 @@ struct vga_char {
 	char attr;
 } PACKED;
 
-void die() {
-	static const char kernel_panic_msg[] = " *** /!\\ Kernel Panic /!\\ ***";
+void panic() {
+	static const char panic_msg[] = " *** /!\\ Kernel Panic /!\\ ***";
 	
 	const size_t columns = 80;
 	const size_t rows    = 25;
@@ -35,8 +37,8 @@ void die() {
 	kernel::std::array<vga_char, columns * rows,
 		kernel::std::buffer::absolute, 0xB8000> video_mem;
 
-	auto it_vmem = video_mem.begin() + columns - sizeof(kernel_panic_msg);
-	for(char c : kernel_panic_msg)
+	auto it_vmem = video_mem.begin() + columns - sizeof(panic_msg);
+	for(char c : panic_msg)
 		*it_vmem++ = { c, red };
 
 	asm volatile (R"(
@@ -48,7 +50,7 @@ void die() {
 }
 
 extern "C" void __kernel_print_stop_msg() {
-	static const char kernel_stop_msg[] = " *** /!\\ Kernel Stopped /!\\ ***";
+	static const char stop_msg[] = " *** /!\\ Kernel Stopped /!\\ ***";
 	
 	const size_t columns = 80;
 	const size_t rows    = 25;
@@ -57,9 +59,19 @@ extern "C" void __kernel_print_stop_msg() {
 	kernel::std::array<vga_char, columns * rows,
 		kernel::std::buffer::absolute, 0xB8000> video_mem;
 
-	auto it_vmem = video_mem.begin() + columns - sizeof(kernel_stop_msg);
-	for(char c : kernel_stop_msg)
+	auto it_vmem = video_mem.begin() + columns - sizeof(stop_msg);
+	for(char c : stop_msg)
 		*it_vmem++ = { c, orange };
+}
+
+void die()
+{
+	static const char panic_msg[] = "/Kernel Panic";
+	if (main_console)
+		main_console->write(panic_msg);
+	else
+		VGAConsole::getInstance().write(panic_msg);
+	panic();
 }
 
 } // namespace kernel

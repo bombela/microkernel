@@ -1,5 +1,6 @@
 /*
  * vga_VGAConsole.cpp
+ * Copyright © 2010 François-Régis 'fregux' Robert <robert.fregis@gmail.com>
  * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *
 */
@@ -23,37 +24,80 @@
 #include KERNEL_CONSOLE_DEBUG
 #include KERNEL_CONSOLE_CHECK
 
+#define VGA_CMD_PORT 0x3D4
+#define VGA_DTA_PORT 0x3D5
+#define VGA_SET_CURSOR_HIGH 0xE
+#define VGA_SET_CURSOR_LOW 0xF
+
 namespace kernel {
+
+namespace fgcolor {
+	enum type: uint8_t {
+	   black      =  0,
+	   dkgray     =  8,
+	   blue       =  1,
+	   ltblue     =  9,
+	   green      =  2,
+	   ltgreen    = 10,
+	   cyan       =  3,
+	   ltcyan     = 11,
+	   red        =  4,
+	   ltred      = 12,
+	   magenta    =  5,
+	   ltmagenta  = 13,
+	   brown      =  6,
+	   yellow     = 14,
+	   ltgray     =  7,
+	   white      = 15,
+   };
+} // namespace fg
+
+namespace bgcolor {
+	enum type: uint8_t {
+		black      =  (0 << 4),
+		blue       =  (1 << 4),
+		green      =  (2 << 4),
+		cyan       =  (3 << 4),
+		red        =  (4 << 4),
+		magenta    =  (5 << 4),
+		brown      =  (6 << 4),
+		ltgray     =  (7 << 4),
+	};
+} // namespace bg
+
+namespace blink {
+	enum type: uint8_t {
+		off        = 0,
+		on         = (1 << 7),
+	};
+} // namespace blink
 
 namespace {
 	char instance[sizeof (VGAConsole)];
 	int init = 1;
-}
-
-void VGAConsole::initInstance()
-{
-	assert(init == 1);
-	new (&instance) VGAConsole();
-	init = 0;
-}
+} // namespace 
 
 VGAConsole& VGAConsole::getInstance()
 {
-	assert(init == 0);
+	if (init == 1)
+	{
+		new (&instance) VGAConsole();
+		init = 0;
+	}
 	return reinterpret_cast<VGAConsole&>(instance);
 }
 
 VGAConsole::VGAConsole():
 	_idx(0),
-	_color(color::white)
+	_attr(fgcolor::ltgray bitor bgcolor::black bitor blink::off)
 #ifdef REENTRENT_ON
 	,_reentrance(0)
 #endif
 	{
-		unsigned char *curRow = (unsigned char *)BIOSCURSORROW;
-		if (*curRow <= 25)
-			_idx = (*curRow)*ROW;
-		dbg("Console() curRow %\n", _idx / ROW);
+		const unsigned char* biosCursorRow = reinterpret_cast<const unsigned char*>(0x0451);
+		if (*biosCursorRow <= 25)
+			_idx = *biosCursorRow * line_len;
+		dbg("Console() x % y %\n", _idx % line_len, _idx / line_len);
 	}
 
 void VGAConsole::write(const char *string)
@@ -69,7 +113,7 @@ void VGAConsole::write(const char *string)
 		putChar(*string);
 		string++;
 	}
-	updateVgaCursor();
+	updateVGACursor();
 #ifdef REENTRENT_ON
 	_reentrance = 0;
 #endif
@@ -84,54 +128,57 @@ void VGAConsole::write(const char c)
 	_reentrance = 1;
 #endif
 	putChar(c);
-	updateVgaCursor();
+	updateVGACursor();
 #ifdef REENTRENT_ON
 	_reentrance = 0;
 #endif
 }
 
-void VGAConsole::setColor(const color c)
+void VGAConsole::setAttr(const Attr& attr)
 {
-	assert(init == 0);
-	_color = c;
+	// CONVERTIR CONNARD
+	// TODO
 }
 
 void VGAConsole::putChar(const char c)
 {
+	assert(_idx < _video_mem.size());
 	switch (c)
 	{
 		case '\n':
 			{
-				_idx = (((_idx/ROW)+1)*ROW);
+				_idx = ((_idx / line_len) + 1) * line_len;
 				break;
 			}
 		case '\t':
 			{
-				_idx = _idx + 8 - (_idx % 8);
+				static const int tab_len = 8;
+				_idx = ((_idx / tab_len) + 1) * tab_len;
 				break;
 			}
 		case '\r':
 			{
-				_idx = ((_idx/ROW)*ROW);
+				_idx = (_idx / line_len) * line_len;
 				break;
 			}
 		default: 
 			{
-				auto it_vmem = _video_mem.begin() + _idx;
-				*it_vmem = {c, _color};
-				_idx++;
+				_video_mem[_idx++] = { c, _attr };
 			}
 	}
-
-	if (_idx > ((LINE-1)*ROW))
+	
+	if (_idx == _video_mem.size())
 	{
-		kernel::std::copy(_video_mem.begin()+ROW, _video_mem.end(), _video_mem.begin());
-		kernel::std::fill(_video_mem.end()-ROW, _video_mem.end(), vga_char{0, color::white});
-		_idx -= ROW;
+		kernel::std::copy(_video_mem.begin() + line_len, _video_mem.end(),
+				_video_mem.begin());
+		kernel::std::fill(_video_mem.end() - line_len, _video_mem.end(),
+				vga_char{ 0, fgcolor::ltgray bitor bgcolor::black });
+		_idx -= line_len;
+		assert(_idx < _video_mem.size());
 	}
 }		
 
-void VGAConsole::updateVgaCursor()
+void VGAConsole::updateVGACursor()
 {
 	// kernel::io::out::byte(VGA_SET_CURSOR_HIGH, VGA_CMD_PORT);
 	// kernel::io::out::byte((_idx >> 8), VGA_DTA_PORT);

@@ -13,7 +13,6 @@ Console* main_console = 0;
 
 void main_console_init()
 {
-	VGAConsole::initInstance();
 	main_console = &VGAConsole::getInstance();
 }
 

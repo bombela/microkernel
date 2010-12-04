@@ -31,49 +31,14 @@ namespace kernel {
 
 class VGAConsole: public Console {
 	public:
-		enum class fgcolor {
-			black      =  0,
-			dkgray     =  8,
-			blue       =  1,
-			ltblue     =  9,
-			green      =  2,
-			ltgreen    = 10,
-			cyan       =  3,
-			ltcyan     = 11,
-			red        =  4,
-			ltred      = 12,
-			magenta    =  5,
-			ltmagenta  = 13,
-			brown      =  6,
-			yellow     = 14,
-			ltgray     =  7,
-			white      = 15,
-		};
-
-		enum class bgcolor {
-			black      =  (0 << 4),
-			blue       =  (1 << 4),
-			green      =  (2 << 4),
-			cyan       =  (3 << 4),
-			red        =  (4 << 4),
-			magenta    =  (5 << 4),
-			brown      =  (6 << 4),
-			ltgray     =  (7 << 4),
-		};
-		
-		enum class blink {
-			off        = 0,
-			on         = (1 << 7),
-		};
-
-		static void initInstance();
 		static VGAConsole& getInstance();
 
 		virtual void write(const char*);
 		virtual void write(char);
+		virtual void setAttr(const Attr&);
 
-		VGAConsole(const VGAConsole& from) = delete;
-		VGAConsole& operator=(const VGAConsole& from) = delete;
+		VGAConsole(const VGAConsole&) = delete;
+		VGAConsole& operator=(const VGAConsole&) = delete;
 
 	private:
 		VGAConsole();
@@ -83,17 +48,17 @@ class VGAConsole: public Console {
 		void updateVGACursor();
 
 		struct vga_char {
-			char c;
-			char attr;
+			uint8_t c;
+			uint8_t attr;
 		} PACKED;
 
-		static const size_t lines_cnt = 25;
-		static const size_t rows_cnt  = 80;
+		static const size_t line_len = 80;
+		static const size_t line_cnt = 25;
 
-		std::array<vga_char, lines_cnt * rows_cnt,
+		std::array<vga_char, line_len * line_cnt,
 			std::buffer::absolute, 0xB8000> _video_mem;
-		int  _idx;
-		char _charAttr;
+		size_t _idx;
+		char   _attr;
 
 #ifdef REENTRENT_ON
 		int _reentrance;

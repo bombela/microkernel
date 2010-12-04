@@ -70,29 +70,8 @@ struct Titi
 
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
-	/*kernel::std::console::initInstance();
-	kernel::std::console& mainconsole = kernel::std::console::getInstance();
+	kernel::main_console_init();
 
-	mainconsole.write("welcome dude\n");
-
-
-
-	mainconsole.write("coucou\n");*/
-	// for (int i=0; i< 5;++i) {
-	//   mainconsole.setColor((kernel::std::color)i);
-	//   mainconsole.write("coucou\n");
-	// }
-	// mainconsole.setColor(kernel::std::color::white);
-
-	/*
-	for (int i = 0; i < 10; ++i)
-	{
-		mainconsole.write("A");
-		mainconsole.write("B");
-		mainconsole.write("c");
-	}
-
-	mainconsole.write("\n");
-
-	mainconsole.write("test\ntiti\ttoto\ntutu\rtata\n");*/
+	kernel::main_console->write(
+			"Hi everybody, welcome to the kernel wrote in C++0x :)\n");
 }

@@ -6,9 +6,21 @@
 
 #include <array.hpp>
 #include <new>
+#include <kernel/die.h>
 
 #include KERNEL_CXXRUNTIME_DEBUG
 #include KERNEL_CXXRUNTIME_CHECK
+
+void operator delete(void* ptr) noexcept
+{
+	dbg("%", ptr);
+}
+
+extern "C" void __cxa_pure_virtual(void)
+{
+	// cout toussa... ("pure virtual method called\n");
+	kernel::die();
+}
 
 // support for static inside function
 
