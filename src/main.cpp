@@ -4,9 +4,10 @@
  *
 */
 
+#include <cxxruntime.h>
+
 #include <kernel/multiboot.h>
 #include <kernel/console.h>
-
 #include <kernel/std/array.hpp>
 #include <kernel/die.h>
 
@@ -26,7 +27,7 @@ struct Toto
 	~Toto() { console.write("destructor\n"); }
 };
 
-//Toto toto;
+Toto toto;
 
 template <typename T, int L>
 struct Titi
@@ -70,6 +71,8 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	kernel::std::console& console = kernel::std::console::getInstance();
 
 	console.write("welcome dude\n");
+
+
 
 	console.write("coucou\n");
 	// for (int i=0; i< 5;++i) {
