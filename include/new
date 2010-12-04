@@ -1,0 +1,15 @@
+/*
+ * new
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef NEW_H
+#define NEW_H
+
+// placement new definition
+inline void* operator new(size_t, void* p) noexcept { return p; }
+inline void* operator new[](size_t, void* p) noexcept { return p; }
+
+#endif /* NEW_H */
