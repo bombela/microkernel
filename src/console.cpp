@@ -1,10 +1,7 @@
 #include <kernel/console.h>
 #include <kernel/ioports.h>
 #include <kernel/std/algo.hpp>
-
-// support for placement new TODO put it in the new header
-inline void* operator new(size_t, void* p) noexcept { return p; }
-inline void* operator new[](size_t, void* p) noexcept { return p; }
+#include <new>
 
 namespace kernel {
 	namespace std {
