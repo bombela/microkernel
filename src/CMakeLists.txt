@@ -65,7 +65,7 @@ add_custom_target(gdb
 add_dependencies(gdb cpykern)
 
 add_custom_target(frun
-	"kvm" -kernel "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kern0x"
+	"kvm" -no-kvm -kernel "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kern0x"
 	DEPENDS kern0x
 	)
 

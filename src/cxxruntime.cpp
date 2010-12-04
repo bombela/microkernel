@@ -56,18 +56,6 @@ void* cleanup_self[20];
 	return 0;
 }*/
 
-void call_static_constructors();
-{
-	typedef void (*func_ptr)();
-	extern func_ptr __b_ctors[];
-	extern func_ptr __e_ctors[];
-
-	console::getInstance().write("call constructors\n");
-	for (func_ptr* i = __e_ctors - 1; i >= __b_ctors; --i)
-		(*i)();
-}
-
-
 void cleanglobal
 {
 	console.write("call destructor\n");
@@ -90,12 +78,7 @@ void* __dso_handle = 0;
 
 extern "C" int __cxa_atexit (void (*dtor)(), void* arg, const void* dso)
 {
-	dbg("at_exit(dtor %, arg %, dso %)", dtor, arg, dso);
-}
-
-int __cxa_atexit(void (*dtor)(), void* obj)
-{
-	dbg("__cxa_atexit(dtor %, obj %)");
+	dbg("(dtor %, arg %, dso %)", dtor, arg, dso);
   
 	/*
 	typedef void (*func_ptr)();
@@ -112,3 +95,20 @@ int __cxa_atexit(void (*dtor)(), void* obj)
 	return 0;
 }
 
+
+extern "C" {
+	typedef void (*func_ptr)();
+	extern func_ptr __b_ctors[];
+	extern func_ptr __e_ctors[];
+}
+
+namespace cxxruntime {
+
+void call_static_constructors()
+{
+	kernel::std::console::getInstance().write("call constructors\n");
+	for (func_ptr* i = __e_ctors - 1; i >= __b_ctors; --i)
+		(*i)();
+}
+
+} // namespace cxxruntime

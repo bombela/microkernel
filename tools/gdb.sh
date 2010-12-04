@@ -21,11 +21,11 @@ EOF
 if [[ -n "$HDDIMG" ]]
 then
 	cat >>gdbexec <<EOF
-	target remote | exec kvm -gdb stdio -hda "$HDDIMG"
+	target remote | exec kvm -no-kvm -gdb stdio -hda "$HDDIMG"
 EOF
 else
 	cat >>gdbexec <<EOF
-	target remote | exec kvm -gdb stdio -kernel "$KERNEL"
+	target remote | exec kvm -no-kvm -gdb stdio -kernel "$KERNEL"
 EOF
 fi
 

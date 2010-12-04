@@ -26,6 +26,7 @@ _start:
 	call kernel_main
 
 	/* should never reach here */
+	call __kernel_print_stop_msg
 	
 	/* stop interruptions */
 	cli

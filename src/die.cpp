@@ -47,4 +47,19 @@ void die() {
 	)");
 }
 
+extern "C" void __kernel_print_stop_msg() {
+	static const char kernel_stop_msg[] = " *** /!\\ Kernel Stopped /!\\ ***";
+	
+	const size_t columns = 80;
+	const size_t rows    = 25;
+	const int    orange  = 6;
+
+	kernel::std::array<vga_char, columns * rows,
+		kernel::std::buffer::absolute, 0xB8000> video_mem;
+
+	auto it_vmem = video_mem.begin() + columns - sizeof(kernel_stop_msg);
+	for(char c : kernel_stop_msg)
+		*it_vmem++ = { c, orange };
+}
+
 } // namespace kernel

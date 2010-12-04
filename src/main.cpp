@@ -91,7 +91,4 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	console.write("\n");
 
 	console.write("test\ntiti\ttoto\ntutu\rtata\n");
-
-	// //kernel::die();
-	
 }

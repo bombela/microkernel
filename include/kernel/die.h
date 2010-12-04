@@ -13,6 +13,7 @@
 namespace kernel {
 
 NORETURN void die();
+extern "C" NORETURN void __kernel_print_stop_msg();
 
 } // namespace kernel
 
