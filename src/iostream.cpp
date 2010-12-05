@@ -7,6 +7,7 @@
 #include <kernel/std/iostream>
 #include <kernel/std/streambuf>
 #include <kernel/console.h>
+#include <attributes.h>
 
 #include KERNEL_STD_IOSTREAM_DEBUG
 #include KERNEL_STD_IOSTREAM_CHECK

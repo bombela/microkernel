@@ -11,6 +11,7 @@
 #include <kernel/std/ios>
 #include <kernel/std/streambuf>
 #include <kernel/console.h>
+#include <attributes.h>
 
 #include KERNEL_STD_OSTREAM_DEBUG
 #include KERNEL_STD_OSTREAM_CHECK
@@ -18,7 +19,7 @@
 namespace kernel {
 namespace std {
 
-static struct ostream_endl { } endl;
+UNUSED static struct ostream_endl { } endl;
 
 class ostream: public ios
 {
