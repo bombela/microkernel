@@ -57,4 +57,6 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	using namespace kernel::std;
 	cout << "cout is fonctionnal! "
 		<< color::blue << "ahah it's work" << color::ltgray << endl;
+
+	cout("my little printf% % %work!", color::ltcyan, "should", color::ltgray) << endl;
 }
