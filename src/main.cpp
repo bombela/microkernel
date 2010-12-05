@@ -11,6 +11,7 @@
 #include <kernel/std/array.hpp>
 #include <kernel/die.h>
 #include <cxxruntime.h>
+#include <kernel/interrupt.h>
 
 namespace kernel {
 
@@ -73,6 +74,15 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
 	main_console_init();
 	cxxruntime::Run running;
+
+	//kernel::Interrupt interrupt;
+
+	// make a "double fault exception"
+	//while (true)
+	//	asm ("hlt");
+
+	//make a "divide by zero exception"
+	//int i = 42 / 0;
 
 	main_console->write("Hi everybody, welcome to the kernel wrote in ");
 	main_console->setAttr({
