@@ -24,24 +24,25 @@ extern "C" void __cxa_pure_virtual(void)
 
 // support for static inside function
 
-#if 0
-
 // TODO
 // it's a 64bits int, we can do what we want with it.
 typedef uint64_t __guard;
 
 // TODO implement fully
-/*extern "C" void __cxa_guard_acquire(__guard*)
+extern "C" int __cxa_guard_acquire(__guard*)
 {
 	// acquire mutex
-}*/
+	return 0;
+}
 
 // TODO implement fully
-/*extern "C" void __cxa_guard_release(__guard*)
+extern "C" int __cxa_guard_release(__guard*)
 {
 	// release mutex
-}*/
+	return 0;
+}
 
+#if 0
 // support for global initalisatoin
 //void* __dso_handle = 0;
 

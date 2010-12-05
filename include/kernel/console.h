@@ -47,6 +47,7 @@ class Console
 		virtual void write(const char*) = 0;
 		virtual void write(char) = 0;
 		virtual void setAttr(const Attr&) = 0;
+		virtual void resetAttr() = 0;
 };
 
 extern Console* main_console;

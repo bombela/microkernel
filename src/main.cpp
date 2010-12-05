@@ -72,6 +72,17 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
 	kernel::main_console_init();
 
-	kernel::main_console->write(
-			"Hi everybody, welcome to the kernel wrote in C++0x :)\n");
+	kernel::main_console->write("Hi everybody, welcome to the kernel wrote in ");
+	kernel::main_console->setAttr({
+			kernel::Console::Color::ltgray,
+			kernel::Console::Color::blue
+			});
+	kernel::main_console->write("C++0x");
+	kernel::main_console->setAttr({
+			kernel::Console::Color::ltmagenta,
+			kernel::Console::Color::black
+			});
+	kernel::main_console->write(" :)");
+	kernel::main_console->resetAttr();
+	kernel::main_console->write("\n");
 }

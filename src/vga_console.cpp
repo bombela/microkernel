@@ -31,45 +31,128 @@
 
 namespace kernel {
 
-namespace fgcolor {
-	enum type: uint8_t {
-	   black      =  0,
-	   dkgray     =  8,
-	   blue       =  1,
-	   ltblue     =  9,
-	   green      =  2,
-	   ltgreen    = 10,
-	   cyan       =  3,
-	   ltcyan     = 11,
-	   red        =  4,
-	   ltred      = 12,
-	   magenta    =  5,
-	   ltmagenta  = 13,
-	   brown      =  6,
-	   yellow     = 14,
-	   ltgray     =  7,
-	   white      = 15,
-   };
-} // namespace fg
+	namespace fgcolor {
+		enum type: uint8_t {
+			black      =  0,
+			dkgray     =  8,
+			blue       =  1,
+			ltblue     =  9,
+			green      =  2,
+			ltgreen    = 10,
+			cyan       =  3,
+			ltcyan     = 11,
+			red        =  4,
+			ltred      = 12,
+			magenta    =  5,
+			ltmagenta  = 13,
+			brown      =  6,
+			yellow     = 14,
+			ltgray     =  7,
+			white      = 15,
+		};
 
-namespace bgcolor {
-	enum type: uint8_t {
-		black      =  (0 << 4),
-		blue       =  (1 << 4),
-		green      =  (2 << 4),
-		cyan       =  (3 << 4),
-		red        =  (4 << 4),
-		magenta    =  (5 << 4),
-		brown      =  (6 << 4),
-		ltgray     =  (7 << 4),
-	};
-} // namespace bg
+		type convert(Console::Color c)
+		{
+			switch (c)
+			{
+				case Console::Color::black:
+					return black;
+				case Console::Color::dkgray:
+					return dkgray;
+				case Console::Color::blue:
+					return blue;
+				case Console::Color::ltblue:
+					return ltblue;
+				case Console::Color::green:
+					return green;
+				case Console::Color::ltgreen:
+					return ltgreen;
+				case Console::Color::cyan:
+					return cyan;
+				case Console::Color::ltcyan:
+					return ltcyan;
+				case Console::Color::red:
+					return red;
+				case Console::Color::ltred:
+					return ltred;
+				case Console::Color::magenta:
+					return magenta;
+				case Console::Color::ltmagenta:
+					return ltmagenta;
+				case Console::Color::brown:
+					return brown;
+				case Console::Color::yellow:
+					return yellow;
+				case Console::Color::ltgray:
+					return ltgray;
+				case Console::Color::white:
+					return white;
+			}
+		}
+	} // namespace fgcolor
+
+	namespace bgcolor {
+		enum type: uint8_t {
+			black      =  (0 << 4),
+			blue       =  (1 << 4),
+			green      =  (2 << 4),
+			cyan       =  (3 << 4),
+			red        =  (4 << 4),
+			magenta    =  (5 << 4),
+			brown      =  (6 << 4),
+			ltgray     =  (7 << 4),
+		};
+
+		bgcolor::type convert(Console::Color c)
+		{
+			switch (c)
+			{
+				case Console::Color::black:
+					return black;
+				case Console::Color::dkgray:
+					return black;
+				case Console::Color::blue:
+					return blue;
+				case Console::Color::ltblue:
+					return blue;
+				case Console::Color::green:
+					return green;
+				case Console::Color::ltgreen:
+					return green;
+				case Console::Color::cyan:
+					return cyan;
+				case Console::Color::ltcyan:
+					return cyan;
+				case Console::Color::red:
+					return red;
+				case Console::Color::ltred:
+					return red;
+				case Console::Color::magenta:
+					return magenta;
+				case Console::Color::ltmagenta:
+					return magenta;
+				case Console::Color::brown:
+					return brown;
+				case Console::Color::yellow:
+					return brown;
+				case Console::Color::ltgray:
+					return ltgray;
+				case Console::Color::white:
+					return ltgray;
+			}
+		}
+	} // namespace bgcolor
 
 namespace blink {
 	enum type: uint8_t {
 		off        = 0,
 		on         = (1 << 7),
 	};
+
+	type convert(bool enable)
+	{
+		return enable ? on : off;
+	}
 } // namespace blink
 
 namespace {
@@ -134,10 +217,17 @@ void VGAConsole::write(const char c)
 #endif
 }
 
+
 void VGAConsole::setAttr(const Attr& attr)
 {
-	// CONVERTIR CONNARD
-	// TODO
+	_attr = fgcolor::convert(attr.fgcolor)
+		bitor bgcolor::convert(attr.bgcolor)
+		bitor blink::convert(attr.blink);
+}
+
+void VGAConsole::resetAttr()
+{
+	_attr = fgcolor::ltgray bitor bgcolor::black bitor blink::off;
 }
 
 void VGAConsole::putChar(const char c)
@@ -153,7 +243,8 @@ void VGAConsole::putChar(const char c)
 		case '\t':
 			{
 				static const int tab_len = 8;
-				_idx = ((_idx / tab_len) + 1) * tab_len;
+				for(int i =  tab_len - (_idx % tab_len); i > 0; --i)
+					putChar(' ');
 				break;
 			}
 		case '\r':
@@ -174,8 +265,8 @@ void VGAConsole::putChar(const char c)
 		kernel::std::fill(_video_mem.end() - line_len, _video_mem.end(),
 				vga_char{ 0, fgcolor::ltgray bitor bgcolor::black });
 		_idx -= line_len;
-		assert(_idx < _video_mem.size());
 	}
+	assert(_idx < _video_mem.size());
 }		
 
 void VGAConsole::updateVGACursor()

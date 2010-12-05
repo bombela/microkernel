@@ -36,6 +36,7 @@ class VGAConsole: public Console {
 		virtual void write(const char*);
 		virtual void write(char);
 		virtual void setAttr(const Attr&);
+		virtual void resetAttr();
 
 		VGAConsole(const VGAConsole&) = delete;
 		VGAConsole& operator=(const VGAConsole&) = delete;
