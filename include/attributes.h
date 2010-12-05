@@ -13,5 +13,6 @@
 #define ALIGNED(__value) __attribute__((aligned( (__value) )))
 #define SECTION(__section) __attribute__ ((section ( (__section) )))
 #define NORETURN __attribute__ ((noreturn))
+#define INIT_PRIORITY(__value) __attribute__ ((init_priority (__value)))
 
 #endif /* ATTRIBUTES_H */
