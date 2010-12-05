@@ -58,7 +58,7 @@ struct Destructor
 
 namespace {
 
-typedef kernel::std::stack<Destructor, 4> CleanupStack;
+typedef kernel::std::stack<Destructor, 16> CleanupStack;
 static char cleanupStack [sizeof (CleanupStack)];
 
 } // namespace 
@@ -66,8 +66,11 @@ static char cleanupStack [sizeof (CleanupStack)];
 extern "C" int __cxa_atexit(void (*dtor)(void*), void* obj, const void*,
 		UNUSED const void* dso)
 {
+	CleanupStack& cs = reinterpret_cast<CleanupStack&>(cleanupStack);
+	
+	assert(not cs.full());
 	dbg("(dtor %, arg %, dso %)", dtor, obj, dso);
-	reinterpret_cast<CleanupStack&>(cleanupStack).push({ dtor, obj });
+	cs.push({ dtor, obj });
 	return 0;
 }
 

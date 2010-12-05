@@ -28,7 +28,6 @@ struct Toto
 
 Toto toto;
 
-#if 0
 template <typename T, int L>
 struct Titi
 {
@@ -39,33 +38,34 @@ struct Titi
 		_name(name),
 		var(arg1)
 	{
-		mainconsole.write("constructor style ");
-		mainconsole.write(name);
-		mainconsole.write("\n");
+		kernel::main_console->write("constructor style ");
+		kernel::main_console->write(name);
+		kernel::main_console->write("\n");
 	}
 
 	Titi(const char* name):
 		_name(name)
 	{
-		mainconsole.write("constructor ");
-		mainconsole.write(name);
-		mainconsole.write(" --\n");
+		kernel::main_console->write("constructor ");
+		kernel::main_console->write(name);
+		kernel::main_console->write(" --\n");
 	}
 
 	~Titi() {
-		mainconsole.write("destructor ");
-		mainconsole.write(_name);
-		mainconsole.write(" --\n");
+		kernel::main_console->write("destructor ");
+		kernel::main_console->write(_name);
+		kernel::main_console->write(" --\n");
 	}
 	T var;
 };
 
-//Titi<int, 10> a("int");
-//Titi<char, 12> b("char");
+Titi<int, 10> a("int");
+Titi<char, 12> b("char");
 
-//Titi< Titi<float, 14>, 16> c("Titi<float>", "float");
-
-#endif
+Titi< Titi<float, 14>, 16> c("Titi<float>", "float");
+Titi<char, 12> d("char");
+Titi<char, 12> e("char");
+Titi<char, 12> f("char");
 
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {

@@ -52,8 +52,10 @@ class stack
 			_array[_size++] = v;
 		}
 
-		size_t size()  const { return _size; }
-		bool   empty() const { return size() == 0; }
+		size_t size()     const { return _size; }
+		bool   empty()    const { return size() == 0; }
+		size_t capacity() const { return _array.size(); }
+		bool   full()     const { return size() == capacity(); }
 		
 	private:
 		array<T, SIZE, buffer::inplace> _array;
