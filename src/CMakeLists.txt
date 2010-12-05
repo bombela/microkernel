@@ -33,6 +33,7 @@ set(SRCS
 	main.cpp
 	console.cpp
 	vga_console.cpp
+	pic_i8259.cpp
 	basename.cpp
 	die.cpp
 	cxxruntime.cpp
