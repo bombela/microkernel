@@ -1,0 +1,68 @@
+/* vim: ft=cpp
+ * ostream
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef OSTREAM_H
+#define OSTREAM_H
+
+#include <kernel/std/ios>
+#include <kernel/std/streambuf>
+#include <kernel/console.h>
+
+#include KERNEL_STD_OSTREAM_DEBUG
+#include KERNEL_STD_OSTREAM_CHECK
+
+namespace kernel {
+namespace std {
+
+static struct ostream_endl { } endl;
+
+class ostream: public ios
+{
+	public:
+		ostream(const ostream& from) = delete;
+		ostream& operator=(const ostream& from) = delete;
+		
+		~ostream() {
+#ifdef DEBUG_ON
+			if (main_console)
+				main_console->write("ostream destruction\n");
+#endif
+		}
+		
+#ifndef DEBUG_ON
+		constexpr
+#endif
+			ostream(streambuf* sb): ios(sb) {
+#ifdef DEBUG_ON
+			if (main_console)
+				main_console->write("ostream initialization\n");
+#endif
+		}
+
+		inline ostream& operator<<(char c) {
+			assert(_streambuf != 0);
+			_streambuf->write(c);
+			return *this;
+		}
+		inline ostream& operator<<(const char* s) {
+			assert(_streambuf != 0);
+			_streambuf->write(s);
+			return *this;
+		}
+		inline std::ostream& operator<<(const ostream_endl&) {
+			assert(_streambuf != 0);
+			return (*this) << '\n';
+		}
+};
+
+} // namespace std
+} // namespace kernel
+
+#include <check_off.h>
+#include <debug_off.h>
+
+#endif /* OSTREAM_H */
