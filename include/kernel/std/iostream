@@ -1,0 +1,27 @@
+/* vim: ft=cpp
+ * iostream
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef IOSTREAM_H
+#define IOSTREAM_H
+
+#include <kernel/std/ostream>
+
+#include KERNEL_STD_IOSTREAM_DEBUG
+#include KERNEL_STD_IOSTREAM_CHECK
+
+namespace kernel {
+namespace std {
+
+extern std::ostream cout;
+
+} // namespace std
+} // namespace kernel
+
+#include <check_off.h>
+#include <debug_off.h>
+
+#endif /* IOSTREAM_H */
