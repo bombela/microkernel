@@ -12,6 +12,7 @@
 #include <kernel/die.h>
 #include <cxxruntime.h>
 #include <kernel/interrupt.h>
+#include <iostream>
 
 namespace kernel {
 
@@ -25,8 +26,8 @@ using namespace kernel;
 
 struct Toto
 {
-	Toto() { main_console->write("constructor\n"); }
-	~Toto() { main_console->write("destructor\n"); }
+	Toto() { main_console->write("constructor toto\n"); }
+	~Toto() { main_console->write("destructor toto\n"); }
 };
 
 Toto toto;
@@ -97,4 +98,7 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	main_console->write(" :)");
 	main_console->resetAttr();
 	main_console->write("\n");
+
+	using namespace kernel;
+	kernel::std::cout << "cout is fonctionnal!" << kernel::std::endl;
 }

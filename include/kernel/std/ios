@@ -9,6 +9,7 @@
 #define IOS_H
 
 #include <kernel/types.h>
+#include <kernel/std/streambuf>
 
 namespace kernel {
 namespace std {
@@ -91,6 +92,17 @@ class ios
 {
 	public:
 		ios_flags flags;
+		
+		inline constexpr ios(streambuf* sb): _streambuf(sb) {}
+		inline constexpr streambuf* rdbuf() const { return _streambuf; }
+		inline streambuf* rdbuf(streambuf* sb) {
+			streambuf* old = _streambuf;
+			_streambuf = sb;
+			return old;
+		}
+	
+	protected:
+		streambuf* _streambuf;
 };
 
 } // namespace std

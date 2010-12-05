@@ -1,0 +1,22 @@
+/* vim: ft=cpp
+ * iomanip
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef IOMANIP_H
+#define IOMANIP_H
+
+#include <kernel/std/ostream>
+
+namespace kernel {
+
+inline std::ostream& operator<<(std::ostream& os, std::numbase nb) {
+	os.setbase(nb);
+	return os;
+}
+
+} // namespace kernel
+
+#endif /* IOMANIP_H */
