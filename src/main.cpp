@@ -25,66 +25,9 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 using namespace kernel;
 
-struct Toto
-{
-	Toto() { main_console->write("constructor toto\n"); }
-	~Toto() { main_console->write("destructor toto\n"); }
-};
-
-Toto toto;
-
-template <typename T, int L>
-struct Titi
-{
-        const char* _name;
-
-	template <typename U>
-	Titi(const char* name, U arg1):
-		_name(name),
-		var(arg1)
-	{
-		main_console->write("constructor style ");
-		main_console->write(name);
-		main_console->write("\n");
-	}
-
-	Titi(const char* name):
-		_name(name)
-	{
-		main_console->write("constructor ");
-		main_console->write(name);
-		main_console->write(" --\n");
-	}
-
-	~Titi() {
-		main_console->write("destructor ");
-		main_console->write(_name);
-		main_console->write(" --\n");
-	}
-	T var;
-};
-
-Titi<int, 10> a("int");
-Titi<char, 12> b("char");
-
-Titi< Titi<float, 14>, 16> c("Titi<float>", "float");
-Titi<char, 12> d("char");
-Titi<char, 12> e("char");
-Titi<char, 12> f("char");
-
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
 	main_console_init();
-	cxxruntime::Run running;
-
-	//kernel::Interrupt interrupt;
-
-	// make a "double fault exception"
-	//while (true)
-	//	asm ("hlt");
-
-	//make a "divide by zero exception"
-	//int i = 42 / 0;
 
 	main_console->write("Hi everybody, welcome to the kernel wrote in ");
 	main_console->setAttr({
@@ -100,6 +43,18 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	main_console->resetAttr();
 	main_console->write("\n");
 
+	cxxruntime::Run running;
+	
+	//kernel::Interrupt interrupt;
+
+	// make a "double fault exception"
+	//while (true)
+	//	asm ("hlt");
+
+	//make a "divide by zero exception"
+	//int i = 42 / 0;
+
 	using namespace kernel::std;
-	cout << "cout is fonctionnal! " << color::blue << "ahah it's work" << color::ltgray << endl;
+	cout << "cout is fonctionnal! "
+		<< color::blue << "ahah it's work" << color::ltgray << endl;
 }
