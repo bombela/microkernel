@@ -13,6 +13,7 @@
 #include <cxxruntime.h>
 #include <kernel/interrupt.h>
 #include <iostream>
+#include <iomanip>
 
 namespace kernel {
 
@@ -99,6 +100,6 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	main_console->resetAttr();
 	main_console->write("\n");
 
-	using namespace kernel;
-	kernel::std::cout << "cout is fonctionnal!" << kernel::std::endl;
+	using namespace kernel::std;
+	cout << "cout is fonctionnal! " << color::blue << "ahah it's work" << color::ltgray << endl;
 }

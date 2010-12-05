@@ -40,6 +40,10 @@ class streambuf_console_impl: public streambuf
 			assert(main_console != 0);
 			main_console->write(c);
 		}
+		virtual void setcolor(color c) {
+			assert(main_console != 0);
+			main_console->setAttr({Console::Color(c)});
+		}
 };
 
 INIT_PRIORITY(65535) streambuf_console_impl streambuf_console;

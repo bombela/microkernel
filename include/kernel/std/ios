@@ -69,6 +69,11 @@ class ios_flags
 
 	private:
 		uint8_t _flags;
+		/*
+		 * 8 7 6 5 4 3 2 1 0
+		 * not  |u|c|b| num |
+		 * used |p|a|a| base|
+		 */
 
 		inline void setbit(uint8_t bit, bool b) {
 			if (b)
@@ -100,6 +105,7 @@ class ios
 			_streambuf = sb;
 			return old;
 		}
+		inline void setcolor(color c) { _streambuf->setcolor(c); }
 	
 	protected:
 		streambuf* _streambuf;

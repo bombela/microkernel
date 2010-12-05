@@ -13,7 +13,12 @@
 namespace kernel {
 
 inline std::ostream& operator<<(std::ostream& os, std::numbase nb) {
-	os.setbase(nb);
+	os.flags.setbase(nb);
+	return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, std::color c) {
+	os.setcolor(c);
 	return os;
 }
 
