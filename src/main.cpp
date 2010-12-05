@@ -20,10 +20,12 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 } // namespace kernel
 
+using namespace kernel;
+
 struct Toto
 {
-	Toto() { kernel::main_console->write("constructor\n"); }
-	~Toto() { kernel::main_console->write("destructor\n"); }
+	Toto() { main_console->write("constructor\n"); }
+	~Toto() { main_console->write("destructor\n"); }
 };
 
 Toto toto;
@@ -38,23 +40,23 @@ struct Titi
 		_name(name),
 		var(arg1)
 	{
-		kernel::main_console->write("constructor style ");
-		kernel::main_console->write(name);
-		kernel::main_console->write("\n");
+		main_console->write("constructor style ");
+		main_console->write(name);
+		main_console->write("\n");
 	}
 
 	Titi(const char* name):
 		_name(name)
 	{
-		kernel::main_console->write("constructor ");
-		kernel::main_console->write(name);
-		kernel::main_console->write(" --\n");
+		main_console->write("constructor ");
+		main_console->write(name);
+		main_console->write(" --\n");
 	}
 
 	~Titi() {
-		kernel::main_console->write("destructor ");
-		kernel::main_console->write(_name);
-		kernel::main_console->write(" --\n");
+		main_console->write("destructor ");
+		main_console->write(_name);
+		main_console->write(" --\n");
 	}
 	T var;
 };
@@ -69,20 +71,20 @@ Titi<char, 12> f("char");
 
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
-	kernel::main_console_init();
+	main_console_init();
 	cxxruntime::Run running;
 
-	kernel::main_console->write("Hi everybody, welcome to the kernel wrote in ");
-	kernel::main_console->setAttr({
-			kernel::Console::Color::ltgray,
-			kernel::Console::Color::blue
+	main_console->write("Hi everybody, welcome to the kernel wrote in ");
+	main_console->setAttr({
+			Console::Color::ltgray,
+			Console::Color::blue
 			});
-	kernel::main_console->write("C++0x");
-	kernel::main_console->setAttr({
-			kernel::Console::Color::ltmagenta,
-			kernel::Console::Color::black
+	main_console->write("C++0x");
+	main_console->setAttr({
+			Console::Color::ltmagenta,
+			Console::Color::black
 			});
-	kernel::main_console->write(" :)");
-	kernel::main_console->resetAttr();
-	kernel::main_console->write("\n");
+	main_console->write(" :)");
+	main_console->resetAttr();
+	main_console->write("\n");
 }
