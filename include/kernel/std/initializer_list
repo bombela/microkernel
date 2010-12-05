@@ -1,4 +1,4 @@
-/*
+/* vim: ft=cpp
  * initializer_list
  * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *
