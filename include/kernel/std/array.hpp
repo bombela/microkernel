@@ -85,8 +85,8 @@ class array
 		array(uintptr_t addr): _buffer(addr) {
 			dbg("constructor(uintptr_t %)", addr);
 		}
-		array(T* addr): _buffer(reinterpret_cast<uintptr_t>(addr)) {
-			dbg("constructor(T* %)", addr);
+		array(void* addr): _buffer(reinterpret_cast<uintptr_t>(addr)) {
+			dbg("constructor(void* %)", addr);
 		}
 		array(::std::initializer_list<T> list)
 		{
@@ -129,9 +129,9 @@ class array
 			dbg("constructor(uintptr_t % fill %)", addr, fill_info.value);
 			fill(*this, fill_info.value);
 		}
-		array(T* addr, const details::fill_info<T>& fill_info):
+		array(void* addr, const details::fill_info<T>& fill_info):
 			_buffer(reinterpret_cast<uintptr_t>(addr)) {
-			dbg("constructor(T* % fill %)", addr, fill_info.value);
+			dbg("constructor(void* % fill %)", addr, fill_info.value);
 			fill(*this, fill_info.value);
 		}
 
