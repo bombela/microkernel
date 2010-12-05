@@ -24,10 +24,8 @@ class streambuf_console_impl: public streambuf
 				main_console->write("streambuf_console_impl destruction\n");
 #endif
 		}
-#ifndef DEBUG_ON
-		constexpr
-#endif
-			streambuf_console_impl() {
+		
+		streambuf_console_impl() {
 #ifdef DEBUG_ON
 			if (main_console)
 				main_console->write("streambuf_console_impl initialization\n");
