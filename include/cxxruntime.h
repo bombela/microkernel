@@ -10,8 +10,15 @@
 
 namespace cxxruntime {
 
-void call_static_constructors();
-void call_registereds_destructors();
+void initialize();
+void finalize();
+
+// A cute helper ;)
+struct Run
+{
+	Run() { initialize(); }
+	~Run() { finalize(); }
+};
 
 } // namespace cxxruntime
 

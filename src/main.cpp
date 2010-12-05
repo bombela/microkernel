@@ -10,6 +10,7 @@
 #include <kernel/console.h>
 #include <kernel/std/array.hpp>
 #include <kernel/die.h>
+#include <cxxruntime.h>
 
 namespace kernel {
 
@@ -19,17 +20,15 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 } // namespace kernel
 
-#if 0
-kernel::std::console& mainconsole = kernel::std::console::getInstance();
-
 struct Toto
 {
-	Toto() { mainconsole.write("constructor\n"); }
-	~Toto() { mainconsole.write("destructor\n"); }
+	Toto() { kernel::main_console->write("constructor\n"); }
+	~Toto() { kernel::main_console->write("destructor\n"); }
 };
 
 Toto toto;
 
+#if 0
 template <typename T, int L>
 struct Titi
 {
@@ -71,6 +70,7 @@ struct Titi
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
 	kernel::main_console_init();
+	cxxruntime::Run running;
 
 	kernel::main_console->write("Hi everybody, welcome to the kernel wrote in ");
 	kernel::main_console->setAttr({

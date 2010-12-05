@@ -4,17 +4,21 @@
  *
 */
 
-#include <array.hpp>
+#include <stack.hpp>
 #include <new>
 #include <kernel/die.h>
 
 #include KERNEL_CXXRUNTIME_DEBUG
 #include KERNEL_CXXRUNTIME_CHECK
 
+// --- delete operator (used by virtual destructor for example)
+
 void operator delete(void* ptr) noexcept
 {
 	dbg("%", ptr);
 }
+
+// --- die on pure virtual call
 
 extern "C" void __cxa_pure_virtual(void)
 {
@@ -22,93 +26,61 @@ extern "C" void __cxa_pure_virtual(void)
 	kernel::die();
 }
 
-// support for static inside function
+// --- guard support (used for initialize static scoped object)
 
-// TODO
 // it's a 64bits int, we can do what we want with it.
 typedef uint64_t __guard;
 
-// TODO implement fully
+// TODO would need to be really implemented in case of multi-threading support!
 extern "C" int __cxa_guard_acquire(__guard*)
 {
-	// acquire mutex
 	return 0;
 }
 
-// TODO implement fully
+// TODO would need to be really implemented in case of multi-threading support!
 extern "C" int __cxa_guard_release(__guard*)
 {
-	// release mutex
 	return 0;
 }
 
-#if 0
-// support for global initalisatoin
-//void* __dso_handle = 0;
-
-typedef void (*func_ptr)();
-func_ptr cleanup[20] = { 0 };
-
-void* cleanup_self[20];
-
-/*extern "C" int __cxa_atexit(void (*func)(), void* self)
-{
-	console.write("__cxa_atexit\n");
-  
-	typedef void (*func_ptr)();
-	func_ptr* fend = cleanup;
-	int i = 0;
-	while (*fend)
-	{
-		++fend;
-		++i;
-	}
-	*fend = func;
-	*++fend = 0;
-	cleanup_self[i] = self;
-	return 0;
-}*/
-
-void cleanglobal
-{
-	console.write("call destructor\n");
-	func_ptr* i = cleanup;
-	int j = 0;
-	while (*i)
-	{
-		++i;
-		++j;
-	}
-	while (--j, --i >= cleanup)
-		((void (*)(void*))(*i)) (cleanup_self[j]);
-}
-
-#endif
-
-// handle used by different translation unit to manage object construction.
-// It's supported by the linker. The main unit have be 0.
+// --- handle used by different translation unit to manage object construction.
+// It's supported by the linker. The main unit have to be 0.
 void* __dso_handle = 0;
 
-extern "C" int __cxa_atexit (void (*dtor)(), void* arg, const void* dso)
+// --- called to registed some function that have to be called at finalize time.
+
+struct Destructor
 {
-	dbg("(dtor %, arg %, dso %)", dtor, arg, dso);
-  
-	/*
-	typedef void (*func_ptr)();
-	func_ptr* fend = cleanup;
-	int i = 0;
-	while (*fend)
-	{
-		++fend;
-		++i;
-	}
-	*fend = func;
-	*++fend = 0;
-	cleanup_self[i] = self;*/
+	void (*dtor)(void*);
+	void* obj;
+	void destroy() { dtor(obj); }
+};
+
+namespace {
+
+typedef kernel::std::stack<Destructor, 4> CleanupStack;
+static char cleanupStack [sizeof (CleanupStack)];
+
+} // namespace 
+
+extern "C" int __cxa_atexit(void (*dtor)(void*), void* obj, const void*,
+		UNUSED const void* dso)
+{
+	dbg("(dtor %, arg %, dso %)", dtor, obj, dso);
+	reinterpret_cast<CleanupStack&>(cleanupStack).push({ dtor, obj });
 	return 0;
 }
 
+void call_registereds_destructors()
+{
+	CleanupStack& cs = reinterpret_cast<CleanupStack&>(cleanupStack);
 
+	dbg("stack size: %", cs.size());
+	while (cs.size())
+		cs.pop_get().destroy();
+}
+
+// --- access to the ctors section (who is simply an array of func_ptr)
 extern "C" {
 	typedef void (*func_ptr)();
 	extern func_ptr __b_ctors[];
@@ -119,9 +91,23 @@ namespace cxxruntime {
 
 void call_static_constructors()
 {
-	dbg("call constructors\n");
-	for (func_ptr* i = __e_ctors - 1; i >= __b_ctors; --i)
-		(*i)();
+	dbg("globales initialization\n");
+
+	for (func_ptr* f = __e_ctors - 1; f >= __b_ctors; --f)
+		(*f)();
+}
+
+// --- public interface
+
+void initialize()
+{
+	new (&cleanupStack) CleanupStack;
+	call_static_constructors();
+}
+
+void finalize()
+{
+	call_registereds_destructors();
 }
 
 } // namespace cxxruntime
