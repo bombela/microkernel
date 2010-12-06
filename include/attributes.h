@@ -14,5 +14,6 @@
 #define SECTION(__section) __attribute__ ((section ( (__section) )))
 #define NORETURN __attribute__ ((noreturn))
 #define INIT_PRIORITY(__value) __attribute__ ((init_priority (__value)))
+#define NOINLINE __attribute__ ((noinline))
 
 #endif /* ATTRIBUTES_H */

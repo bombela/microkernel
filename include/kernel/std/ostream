@@ -61,14 +61,14 @@ class ostream: public ios
 
 
 		template <typename... Args>
-			ostream& printf(const char* fmt)
+			ostream& format(const char* fmt)
 			{
 				*this << fmt;
 				return *this;
 			}
 
 		template <typename T, typename... Args>
-			ostream& printf(const char* fmt, const T& arg1, const Args&... args)
+			ostream& format(const char* fmt, const T& arg1, const Args&... args)
 			{
 				while (*fmt)
 				{
@@ -76,7 +76,7 @@ class ostream: public ios
 					{
 						//details::print_helper(std::cout, arg1);
 						*this << arg1;
-						return this->printf(fmt, args...);
+						return this->format(fmt, args...);
 					}
 					*this << *fmt++;
 				}
@@ -85,7 +85,7 @@ class ostream: public ios
 		
 		template <typename... Args>
 			ostream& operator()(const char* fmt, const Args&... args) {
-				return this->printf(fmt, args...);
+				return this->format(fmt, args...);
 			}
 };
 
