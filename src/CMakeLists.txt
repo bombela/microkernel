@@ -44,6 +44,7 @@ set(SRCS
 	cxxruntime.cpp
 	interrupt.cpp
 	iostream.cpp
+	ostream.cpp
 	)
 
 set_property(SOURCE ${SRCS} APPEND
