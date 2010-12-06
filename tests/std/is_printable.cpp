@@ -17,8 +17,8 @@ std::ostream& operator<<(std::ostream& os, Printable&) { return os; }
 
 BOOST_AUTO_TEST_CASE(test)
 {
-	BOOST_CHECK(is_printable<int>::value);
-	BOOST_CHECK(not is_printable<NotPrintable>::value);
-	BOOST_CHECK(is_printable<Printable>::value);
+	BOOST_CHECK((is_printable<int, std::ostream>::value));
+	BOOST_CHECK((not is_printable<NotPrintable, std::ostream>::value));
+	BOOST_CHECK((is_printable<Printable, std::ostream>::value));
 }
 

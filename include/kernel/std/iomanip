@@ -9,8 +9,10 @@
 #define IOMANIP_H
 
 #include <kernel/std/ostream>
+#include <kernel/std/formatter.hpp>
 
 namespace kernel {
+namespace std {
 
 inline std::ostream& operator<<(std::ostream& os, std::numbase nb) {
 	os.flags.setbase(nb);
@@ -22,6 +24,22 @@ inline std::ostream& operator<<(std::ostream& os, std::color c) {
 	return os;
 }
 
+template <typename... Args>
+inline constexpr formatter::formatter<std::ostream,
+formatter::arg_printer::simple, Args...> format(
+	   const char* fmt, const Args&... args) {
+   return formatter::mkformatter<std::ostream,
+	   formatter::arg_printer::simple>( fmt, args...);
+}
+
+template <typename... Args>
+inline constexpr std::ostream& operator<<(std::ostream& os,
+		const formatter::formatter<std::ostream,
+		formatter::arg_printer::simple, Args...>& fmter) {
+	return fmter.print(os);
+}
+
+} // namespace std
 } // namespace kernel
 
 #endif /* IOMANIP_H */

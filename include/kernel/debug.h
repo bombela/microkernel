@@ -8,7 +8,8 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-//#include <kernel/console.h>
+//#include <kernel/std/iostream>
+//#include <kernel/std/formatter.hpp>
 
 namespace kernel {
 namespace debug {
@@ -16,7 +17,7 @@ namespace debug {
 template <typename... Args>
 void printf(const char* fmt, Args...)
 {
-	//kernel::std::console::getInstance().write(fmt);
+	//formatter::print()
 }
 
 } // namespace debug

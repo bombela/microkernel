@@ -4,7 +4,7 @@
  *
 */
 
-#include <debug.h>
+#include <kernel/debug.h>
 #include <basename.h>
 
 #undef dbg

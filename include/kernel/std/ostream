@@ -11,6 +11,7 @@
 #include <kernel/std/ios>
 #include <kernel/std/streambuf>
 #include <kernel/console.h>
+#include <kernel/std/formatter.hpp>
 #include <attributes.h>
 
 #include KERNEL_STD_OSTREAM_DEBUG
@@ -46,7 +47,10 @@ class ostream: public ios
 
 		inline ostream& operator<<(char c) {
 			assert(_streambuf != 0);
-			_streambuf->write(c);
+			if (flags.ischaralpha())
+				_streambuf->write(c);
+			else
+				/* *this << static_cast<int>(c) */;
 			return *this;
 		}
 		inline ostream& operator<<(const char* s) {
@@ -58,6 +62,40 @@ class ostream: public ios
 			assert(_streambuf != 0);
 			return (*this) << '\n';
 		}
+
+		template <typename T, typename... Args>
+			ostream& print(const char* fmt, const T& arg1, const Args&... args) {
+				return formatter::print(*this, fmt, args...);
+			}
+		
+		template <typename... Args>
+			ostream& operator()(const char* fmt, const Args&... args) {
+				return formatter::print(*this, fmt, args...);
+			}
+
+		// fregux, alex! au boulot!
+		// inline std::ostream& operator<<(int);
+		// inline std::ostream& operator<<(long);
+		// inline std::ostream& operator<<(unsigned int);
+		// inline std::ostream& operator<<(unsigned long);
+		
+		// attention à celui là, lire le this->flags.ischaralpha
+		// pour le printer en temps que char simple, sinon le printer
+		// en temps que unsigned int.
+		// ex:
+		//	if (flags.ischaralpha())
+		//		*this << static_cast<char>(c);
+		//	else
+		//		*this << static_cast<unsigned int>(c);
+		// inline std::ostream& operator<<(unsigned char);
+		
+		// même chose que précédemment, penser au boolalpha.
+		// inline std::ostream& operator<<(bool);
+		
+		// bon puisque vous insistez,
+		// et que vous êtes des chauds de la bittes :P
+		// inline std::ostream& operator<<(float);
+		// inline std::ostream& operator<<(double);
 };
 
 } // namespace std
