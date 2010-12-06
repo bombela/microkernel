@@ -90,9 +90,11 @@ inline constexpr formatter<S, P, Args...> mkformatter(const char* fmt,
 	return formatter<S, P, Args...>(fmt, args...);
 }
 
-template <typename S, typename... Args>
+template <typename S,
+		 template <typename, typename> class P = arg_printer::simple,
+		 typename... Args>
 inline constexpr S& print(S& os, const char* fmt, const Args&... args) {
-	return mkformatter<S, arg_printer::simple, Args...>(fmt, args...).print(os);
+	return mkformatter<S, P, Args...>(fmt, args...).print(os);
 }
 
 } // namespace formatter

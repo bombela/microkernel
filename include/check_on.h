@@ -5,7 +5,7 @@
 */
 
 #include <kernel/die.h>
-#include <debug.h>
+#include <kernel/debug.h>
 #include <basename.h>
 
 #undef assert
