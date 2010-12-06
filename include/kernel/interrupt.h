@@ -25,7 +25,7 @@ namespace kernel {
 	public:
 		Interrupt();
 		~Interrupt();
-		int setInterrupt();
+		int setInterrupt(uint16_t, void*);
 
 	private:
 		std::array<IDT_Item, IDT_Size> Idt;

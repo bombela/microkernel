@@ -79,8 +79,20 @@ namespace kernel {
 		//asm("cli");
 	}
 
-	int Interrupt::setInterrupt()
+	int Interrupt::setInterrupt(uint16_t NbInt, void* Offset)
 	{
+		// OutDbg("Allocage de l'INT%u pour l'offset %h...",Int,(u32) Offset);
+		if (Idt[NbInt].Type == 0x8E00)
+		{
+			kernel::main_console->write("Int déjà allouée.");
+			// OutDbg("Int déjà allouée.");
+			return 1;
+		}
+		Idt[NbInt].Selecteur = 8;
+		Idt[NbInt].Type = 0x8E00;
+		Idt[NbInt].Offset_Low  = (uint32_t) Offset;
+		Idt[NbInt].Offset_High = (((uint32_t) Offset) >> 16);
+		// OutDbg("Allocation réussie de l'int %u à l'offset %h.",Int,(u32) Offset);
 		return 0;
 	}
 
