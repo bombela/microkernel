@@ -9,7 +9,7 @@
 #define IS_PRINTABLE_H
 
 // Can we do (object stream of type S) << (object of type T) ?
-template <typename T, typename S = std::ostream>
+template <typename T, typename S>
 class is_printable
 {
 	typedef char yes;

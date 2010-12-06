@@ -25,14 +25,17 @@ inline std::ostream& operator<<(std::ostream& os, std::color c) {
 }
 
 template <typename... Args>
-inline constexpr formatter::formatter<std::ostream, Args...> format(
-		const char* fmt, const Args&... args) {
-	return formatter::mkformatter<std::ostream>(fmt, args...);
+inline constexpr formatter::formatter<std::ostream,
+formatter::arg_printer::simple, Args...> format(
+	   const char* fmt, const Args&... args) {
+   return formatter::mkformatter<std::ostream,
+	   formatter::arg_printer::simple>( fmt, args...);
 }
 
 template <typename... Args>
 inline constexpr std::ostream& operator<<(std::ostream& os,
-		const formatter::formatter<std::ostream, Args...>& fmter) {
+		const formatter::formatter<std::ostream,
+		formatter::arg_printer::simple, Args...>& fmter) {
 	return fmter.print(os);
 }
 

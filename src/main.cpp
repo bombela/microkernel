@@ -62,5 +62,5 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 
 	cout("my little printf% % %work!", color::ltcyan, "should", color::ltgray)
 		<< endl	<< "and also can " << format("mix easily % %", "with", 'e')
-		<< "verything!" << format("\n%\n", "classy right?\n") << endl;
+		<< "verything!" << format("\n%\n...", "classy right?") << endl;
 }
