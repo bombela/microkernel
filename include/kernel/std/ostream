@@ -11,6 +11,7 @@
 #include <kernel/std/ios>
 #include <kernel/std/streambuf>
 #include <kernel/console.h>
+#include <kernel/std/formatter.hpp>
 #include <attributes.h>
 
 #include KERNEL_STD_OSTREAM_DEBUG
@@ -59,33 +60,14 @@ class ostream: public ios
 			return (*this) << '\n';
 		}
 
-
-		template <typename... Args>
-			ostream& format(const char* fmt)
-			{
-				*this << fmt;
-				return *this;
-			}
-
 		template <typename T, typename... Args>
-			ostream& format(const char* fmt, const T& arg1, const Args&... args)
-			{
-				while (*fmt)
-				{
-					if (*fmt == '%' && *++fmt != '%')
-					{
-						//details::print_helper(std::cout, arg1);
-						*this << arg1;
-						return this->format(fmt, args...);
-					}
-					*this << *fmt++;
-				}
-				return *this;
+			ostream& print(const char* fmt, const T& arg1, const Args&... args) {
+				return formatter::print(*this, fmt, args...);
 			}
 		
 		template <typename... Args>
 			ostream& operator()(const char* fmt, const Args&... args) {
-				return this->format(fmt, args...);
+				return formatter::print(*this, fmt, args...);
 			}
 };
 

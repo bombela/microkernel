@@ -9,8 +9,10 @@
 #define IOMANIP_H
 
 #include <kernel/std/ostream>
+#include <kernel/std/formatter.hpp>
 
 namespace kernel {
+namespace std {
 
 inline std::ostream& operator<<(std::ostream& os, std::numbase nb) {
 	os.flags.setbase(nb);
@@ -23,61 +25,18 @@ inline std::ostream& operator<<(std::ostream& os, std::color c) {
 }
 
 template <typename... Args>
-struct formater_arg;
-
-template <>
-struct formater_arg<>
-{
-	std::ostream& print(std::ostream& os, const char* fmt) const {
-		return os << fmt;
-	}
-};
-
-template <typename T, typename... Args>
-struct formater_arg<T, Args...>: formater_arg<Args...>
-{
-	const T& arg;
-	constexpr formater_arg(const T& a, const Args&... args):
-		formater_arg<Args...>(args...), arg(a) {}
-	
-	constexpr std::ostream& print(std::ostream& os, const char* fmt) const {
-		while (*fmt)
-		{
-			if (*fmt == '%' && *++fmt != '%')
-			{
-				os << arg;
-				return formater_arg<Args...>::print(os, fmt);
-			}
-			os << *fmt++;
-		}
-		return os;
-	}
-};
-
-template <typename... Args>
-struct formater: formater_arg<Args...>
-{
-	const char* fmt;
-	constexpr formater(const char* fmt, const Args&... args):
-		formater_arg<Args...>(args...), fmt(fmt) {}
-
-	constexpr std::ostream& print(std::ostream& os) const {
-		formater_arg<Args...>::print(os, fmt);
-		return os;
-	}
-};
-
-template <typename... Args>
-inline constexpr formater<Args...> format(const char* fmt, const Args&... args) {
-	return formater<Args...>(fmt, args...);
+inline constexpr formatter::formatter<std::ostream, Args...> format(
+		const char* fmt, const Args&... args) {
+	return formatter::mkformatter<std::ostream>(fmt, args...);
 }
 
 template <typename... Args>
 inline constexpr std::ostream& operator<<(std::ostream& os,
-		const formater<Args...>& fmter) {
+		const formatter::formatter<std::ostream, Args...>& fmter) {
 	return fmter.print(os);
 }
 
+} // namespace std
 } // namespace kernel
 
 #endif /* IOMANIP_H */
