@@ -81,6 +81,10 @@ struct formatter: formatter_arg<S, P, Args...>
 		formatter_arg<S, P, Args...>::print(os, fmt);
 		return os;
 	}
+
+	friend S& operator<<(S& os, const formatter& fmter) {
+		return fmter.print(os);
+	}
 };
 
 template <typename S,
