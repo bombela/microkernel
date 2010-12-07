@@ -35,6 +35,10 @@ class streambuf_console_impl: public streambuf
 			assert(main_console != 0);
 			main_console->write(s);
 		}
+		virtual void write(const char* s, size_t len) {
+			assert(main_console != 0);
+			main_console->write(s, len);
+		}
 		virtual void write(char c) {
 			assert(main_console != 0);
 			main_console->write(c);

@@ -8,6 +8,8 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+#include <kernel/types.h>
+
 namespace kernel {
 
 class Console
@@ -45,6 +47,7 @@ class Console
 
 		virtual ~Console() {}
 		virtual void write(const char*) = 0;
+		virtual void write(const char*, size_t) = 0;
 		virtual void write(char) = 0;
 		virtual void setAttr(const Attr&) = 0;
 		virtual void resetAttr() = 0;

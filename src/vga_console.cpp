@@ -202,6 +202,22 @@ void VGAConsole::write(const char *string)
 #endif
 }
 
+void VGAConsole::write(const char* s, size_t len)
+{
+	assert(init == 0);
+#ifdef REENTRENT_ON
+	if (_reentrance)
+		return;
+	_reentrance = 1;
+#endif
+	while (*s and len--)
+		putChar(*s++);
+	updateVGACursor();
+#ifdef REENTRENT_ON
+	_reentrance = 0;
+#endif
+}
+
 void VGAConsole::write(const char c)
 {
 	assert(init == 0);

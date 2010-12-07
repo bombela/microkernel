@@ -109,6 +109,15 @@ class ios
 			return old;
 		}
 		inline void setcolor(color c) { _streambuf->setcolor(c); }
+
+		struct sentry
+		{
+			ios&      ios_ref;
+			ios_flags flags;
+			explicit constexpr sentry(ios& ios):
+				ios_ref(ios), flags(ios.flags) { }
+			~sentry() { ios_ref.flags = flags; }
+		};
 	
 	protected:
 		streambuf* _streambuf;
