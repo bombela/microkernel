@@ -12,6 +12,7 @@
 #include <kernel/die.h>
 #include <cxxruntime.h>
 #include <kernel/interrupt.h>
+#include <kernel/pic_i8259.h>
 #include <iostream>
 #include <iomanip>
 
@@ -45,11 +46,17 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 
 	cxxruntime::Run running;
 	
-	//kernel::Interrupt interrupt;
+	// kernel::Interrupt interrupt;
+	// driver::PIC_i8259 pic;
+	// interrupt.setInterrupt(33, (void*)tt);
+	// pic.enable(1);
 
 	// make a "double fault exception"
-	//while (true)
-	//	asm ("hlt");
+	// while (true)
+	// {
+	// 	main_console->write("Wait for Interupt");
+	// 	asm ("hlt");
+	// }
 
 	//make a "divide by zero exception"
 	//int i = 42 / 0;
