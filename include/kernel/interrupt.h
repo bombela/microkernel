@@ -33,10 +33,11 @@ namespace kernel {
 		Interrupt();
 		~Interrupt();
 
-		void	enableInterrupt();
-		void	disableInterrupt();
 		int		setInterruptHandler(uint16_t, void*);
 		void*	getInterruptHandler(uint16_t);
+
+		inline void	enableInterrupt()	{ asm volatile ("sti"); }
+		inline void	disableInterrupt()	{ asm volatile ("cli"); }
 
 	private:
 		std::array<IDT_Item, IDT_SIZE> Idt;
