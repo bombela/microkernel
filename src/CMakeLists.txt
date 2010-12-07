@@ -43,6 +43,7 @@ set(SRCS
 	die.cpp
 	cxxruntime.cpp
 	interrupt.cpp
+	exception.cpp
 	iostream.cpp
 	ostream.cpp
 	)

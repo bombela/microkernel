@@ -15,18 +15,16 @@ namespace driver {
 
 class PIC_i8259 {
 	public:
-		PIC_i8259();
-		~PIC_i8259();
-
-		void	release() const;
-		bool	enable(uint8_t);
-		bool	disable(uint8_t);
-
+		static void		init();
+		static void		releaseAll();
+		static bool		enable(uint8_t);
+		static bool		disable(uint8_t);
 		static uint8_t	intToIrq(uint8_t);
 
 	private:
-		void irq_init() const;
-		
+		static uint8_t		NbToBit(uint8_t Nb);
+
+
 };
 
 } // namespace driver

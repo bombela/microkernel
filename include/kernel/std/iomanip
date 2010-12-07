@@ -1,4 +1,7 @@
 /* vim: ft=cpp
+ * Local Variables:
+ * mode:c++
+ * End:
  * iomanip
  * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *

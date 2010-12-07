@@ -1,10 +1,17 @@
+/*
+ * interrupt.h
+ * Copyright © 2010 François-Régis 'fregux' Robert <robert.fregis@gmail.com>
+ * Copyright © 2010 Alexandre Gau <gau.alexandre@gmail.com>
+ *
+*/
+
 #ifndef __H_INTERRUPT__
 #define __H_INTERRUPT__
 
 #include <kernel/types.h>
 #include <kernel/std/array.hpp>
 
-#define IDT_Size 47
+#define IDT_SIZE 47
 
 namespace kernel {
 	struct IDT_Item {
@@ -25,11 +32,14 @@ namespace kernel {
 	public:
 		Interrupt();
 		~Interrupt();
-		int setInterrupt(uint16_t, void*);
+
+		void	enableInterrupt();
+		void	disableInterrupt();
+		int		setInterruptHandler(uint16_t, void*);
+		void*	getInterruptHandler(uint16_t);
 
 	private:
-		std::array<IDT_Item, IDT_Size> Idt;
-		//IDT_Item Idt[IDT_Size];
+		std::array<IDT_Item, IDT_SIZE> Idt;
 	};
 } /* namespace kernel */
 

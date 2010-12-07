@@ -1,4 +1,8 @@
+
 /* vim: ft=cpp
+ * Local Variables:
+ * mode:c++
+ * End:
  * ostream
  * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *
@@ -74,7 +78,7 @@ class ostream: public ios
 			}
 
 		// fregux, alex! au boulot!
-		// inline std::ostream& operator<<(int);
+		std::ostream& operator<<(int);
 		// inline std::ostream& operator<<(long);
 		// inline std::ostream& operator<<(unsigned int);
 		// inline std::ostream& operator<<(unsigned long);

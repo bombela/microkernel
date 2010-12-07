@@ -12,6 +12,7 @@
 #include <kernel/die.h>
 #include <cxxruntime.h>
 #include <kernel/interrupt.h>
+#include <kernel/pic_i8259.h>
 #include <iostream>
 #include <iomanip>
 
@@ -45,11 +46,17 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 
 	cxxruntime::Run running;
 	
-	//kernel::Interrupt interrupt;
+	// kernel::Interrupt interrupt;
+	// driver::PIC_i8259 pic;
+	// interrupt.setInterrupt(33, (void*)tt);
+	// pic.enable(1);
 
 	// make a "double fault exception"
-	//while (true)
-	//	asm ("hlt");
+	// while (true)
+	// {
+	// 	main_console->write("Wait for Interupt");
+	// 	asm ("hlt");
+	// }
 
 	//make a "divide by zero exception"
 	//int i = 42 / 0;
@@ -57,4 +64,10 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	using namespace kernel::std;
 	cout << "cout is fonctionnal! "
 		<< color::blue << "ahah it's work" << color::ltgray << endl;
+
+	cout << format("hello % % '%'!", "coucou", "tata", 'c') << endl << endl;
+
+	cout("my little printf% % %work!", color::ltcyan, "should", color::ltgray)
+		<< endl	<< "and also can " << format("mix easily % %", "with", 'e')
+		<< "verything!" << format("\n%\n...", "classy right?") << endl;
 }
