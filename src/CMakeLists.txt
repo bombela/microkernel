@@ -32,20 +32,23 @@ include_directories("${CMAKE_SOURCE_DIR}/include/kernel/std")
 # RULES
 ###############################################################################
 
+set(SRC_KERNEL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/kernel")
+set(SRC_DRIVER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/driver")
+
 set(SRCS
 	kernel.lds
 	multiboot.s
-	main.cpp
-	console.cpp
-	vga_console.cpp
-	pic_i8259.cpp
 	basename.cpp
-	die.cpp
-	cxxruntime.cpp
-	interrupt.cpp
-	exception.cpp
-	iostream.cpp
-	ostream.cpp
+	${SRC_KERNEL_DIR}/main.cpp
+	${SRC_KERNEL_DIR}/console.cpp
+	${SRC_KERNEL_DIR}/vga_console.cpp
+	${SRC_KERNEL_DIR}/die.cpp
+	${SRC_KERNEL_DIR}/cxxruntime.cpp
+	${SRC_KERNEL_DIR}/interrupt.cpp
+	${SRC_KERNEL_DIR}/exception.cpp
+	${SRC_KERNEL_DIR}/iostream.cpp
+	${SRC_KERNEL_DIR}/ostream.cpp
+	${SRC_DRIVER_DIR}/pic_i8259.cpp
 	)
 
 set_property(SOURCE ${SRCS} APPEND
