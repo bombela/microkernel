@@ -71,7 +71,7 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 		<< endl	<< "and also can " << format("mix easily % %", "with", 'e')
 		<< "verything!" << format("\n%\n...", "classy right?") << endl;
 
-	cout("-%xx-\n%%", 42);
+	cout("-%xU-%X-%x-\n%%", 42, 42, 42);
 	cout("*");
 	cout("%x", 4);
 }
