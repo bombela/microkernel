@@ -1,21 +1,13 @@
 #include <kernel/std/ostream>
+#include <kernel/std/nbprinter.hpp>
 
 namespace kernel {
 	namespace std {
 		
 		ostream& ostream::operator<<(int num)
 		{
-			int idx = 1;
-			int tmp;
-
-			for (;num/idx>10;idx*=10);
-
-			for (;idx >= 1; idx/=10)
-			{
-				tmp = (num/idx)+'0';
-				num -= (num/idx)*idx;
-				_streambuf->write(tmp);
-			}
+			auto printer = nbprinter::mkprinter<int>("0123456789");
+			*this << printer(num);
 			return *this;
 		}
 
