@@ -70,4 +70,9 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	cout("my little printf% % %work!", color::ltcyan, "should", color::ltgray)
 		<< endl	<< "and also can " << format("mix easily % %", "with", 'e')
 		<< "verything!" << format("\n%\n...", "classy right?") << endl;
+
+	cout("-%xU-%X-%x-\n%%", 42, 42, 42);
+	cout("lolita\n");
+	cout("*");
+	cout("%\n", 'a');
 }

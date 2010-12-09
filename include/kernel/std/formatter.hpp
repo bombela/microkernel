@@ -10,6 +10,7 @@
 
 #include <is_printable.hpp>
 #include <enable_if.hpp>
+#include <kernel/std/ios>
 
 namespace kernel {
 namespace std {
@@ -52,20 +53,51 @@ template <typename S, template <typename, typename> class P,
 		 typename T, typename... Args>
 struct formatter_arg<S, P, T, Args...>: formatter_arg<S, P, Args...>
 {
+	typedef P<S, T> printer_t;
+	typedef formatter_arg<S, P, Args...> next_t;
+
 	const T& arg;
 	constexpr formatter_arg(const T& a, const Args&... args):
 		formatter_arg<S, P, Args...>(args...), arg(a) {}
 	
-	constexpr S& print(S& os, const char* fmt) const {
+	constexpr S& print(S& os, const char* fmt) const
+	{
+		const char* fmt_start = fmt;
 		while (*fmt)
 		{
 			if (*fmt == '%' && *++fmt != '%')
 			{
-				P<S, T>::print(os, arg);
-				return formatter_arg<S, P, Args...>::print(os, fmt);
+				ios_flags flags = os.flags;
+				do
+				{
+					switch (*fmt)
+					{
+						case 'd': os.flags.setbase(numbase::dec); break;
+						case 'o': os.flags.setbase(numbase::oct); break;
+						case 'b': os.flags.setbase(numbase::bin); break;
+						case 'x': os.flags.setbase(numbase::hex); break;
+						case 'X': os.flags.setbase(numbase::hex);
+								  os.flags.setuppercase(true); break;
+						case 'a': os.flags.setboolalpha(false); break;
+						case 'A': os.flags.setboolalpha(true); break;
+						case 'c': os.flags.setcharalpha(false); break;
+						case 'C': os.flags.setcharalpha(true); break;
+						case 'u': os.flags.setuppercase(false); break;
+						case 'U': os.flags.setuppercase(true); break;
+						
+						case '/':
+							++fmt;
+						default:
+							os.rdbuf()->write(fmt_start, fmt - fmt_start - 1);
+							printer_t::print(os, arg);
+							os.flags = flags;
+							return next_t::print(os, fmt);
+					}
+				} while (++fmt);
 			}
-			os << *fmt++;
+			++fmt;
 		}
+		os << fmt_start;
 		return os;
 	}
 };
@@ -78,8 +110,7 @@ struct formatter: formatter_arg<S, P, Args...>
 		formatter_arg<S, P, Args...>(args...), fmt(fmt) {}
 
 	constexpr S& print(S& os) const {
-		formatter_arg<S, P, Args...>::print(os, fmt);
-		return os;
+		return formatter_arg<S, P, Args...>::print(os, fmt);
 	}
 
 	friend S& operator<<(S& os, const formatter& fmter) {

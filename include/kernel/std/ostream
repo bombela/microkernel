@@ -54,7 +54,7 @@ class ostream: public ios
 			if (flags.ischaralpha())
 				_streambuf->write(c);
 			else
-				/* *this << static_cast<int>(c) */;
+				*this << static_cast<int>(c);
 			return *this;
 		}
 		inline ostream& operator<<(const char* s) {
@@ -77,11 +77,10 @@ class ostream: public ios
 				return formatter::print(*this, fmt, args...);
 			}
 
-		// fregux, alex! au boulot!
-		std::ostream& operator<<(int);
-		// inline std::ostream& operator<<(long);
-		// inline std::ostream& operator<<(unsigned int);
-		// inline std::ostream& operator<<(unsigned long);
+		ostream& operator<<(int);
+		ostream& operator<<(unsigned int);
+		ostream& operator<<(long int);
+		ostream& operator<<(unsigned long int);
 		
 		// attention à celui là, lire le this->flags.ischaralpha
 		// pour le printer en temps que char simple, sinon le printer

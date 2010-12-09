@@ -1,0 +1,114 @@
+/*
+ * nbprinter.hpp
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef NBPRINTER_H
+#define NBPRINTER_H
+
+#include <enable_if.hpp>
+
+namespace kernel {
+namespace std {
+
+template <typename T>
+struct is_unsigned {
+	static const bool value = (T(-1) > 0);
+};
+
+template <typename T>
+struct binsize { static const size_t value = (sizeof (T) * 8); };
+
+template <typename T>
+struct maxvalue {
+	static const T value = is_unsigned<T>::value ?
+		~T(0) : T(1) << (binsize<T>::value - 1);
+};
+
+template <typename T, T V, T BASE, bool ZERO = (V / BASE == 0)>
+struct log;
+
+template <typename T, T V, T BASE>
+struct log<T, V, BASE, false>{
+	static const T value = 1 + log<T, V / BASE, BASE, (V / BASE) == 0>::value;
+};
+
+template <typename T, T V, T BASE>
+struct log<T, V, BASE, true>{
+	static const T value = -1;
+};
+
+template <typename T>
+struct static_strlen;
+
+template <typename T, size_t S>
+struct static_strlen<T[S]> { static const size_t value = S - 1; };
+
+namespace nbprinter {
+
+template <typename T, size_t BASE>
+struct printed_len {
+	static const size_t value = log<T, maxvalue<T>::value, BASE>::value
+		+ (is_unsigned<T>::value ? 1 : 2);
+};
+
+template <typename T, size_t BASE>
+struct printer {
+	char buffer[printed_len<T, BASE>::value + 1];
+	const char* base;
+
+	constexpr printer(const char* base): base(base) {}
+
+	const char* operator()(T nb) { return print(nb); }
+
+private:
+	template <typename U>
+	const char* print(U nb,
+			typename enable_if<not is_unsigned<U>::value>::type = 0)
+	{
+		size_t i = sizeof buffer;
+		buffer[--i] = '\0';
+		bool neg = (nb < 0);
+		if (not neg)
+			nb = -nb;
+		do
+		{
+			buffer[--i] = base[-(nb % U(BASE))];
+			nb /= U(BASE);
+		}
+		while (nb);
+		if (neg)
+			buffer[--i] = '-';
+		return &buffer[i];
+	}
+	
+	template <typename U>
+	const char* print(U nb,
+			typename enable_if<is_unsigned<U>::value>::type = 0)
+	{
+		size_t i = sizeof buffer;
+		buffer[--i] = '\0';
+		do
+		{
+			buffer[--i] = base[nb % U(BASE)];
+			nb /= U(BASE);
+		}
+		while (nb);
+		return &buffer[i];
+	}
+};
+
+template <typename T, typename A>
+constexpr printer<T, static_strlen<A>::value> mkprinter(const A& base)
+{
+	return printer<T, static_strlen<A>::value>(base);
+}
+
+} // namespace nbprinter
+
+} // namespace std
+} // namespace kernel
+
+#endif /* NBPRINTER_H */
