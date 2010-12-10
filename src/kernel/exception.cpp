@@ -6,11 +6,17 @@
 
 #include <kernel/die.h>
 
+
+
+extern uint32_t exception_wrapper[EXCEPT_SIZE];
+
 namespace kernel {
 
-	extern Interrupt interrupt;
+extern Interrupt interrupt;
 
-#define Define_Except(NUM, TEXT) void Exception ## NUM ()	  \
+extern "C" Exception::exception_handler_t		exception_handler[EXCEPT_SIZE] = { nullptr, };
+
+#define Define_Except(NUM, TEXT) void Exception ## NUM (int)	  \
 	{ \
 		kernel::main_console->setAttr(kernel::Console::Color::red); \
 		kernel::main_console->write(TEXT); \
@@ -51,22 +57,38 @@ namespace kernel {
 	Exception::Exception()
 	{
 		//IDT_ExceptDefine(0);
-		IDT_ExceptDefine(1);
-		IDT_ExceptDefine(2);
-		IDT_ExceptDefine(3);
-		IDT_ExceptDefine(4);
-		IDT_ExceptDefine(5);
-		IDT_ExceptDefine(6);
-		IDT_ExceptDefine(7);
-		IDT_ExceptDefine(8);
-		IDT_ExceptDefine(9);
-		IDT_ExceptDefine(10);
-		IDT_ExceptDefine(11);
-		IDT_ExceptDefine(12);
-		IDT_ExceptDefine(13);
-		IDT_ExceptDefine(14);
-		IDT_ExceptDefine(15);
-		IDT_ExceptDefine(16);
+		// IDT_ExceptDefine(1);
+		// IDT_ExceptDefine(2);
+		// IDT_ExceptDefine(3);
+		// IDT_ExceptDefine(4);
+		// IDT_ExceptDefine(5);
+		// IDT_ExceptDefine(6);
+		// IDT_ExceptDefine(7);
+		// IDT_ExceptDefine(8);
+		// IDT_ExceptDefine(9);
+		// IDT_ExceptDefine(10);
+		// IDT_ExceptDefine(11);
+		// IDT_ExceptDefine(12);
+		// IDT_ExceptDefine(13);
+		// IDT_ExceptDefine(14);
+		// IDT_ExceptDefine(15);
+		// IDT_ExceptDefine(16);
 	}
+
+	bool	Exception::setExceptionHandler(int NbExcept, exception_handler_t handler)
+	{
+		int ret;
+
+		if (NbExcept < 0 || NbExcept > EXCEPT_SIZE)
+			return false;
+
+		exception_handler[NbExcept] = handler;
+		ret = interrupt.setInterruptHandler(NbExcept, (void *)exception_wrapper[NbExcept]);
+		if (ret == -1)
+			return false;
+		else
+			return true;
+	}
+
 
 } // namespace kernel
