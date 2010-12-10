@@ -45,7 +45,18 @@ template <typename S, template <typename, typename> class P>
 struct formatter_arg<S, P>
 {
 	S& print(S& os, const char* fmt) const {
-		return os << fmt;
+		const char* fmt_start = fmt;
+		while (*fmt)
+		{
+			while (*fmt and not (fmt[0] == '%' and fmt[1] == '%'))
+				++fmt;
+			if (*fmt)
+			{
+				os.rdbuf()->write(fmt_start, ++fmt - fmt_start);
+				fmt_start = ++fmt;
+			}
+		}
+		return os << fmt_start;
 	}
 };
 
@@ -62,39 +73,48 @@ struct formatter_arg<S, P, T, Args...>: formatter_arg<S, P, Args...>
 	
 	constexpr S& print(S& os, const char* fmt) const
 	{
-		const char* const fmt_start = fmt;
+		const char* fmt_start = fmt;
 		while (*fmt)
 		{
-			if (*fmt == '%' && *++fmt != '%')
+			if (*fmt == '%')
 			{
-				const char* const fmt_end = fmt - 1;
-				ios_flags flags = os.flags;
-				do
+				if (*++fmt == '%')
 				{
-					switch (*fmt)
+					os.rdbuf()->write(fmt_start, fmt - fmt_start);
+					fmt_start = fmt + 1;
+				}
+				else
+				{
+					const char* const fmt_end = fmt - 1;
+					ios_flags flags = os.flags;
+					do
 					{
-						case 'd': os.flags.setbase(numbase::dec); break;
-						case 'o': os.flags.setbase(numbase::oct); break;
-						case 'b': os.flags.setbase(numbase::bin); break;
-						case 'x': os.flags.setbase(numbase::hex); break;
-						case 'X': os.flags.setbase(numbase::hex);
-								  os.flags.setuppercase(true); break;
-						case 'a': os.flags.setboolalpha(false); break;
-						case 'A': os.flags.setboolalpha(true); break;
-						case 'c': os.flags.setcharalpha(false); break;
-						case 'C': os.flags.setcharalpha(true); break;
-						case 'u': os.flags.setuppercase(false); break;
-						case 'U': os.flags.setuppercase(true); break;
-						
-						case '/':
-							++fmt;
-						default:
-							os.rdbuf()->write(fmt_start, (fmt_end - fmt_start));
-							printer_t::print(os, arg);
-							os.flags = flags;
-							return next_t::print(os, fmt);
-					}
-				} while (++fmt);
+						switch (*fmt)
+						{
+							case 'd': os.flags.setbase(numbase::dec); break;
+							case 'o': os.flags.setbase(numbase::oct); break;
+							case 'b': os.flags.setbase(numbase::bin); break;
+							case 'x': os.flags.setbase(numbase::hex); break;
+							case 'X': os.flags.setbase(numbase::hex);
+									  os.flags.setuppercase(true); break;
+							case 'a': os.flags.setboolalpha(false); break;
+							case 'A': os.flags.setboolalpha(true); break;
+							case 'c': os.flags.setcharalpha(false); break;
+							case 'C': os.flags.setcharalpha(true); break;
+							case 'u': os.flags.setuppercase(false); break;
+							case 'U': os.flags.setuppercase(true); break;
+
+							case '/':
+									  ++fmt;
+							default:
+									  os.rdbuf()->write(fmt_start,
+											  (fmt_end - fmt_start));
+									  printer_t::print(os, arg);
+									  os.flags = flags;
+									  return next_t::print(os, fmt);
+						}
+					} while (++fmt);
+				}
 			}
 			++fmt;
 		}

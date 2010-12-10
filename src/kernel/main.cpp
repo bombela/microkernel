@@ -73,6 +73,7 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 
 	cout("-%xU-%X-%x-\n%%", 42, 42, 42);
 	cout("lolita\n");
-	cout("*");
+	cout("* %% *\n", 42);
+	cout("* %% *\n");
 	cout("%\n", 'a');
 }
