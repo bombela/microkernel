@@ -62,11 +62,12 @@ struct formatter_arg<S, P, T, Args...>: formatter_arg<S, P, Args...>
 	
 	constexpr S& print(S& os, const char* fmt) const
 	{
-		const char* fmt_start = fmt;
+		const char* const fmt_start = fmt;
 		while (*fmt)
 		{
 			if (*fmt == '%' && *++fmt != '%')
 			{
+				const char* const fmt_end = fmt - 1;
 				ios_flags flags = os.flags;
 				do
 				{
@@ -88,7 +89,7 @@ struct formatter_arg<S, P, T, Args...>: formatter_arg<S, P, Args...>
 						case '/':
 							++fmt;
 						default:
-							os.rdbuf()->write(fmt_start, fmt - fmt_start - 1);
+							os.rdbuf()->write(fmt_start, (fmt_end - fmt_start));
 							printer_t::print(os, arg);
 							os.flags = flags;
 							return next_t::print(os, fmt);
