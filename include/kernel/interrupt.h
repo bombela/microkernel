@@ -29,17 +29,21 @@ namespace kernel {
 
 
 	class Interrupt {
+
+		friend class Exception;
+		friend class Irq;
+
 	public:
 		Interrupt();
 		~Interrupt();
-
-		int		setInterruptHandler(uint16_t, void*);
-		void*	getInterruptHandler(uint16_t);
 
 		inline void	enableInterrupt()	{ asm volatile ("sti"); }
 		inline void	disableInterrupt()	{ asm volatile ("cli"); }
 
 	private:
+		int		setInterruptHandler(uint16_t, void*);
+		void*	getInterruptHandler(uint16_t);
+
 		std::array<IDT_Item, IDT_SIZE> Idt;
 	};
 } /* namespace kernel */

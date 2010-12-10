@@ -116,7 +116,7 @@ bool	PIC_i8259::enable(uint8_t NumIrq)
 			NumIrq = NbToBit(NumIrq);
 
 		Mask = kernel::io::in::byte(PORT2_M);
-		kernel::io::out::byte(PORT2_M, Mask & ~NumIrq);
+		kernel::io::out::byte(Mask & ~NumIrq, PORT2_M);
 		return 0;
 	}
 	return 1;
