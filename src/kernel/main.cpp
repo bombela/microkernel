@@ -13,6 +13,7 @@
 #include <cxxruntime.h>
 #include <kernel/interrupt.h>
 #include <kernel/pic_i8259.h>
+#include <kernel/exception.h>
 #include <iostream>
 #include <iomanip>
 
@@ -26,11 +27,18 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 using namespace kernel;
 
+void divide_error(int nb)
+{
+	using namespace kernel::std;
+	cout << color::red << "divide error" << color::ltgray << endl;
+	kernel::die();
+}
+
 extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
 	main_console_init();
 
-	main_console->write("Hi everybody, welcome to the kernel wrote in ");
+	/*main_console->write("Hi everybody, welcome to the kernel wrote in ");
 	main_console->setAttr({
 			Console::Color::ltgray,
 			Console::Color::blue
@@ -42,7 +50,7 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 			});
 	main_console->write(" :)");
 	main_console->resetAttr();
-	main_console->write("\n");
+	main_console->write("\n");*/
 
 	cxxruntime::Run running;
 	
@@ -62,18 +70,19 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	//int i = 42 / 0;
 
 	using namespace kernel::std;
-	cout << "cout is fonctionnal! "
-		<< color::blue << "ahah it's work" << color::ltgray << endl;
 
+	cout("coucou %X %", 42, 'a') << endl;
+	//cout << "cout is fonctionnal! "
+	//	<< color::blue << "ahah it's work" << color::ltgray << endl;
+/*
 	cout << format("hello % % '%'!", "coucou", "tata", 'c') << endl << endl;
 
 	cout("my little printf% % %work!", color::ltcyan, "should", color::ltgray)
 		<< endl	<< "and also can " << format("mix easily % %", "with", 'e')
 		<< "verything!" << format("\n%\n...", "classy right?") << endl;
 
-	cout("-%xU-%X-%x-\n%%", 42, 42, 42);
-	cout("lolita\n");
-	cout("* %% *\n", 42);
-	cout("* %% *\n");
-	cout("%\n", 'a');
+	Exception exception_manager;
+	exception_manager.setExceptionHandler(EXCEPT_DIVIDE_ERROR, &divide_error);
+	cout << "test division by zero" << endl;
+	int a = 2 / 0;*/
 }
