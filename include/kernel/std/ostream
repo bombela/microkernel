@@ -70,6 +70,8 @@ class ostream: public ios
 				*this << static_cast<unsigned int>(c);
 			return *this;
 		}
+		ostream& operator<<(short);
+		//ostream& operator<<(unsigned short);
 		ostream& operator<<(int);
 		ostream& operator<<(unsigned int);
 		ostream& operator<<(long int);

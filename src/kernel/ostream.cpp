@@ -48,6 +48,8 @@ ostream& printnb(ostream& os, T num)
 
 } // namespace 
 
+ostream& ostream::operator<<(short v) { return printnb(*this, v); }
+//ostream& ostream::operator<<(unsigned short v) { return printnb(*this, v); }
 ostream& ostream::operator<<(int v) { return printnb(*this, v); }
 ostream& ostream::operator<<(unsigned int v) { return printnb(*this, v); }
 ostream& ostream::operator<<(long int v) { return printnb(*this, v); }
