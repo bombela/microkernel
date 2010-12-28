@@ -13,18 +13,13 @@
 
 #include <kernel/std/ostream>
 
-#include KERNEL_STD_IOSTREAM_DEBUG
-#include KERNEL_STD_IOSTREAM_CHECK
-
 namespace kernel {
 namespace std {
 
 extern std::ostream cout;
+extern const bool cout_initialized;
 
 } // namespace std
 } // namespace kernel
-
-#include <check_off.h>
-#include <debug_off.h>
 
 #endif /* IOSTREAM_H */

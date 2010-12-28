@@ -25,13 +25,15 @@ namespace arg_printer {
 
 	template <typename S, typename T>
 	struct nofail {
-		static inline constexpr void print(S& os, const T&,
-				typename enable_if<not is_printable<T, S>::value>::type = 0) {
+		template <typename U>
+		static inline constexpr void print(S& os, const U&,
+				typename enable_if<not is_printable<U, S>::value>::type = 0) {
 			os << "<something>";
 		}
 
-		static inline constexpr void print(S& os, const T& arg,
-				typename enable_if<is_printable<T, S>::value>::type = 0) {
+		template <typename U>
+		static inline constexpr void print(S& os, const U& arg,
+				typename enable_if<is_printable<U, S>::value>::type = 0) {
 			os << arg;
 		}
 	};

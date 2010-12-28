@@ -4,11 +4,14 @@
  *
 */
 
-#include <kernel/debug.h>
 #include <basename.h>
+#include <kernel/debug.h>
+
+#ifdef DEBUG_REENTRANT
+#	error DEBUG_REENTRANT not supported in dbg()
+#endif // DEBUG_REENTRANT
 
 #undef dbg
-
 #define dbg(...) do { kernel::debug::printf(__FILE__ ":% % - " \
 		+ utility::basename(__FILE__), __LINE__, __PRETTY_FUNCTION__); \
 		kernel::debug::printf(__VA_ARGS__); \

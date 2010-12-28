@@ -49,8 +49,13 @@ class streambuf_console_impl: public streambuf
 		}
 };
 
+const bool cout_initialized = false;
 INIT_PRIORITY(65535) streambuf_console_impl streambuf_console;
 INIT_PRIORITY(65534) ostream cout(&streambuf_console);
+
+INIT_PRIORITY(65533) struct ostream_init {
+	ostream_init() { const_cast<bool&>(cout_initialized) = true; }
+} ostream_initialization;
 
 } // namespace std
 } // namespace kernel

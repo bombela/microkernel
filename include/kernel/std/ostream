@@ -18,7 +18,7 @@
 #include <kernel/std/formatter.hpp>
 #include <attributes.h>
 
-#include KERNEL_STD_OSTREAM_DEBUG
+#define DEBUG_REENTRANT
 #include KERNEL_STD_OSTREAM_CHECK
 
 namespace kernel {
@@ -32,22 +32,8 @@ class ostream: public ios
 		ostream(const ostream& from) = delete;
 		ostream& operator=(const ostream& from) = delete;
 		
-		~ostream() {
-#ifdef DEBUG_ON
-			if (main_console)
-				main_console->write("ostream destruction\n");
-#endif
-		}
-		
-#ifndef DEBUG_ON
-		constexpr
-#endif
-			ostream(streambuf* sb): ios(sb) {
-#ifdef DEBUG_ON
-			if (main_console)
-				main_console->write("ostream initialization\n");
-#endif
-		}
+		~ostream() = default;
+		constexpr ostream(streambuf* sb): ios(sb) {}
 
 		inline ostream& operator<<(char c) {
 			assert(_streambuf != 0);
@@ -105,6 +91,6 @@ class ostream: public ios
 } // namespace kernel
 
 #include <check_off.h>
-#include <debug_off.h>
+#undef DEBUG_REENTRANT
 
 #endif /* OSTREAM_H */

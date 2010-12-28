@@ -13,30 +13,30 @@ ostream& printnb(ostream& os, T num)
 	{
 		case numbase::bin:
 			{
-				auto printer = nbprinter::mkprinter<T>("01");
-				os << printer(num);
+				auto print = nbprinter::mkprinter<T>("01");
+				os << print(num);
 				break;
 			}
 		case numbase::oct:
 			{
-				auto printer = nbprinter::mkprinter<T>("012345678");
-				os << printer(num);
+				auto print = nbprinter::mkprinter<T>("012345678");
+				os << print(num);
 				break;
 			}
 		case numbase::hex:
 			if (os.flags.isuppercase()) {
-				auto printer = nbprinter::mkprinter<T>("0123456789ABCDEF");
-				os << printer(num);
+				auto print = nbprinter::mkprinter<T>("0123456789ABCDEF");
+				os << print(num);
 			} else {
-				auto printer = nbprinter::mkprinter<T>("0123456789abcdef");
-				os << printer(num);
+				auto print = nbprinter::mkprinter<T>("0123456789abcdef");
+				os << print(num);
 			}
 			break;
 		case numbase::dec:
 		default:
 			{
-				auto printer = nbprinter::mkprinter<T>("0123456789");
-				os << printer(num);
+				auto print = nbprinter::mkprinter<T>("0123456789");
+				os << print(num);
 			}
 	}
 	return os;

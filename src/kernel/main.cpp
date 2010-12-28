@@ -38,7 +38,7 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 {
 	main_console_init();
 
-	/*main_console->write("Hi everybody, welcome to the kernel wrote in ");
+	main_console->write("Hi everybody, welcome to the kernel wrote in ");
 	main_console->setAttr({
 			Console::Color::ltgray,
 			Console::Color::blue
@@ -50,7 +50,7 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 			});
 	main_console->write(" :)");
 	main_console->resetAttr();
-	main_console->write("\n");*/
+	main_console->write("\n");
 
 	cxxruntime::Run running;
 	
@@ -72,6 +72,7 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	using namespace kernel::std;
 
 	cout("coucou %X %", 42, 'a') << endl;
+
 	//cout << "cout is fonctionnal! "
 	//	<< color::blue << "ahah it's work" << color::ltgray << endl;
 /*
