@@ -68,10 +68,8 @@ const char* const boolalpha_uppercase[]  = { "FALSE", "TRUE" };
 
 ostream& ostream::operator<<(bool b) {
 	if (flags.isboolalpha())
-		if (flags.isuppercase())
-			*this << boolalpha_uppercase[b ? 1 : 0];
-		else
-			*this << boolalpha_lowercase[b ? 1 : 0];
+		*this << (flags.isuppercase() ?
+				boolalpha_uppercase : boolalpha_lowercase)[b ? 1 : 0];
 	else
 			*this << static_cast<int>(b);
 	return *this;
