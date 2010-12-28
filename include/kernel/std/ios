@@ -18,25 +18,27 @@ namespace kernel {
 namespace std {
 
 enum numbase {
-	dec       = 0U,
-	oct       = 1U,
-	hex       = 2U,
-	bin       = 3U,
+	human     = 0U,
+	dec       = 1U,
+	oct       = 2U,
+	hex       = 3U,
+	bin       = 4U,
+	numbase_max = 7U,
 };
 
 enum fmt {
-	boolalpha = 1U << 3,
-	charalpha = 1U << 4,
-	uppercase = 1U << 5,
+	boolalpha = 1U << 4,
+	charalpha = 1U << 5,
+	uppercase = 1U << 6,
 };
 
 class ios_flags
 {
 	public:
-		constexpr ios_flags(): _flags(_mkflags(dec, charalpha)) {}
+		constexpr ios_flags(): _flags(_mkflags(human, charalpha)) {}
 
 		inline void setbase(numbase nb) {
-			_flags = (uint8_t(_flags) bitand ~3U) bitor uint8_t(nb); }
+			_flags = (uint8_t(_flags) bitand ~numbase_max) bitor uint8_t(nb); }
 
 		inline void setboolalpha(bool b = true) {
 			setbit(fmt::boolalpha, b);
@@ -52,10 +54,10 @@ class ios_flags
 			inline void set(Args... args) {
 				_flags = _mkflags(args...);
 			}
-		inline void reset() { set(dec, charalpha); }
+		inline void reset() { set(human, charalpha); }
 
 		inline constexpr numbase getbase() const {
-			return numbase(uint8_t(_flags) bitand 3U);
+			return numbase(uint8_t(_flags) bitand numbase_max);
 		}
 
 		inline constexpr bool isboolalpha() const {
@@ -73,9 +75,9 @@ class ios_flags
 	private:
 		uint8_t _flags;
 		/*
-		 * 8 7 6 5 4 3 2 1 0
-		 * not  |u|c|b| num |
-		 * used |p|a|a| base|
+		 *   8 7 6 5 4 3 2 1 0
+		 * not  |u|c|b| num  |
+		 * used |p|a|a| base |
 		 */
 
 		inline void setbit(uint8_t bit, bool b) {

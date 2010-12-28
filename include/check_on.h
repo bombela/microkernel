@@ -7,11 +7,10 @@
 #include <basename.h>
 #include <kernel/die.h>
 
-#undef assert
-
 #ifdef DEBUG_REENTRANT
 #	include <kernel/console.h>
 #	include <kernel/std/nbprinter.hpp>
+#	undef assert
 #	define assert(__expr) do { if (not (__expr)) { \
 		if (main_console) { \
 			main_console->write(__FILE__ ":" \
@@ -24,6 +23,7 @@
 		} kernel::die(); } } while (0)
 #else // !DEBUG_REENTRANT
 #	include <kernel/debug.h>
+#	undef assert
 #	define assert(__expr) do { if (not (__expr)) { \
 			kernel::debug::printf(__FILE__ ":% % - /!\\ ASSERTION ERROR /!\\ (" \
 			#__expr ")\n" + utility::basename(__FILE__), \

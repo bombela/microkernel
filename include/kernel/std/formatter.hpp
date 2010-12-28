@@ -93,6 +93,9 @@ struct formatter_arg<S, P, T, Args...>: formatter_arg<S, P, Args...>
 					{
 						switch (*fmt)
 						{
+							case 'h': os.flags.setbase(numbase::human); break;
+							case 'H': os.flags.setbase(numbase::human);
+									  os.flags.setuppercase(true); break;
 							case 'd': os.flags.setbase(numbase::dec); break;
 							case 'o': os.flags.setbase(numbase::oct); break;
 							case 'b': os.flags.setbase(numbase::bin); break;

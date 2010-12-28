@@ -88,6 +88,7 @@ namespace kernel {
 				case Console::Color::white:
 					return white;
 			}
+			return black; // to prevent warning.
 		}
 	} // namespace fgcolor
 
@@ -140,6 +141,7 @@ namespace kernel {
 				case Console::Color::white:
 					return ltgray;
 			}
+			return black; // to prevent warning.
 		}
 	} // namespace bgcolor
 

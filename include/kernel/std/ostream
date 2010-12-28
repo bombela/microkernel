@@ -63,21 +63,19 @@ class ostream: public ios
 				return formatter::print(*this, fmt, args...);
 			}
 
+		ostream& operator<<(unsigned char c) {
+			if (flags.ischaralpha())
+				*this << static_cast<char>(c);
+			else
+				*this << static_cast<unsigned int>(c);
+			return *this;
+		}
 		ostream& operator<<(int);
 		ostream& operator<<(unsigned int);
 		ostream& operator<<(long int);
 		ostream& operator<<(unsigned long int);
-		
-		// attention à celui là, lire le this->flags.ischaralpha
-		// pour le printer en temps que char simple, sinon le printer
-		// en temps que unsigned int.
-		// ex:
-		//	if (flags.ischaralpha())
-		//		*this << static_cast<char>(c);
-		//	else
-		//		*this << static_cast<unsigned int>(c);
-		// inline std::ostream& operator<<(unsigned char);
-		
+		ostream& operator<<(const void*);
+
 		// même chose que précédemment, penser au boolalpha.
 		// inline std::ostream& operator<<(bool);
 		

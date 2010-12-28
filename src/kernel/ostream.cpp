@@ -6,10 +6,11 @@ namespace std {
 	
 namespace {
 
-template <typename T>
+template <typename T, numbase HUMAN = numbase::dec>
 ostream& printnb(ostream& os, T num)
 {
-	switch (os.flags.getbase())
+	numbase base = os.flags.getbase();
+	switch (base == numbase::human ? HUMAN : base)
 	{
 		case numbase::bin:
 			{
@@ -24,6 +25,7 @@ ostream& printnb(ostream& os, T num)
 				break;
 			}
 		case numbase::hex:
+			os << "0x";
 			if (os.flags.isuppercase()) {
 				auto print = nbprinter::mkprinter<T>("0123456789ABCDEF");
 				os << print(num);
@@ -33,6 +35,8 @@ ostream& printnb(ostream& os, T num)
 			}
 			break;
 		case numbase::dec:
+		case numbase::human: // to prevent warning
+		case numbase::numbase_max: // to prevent warning
 		default:
 			{
 				auto print = nbprinter::mkprinter<T>("0123456789");
@@ -48,6 +52,10 @@ ostream& ostream::operator<<(int v) { return printnb(*this, v); }
 ostream& ostream::operator<<(unsigned int v) { return printnb(*this, v); }
 ostream& ostream::operator<<(long int v) { return printnb(*this, v); }
 ostream& ostream::operator<<(unsigned long int v) { return printnb(*this, v); }
+ostream& ostream::operator<<(const void* ptr) {
+	return printnb<uintptr_t, numbase::hex>(*this,
+			reinterpret_cast<uintptr_t>(ptr));
+}
 
 } // namespace std
 } // namespace kernel

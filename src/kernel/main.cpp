@@ -27,14 +27,14 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 using namespace kernel;
 
-void divide_error(int nb)
+void divide_error(UNUSED int nb)
 {
 	using namespace kernel::std;
 	cout << color::red << "divide error" << color::ltgray << endl;
 	kernel::die();
 }
 
-extern "C" void kernel_main(int magic, void* multiboot_addr)
+extern "C" void kernel_main(UNUSED int magic, UNUSED void* multiboot_addr)
 {
 	main_console_init();
 
@@ -70,8 +70,6 @@ extern "C" void kernel_main(int magic, void* multiboot_addr)
 	//int i = 42 / 0;
 
 	using namespace kernel::std;
-
-	cout("coucou %X %", 42, 'a') << endl;
 
 	//cout << "cout is fonctionnal! "
 	//	<< color::blue << "ahah it's work" << color::ltgray << endl;
