@@ -54,6 +54,10 @@ extern "C" void kernel_main(UNUSED int magic, UNUSED void* multiboot_addr)
 
 	cxxruntime::Run running;
 	
+	using namespace kernel::std;
+
+	cout("Kernel running...") << endl;
+	
 	// kernel::Interrupt interrupt;
 	// driver::PIC_i8259 pic;
 	// interrupt.setInterrupt(33, (void*)tt);
@@ -68,20 +72,4 @@ extern "C" void kernel_main(UNUSED int magic, UNUSED void* multiboot_addr)
 
 	//make a "divide by zero exception"
 	//int i = 42 / 0;
-
-	using namespace kernel::std;
-
-	//cout << "cout is fonctionnal! "
-	//	<< color::blue << "ahah it's work" << color::ltgray << endl;
-/*
-	cout << format("hello % % '%'!", "coucou", "tata", 'c') << endl << endl;
-
-	cout("my little printf% % %work!", color::ltcyan, "should", color::ltgray)
-		<< endl	<< "and also can " << format("mix easily % %", "with", 'e')
-		<< "verything!" << format("\n%\n...", "classy right?") << endl;
-
-	Exception exception_manager;
-	exception_manager.setExceptionHandler(EXCEPT_DIVIDE_ERROR, &divide_error);
-	cout << "test division by zero" << endl;
-	int a = 2 / 0;*/
 }

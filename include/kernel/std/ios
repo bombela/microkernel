@@ -35,7 +35,7 @@ enum fmt {
 class ios_flags
 {
 	public:
-		constexpr ios_flags(): _flags(_mkflags(human, charalpha)) {}
+		constexpr ios_flags(): _flags(_mkflags(human, charalpha, boolalpha)) {}
 
 		inline void setbase(numbase nb) {
 			_flags = (uint8_t(_flags) bitand ~numbase_max) bitor uint8_t(nb); }
@@ -54,7 +54,7 @@ class ios_flags
 			inline void set(Args... args) {
 				_flags = _mkflags(args...);
 			}
-		inline void reset() { set(human, charalpha); }
+		inline void reset() { set(human, charalpha, boolalpha); }
 
 		inline constexpr numbase getbase() const {
 			return numbase(uint8_t(_flags) bitand numbase_max);

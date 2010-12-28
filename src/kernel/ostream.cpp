@@ -59,5 +59,23 @@ ostream& ostream::operator<<(const void* ptr) {
 			reinterpret_cast<uintptr_t>(ptr));
 }
 
+namespace {
+
+const char* const boolalpha_lowercase[] = { "false", "true" };
+const char* const boolalpha_uppercase[]  = { "FALSE", "TRUE" };
+
+} // namespace 
+
+ostream& ostream::operator<<(bool b) {
+	if (flags.isboolalpha())
+		if (flags.isuppercase())
+			*this << boolalpha_uppercase[b ? 1 : 0];
+		else
+			*this << boolalpha_lowercase[b ? 1 : 0];
+	else
+			*this << static_cast<int>(b);
+	return *this;
+}
+
 } // namespace std
 } // namespace kernel

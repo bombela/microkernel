@@ -77,6 +77,8 @@ class ostream: public ios
 		ostream& operator<<(long int);
 		ostream& operator<<(unsigned long int);
 		ostream& operator<<(const void*);
+		
+		ostream& operator<<(bool);
 
 		// même chose que précédemment, penser au boolalpha.
 		// inline std::ostream& operator<<(bool);
