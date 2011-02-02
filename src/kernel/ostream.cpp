@@ -4,11 +4,11 @@
  *
 */
 
-#include <kernel/std/ostream.h>
-#include <kernel/std/nbprinter.hpp>
+#include <kernel/std/ostream>
+#include <kernel/std/nbprinter>
 
-namespace kernel {
 namespace std {
+namespace kernel_std {
 	
 namespace {
 
@@ -81,5 +81,5 @@ ostream& ostream::operator<<(bool b) {
 	return *this;
 }
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel

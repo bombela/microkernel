@@ -14,7 +14,7 @@
 #define KERNEL_STD_ARRAY_DEBUG "debug_off.h"
 #undef  KERNEL_STD_ARRAY_CHECK
 #define KERNEL_STD_ARRAY_CHECK "check_off.h"
-#include <kernel/std/array.hpp>
+#include <array>
 
 #include <attributes.h>
 #include <kernel/console.h>
@@ -34,8 +34,8 @@ void panic() {
 	const size_t rows    = 25;
 	const int    red     = 4;
 
-	kernel::std::array<vga_char, columns * rows,
-		kernel::std::buffer::absolute, 0xB8000> video_mem;
+	std::array<vga_char, columns * rows,
+		std::buffer::absolute, 0xB8000> video_mem;
 
 	auto it_vmem = video_mem.begin() + columns - sizeof(panic_msg);
 	for(char c : panic_msg)
@@ -56,8 +56,8 @@ extern "C" void __kernel_print_stop_msg() {
 	const size_t rows    = 25;
 	const int    orange  = 6;
 
-	kernel::std::array<vga_char, columns * rows,
-		kernel::std::buffer::absolute, 0xB8000> video_mem;
+	std::array<vga_char, columns * rows,
+		std::buffer::absolute, 0xB8000> video_mem;
 
 	auto it_vmem = video_mem.begin() + columns - sizeof(stop_msg);
 	for(char c : stop_msg)

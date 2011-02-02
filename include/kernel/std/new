@@ -11,6 +11,8 @@
 #ifndef NEW_H
 #define NEW_H
 
+#include <kernel/std/bits/config.h>
+
 // placement new definition
 inline void* operator new(size_t, void* p) noexcept { return p; }
 inline void* operator new[](size_t, void* p) noexcept { return p; }

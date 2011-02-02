@@ -4,16 +4,18 @@
  *
 */
 
-#include <kernel/std/iostream.h>
-#include <kernel/std/streambuf.h>
+#include <kernel/std/iostream>
+#include <kernel/std/streambuf>
 #include <kernel/console.h>
 #include <attributes.h>
 
 #include KERNEL_STD_IOSTREAM_DEBUG
 #include KERNEL_STD_IOSTREAM_CHECK
 
-namespace kernel {
+using namespace kernel;
+
 namespace std {
+namespace kernel_std {
 
 class streambuf_console_impl: public streambuf
 {
@@ -57,5 +59,5 @@ INIT_PRIORITY(65533) struct ostream_init {
 	ostream_init() { const_cast<bool&>(cout_initialized) = true; }
 } ostream_initialization;
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel

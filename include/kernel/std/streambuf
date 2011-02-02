@@ -11,8 +11,8 @@
 #ifndef STREAMBUF_H
 #define STREAMBUF_H
 
-namespace kernel {
 namespace std {
+namespace kernel_std {
 
 enum class color {
 	black,
@@ -43,7 +43,7 @@ class streambuf
 		virtual void setcolor(color) = 0;
 };
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel
 
 #endif /* STREAMBUF_H */

@@ -9,7 +9,7 @@
 #define DEBUG_H
 
 #include <iostream>
-#include <kernel/std/formatter.hpp>
+#include <kernel/std/formatter>
 
 namespace kernel {
 namespace debug {
@@ -17,10 +17,10 @@ namespace debug {
 template <typename... Args>
 void printf(const char* fmt, const Args&... args)
 {
-	if (kernel::std::cout_initialized)
-		kernel::std::formatter::print<kernel::std::ostream,
-			kernel::std::formatter::arg_printer::nofail, Args...>(
-					kernel::std::cout, fmt, args...);
+	if (::std::cout_initialized)
+		::std::formatter::print< ::std::ostream,
+			::std::formatter::arg_printer::nofail, Args...>(
+					::std::cout, fmt, args...);
 }
 
 } // namespace debug

@@ -11,11 +11,12 @@
 #ifndef IOMANIP_H
 #define IOMANIP_H
 
-#include <kernel/std/ostream.h>
-#include <kernel/std/formatter.hpp>
+#include <kernel/std/bits/config.h>
+#include <kernel/std/ostream>
+#include <kernel/std/formatter>
 
-namespace kernel {
 namespace std {
+namespace kernel_std {
 
 inline std::ostream& operator<<(std::ostream& os, std::numbase nb) {
 	os.flags.setbase(nb);
@@ -35,7 +36,7 @@ formatter::arg_printer::simple, Args...> format(
 	   formatter::arg_printer::simple>(fmt, args...);
 }
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel
 
 #endif /* IOMANIP_H */

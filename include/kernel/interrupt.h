@@ -44,7 +44,7 @@ namespace kernel {
 		int		setInterruptHandler(uint16_t, void*);
 		void*	getInterruptHandler(uint16_t);
 
-		std::array<IDT_Item, IDT_SIZE> Idt;
+		::std::array<IDT_Item, IDT_SIZE> Idt;
 	};
 } /* namespace kernel */
 

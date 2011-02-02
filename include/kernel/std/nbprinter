@@ -1,4 +1,4 @@
-/*
+/* vim: ft=cpp
  * nbprinter.hpp
  * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *
@@ -8,10 +8,11 @@
 #ifndef NBPRINTER_H
 #define NBPRINTER_H
 
+#include <kernel/std/bits/config.h>
 #include <enable_if.hpp>
 
-namespace kernel {
 namespace std {
+namespace kernel_std {
 
 template <typename T>
 struct is_unsigned {
@@ -108,7 +109,7 @@ constexpr printer<T, static_strlen<A>::value> mkprinter(const A& base)
 
 } // namespace nbprinter
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel
 
 #endif /* NBPRINTER_H */

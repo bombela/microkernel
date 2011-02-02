@@ -1,4 +1,4 @@
-/*
+/* vim: ft=cpp
  * algo.hpp
  * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *
@@ -8,10 +8,11 @@
 #ifndef ALGO_H
 #define ALGO_H
 
-#include <kernel/std/range.hpp>
+#include <kernel/std/bits/config.h>
+#include <kernel/std/range>
 
-namespace kernel {
 namespace std {
+namespace kernel_std {
 
 template <typename IT, typename T>
 	void fill(IT first, IT last, const T& value)
@@ -39,7 +40,7 @@ template <typename C1, typename C2>
 		copy(begin(src), end(src), begin(out));
 	}
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel
 
 #endif /* ALGO_H */

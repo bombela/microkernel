@@ -1,4 +1,4 @@
-/*
+/* vim: ft=cpp
  * formatter.hpp
  * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *
@@ -8,14 +8,15 @@
 #ifndef FORMATTER_H
 #define FORMATTER_H
 
+#include <kernel/std/bits/config.h>
+#include <kernel/std/ios>
 #include <is_printable.hpp>
 #include <enable_if.hpp>
-#include <kernel/std/ios.h>
 
-namespace kernel {
 namespace std {
-namespace formatter {
+namespace kernel_std {
 
+namespace formatter {
 namespace arg_printer {
 
 	template<typename S, typename T>
@@ -160,6 +161,6 @@ inline constexpr S& print(S& os, const char* fmt, const Args&... args) {
 
 } // namespace formatter
 } // namespace std
-} // namespace kernel
+} // namespace kernel_std
 
 #endif /* FORMATTER_H */

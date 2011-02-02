@@ -1,4 +1,4 @@
-/*
+/* vim: ft=cpp
  * range.hpp
  * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *
@@ -8,8 +8,10 @@
 #ifndef RANGE_H
 #define RANGE_H
 
-namespace kernel {
+#include <kernel/std/bits/config.h>
+
 namespace std {
+namespace kernel_std {
 
 template <typename C>
 auto begin(C&& container) -> decltype(container.begin())
@@ -23,7 +25,7 @@ auto end(C&& container) -> decltype(container.end())
 	return container.end();
 }
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel
 
 #endif /* RANGE_H */

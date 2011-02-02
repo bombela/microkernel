@@ -24,38 +24,38 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 } // namespace kernel
 
-using namespace kernel;
-
 void divide_error(UNUSED int nb)
 {
-	using namespace kernel::std;
+	using namespace ::std;
 	cout << color::red << "divide error" << color::ltgray << endl;
-	kernel::die();
+	::kernel::die();
 }
 
 extern "C" void kernel_main(UNUSED int magic, UNUSED void* multiboot_addr)
 {
-	main_console_init();
+	{
+		using namespace kernel;
 
-	main_console->write("Hi everybody, welcome to the kernel wrote in ");
-	main_console->setAttr({
-			Console::Color::ltgray,
-			Console::Color::blue
-			});
-	main_console->write("C++0x");
-	main_console->setAttr({
-			Console::Color::ltmagenta,
-			Console::Color::black
-			});
-	main_console->write(" :)");
-	main_console->resetAttr();
-	main_console->write("\n");
+		main_console_init();
+
+		main_console->write("Hi everybody, welcome to the kernel wrote in ");
+		main_console->setAttr({
+				Console::Color::ltgray,
+				Console::Color::blue
+				});
+		main_console->write("C++0x");
+		main_console->setAttr({
+				Console::Color::ltmagenta,
+				Console::Color::black
+				});
+		main_console->write(" :)");
+		main_console->resetAttr();
+		main_console->write("\n");
+	}
 
 	cxxruntime::Run running;
 	
-	using namespace kernel::std;
-
-	cout("Kernel running...") << endl;
+	std::cout << "Kernel running..." << std::endl;
 
 	// kernel::Interrupt interrupt;
 	// driver::PIC_i8259 pic;

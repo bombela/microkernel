@@ -1,4 +1,4 @@
-/*
+/* vim: ft=cpp
  * array.hpp
  * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *
@@ -8,17 +8,19 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
+#include <kernel/std/bits/config.h>
+#include <kernel/std/algorithm>
 #include <kernel/types.h>
-#include <kernel/std/algorithm.hpp>
+#include <kernel/std/range>
 #include <initializer_list>
 
 #include KERNEL_STD_ARRAY_DEBUG
 #include KERNEL_STD_ARRAY_CHECK
 
-namespace kernel {
 namespace std {
-namespace buffer {
+namespace kernel_std {
 
+namespace buffer {
 template <typename T, size_t SIZE, uintptr_t ADDR>
 struct inplace {
 	static_assert(ADDR == 0, "ADDR shouldn't be used!");
@@ -270,7 +272,7 @@ class array
 };
 
 } // namespace std
-} // namespace kernel
+} // namespace kernel_std
 
 #include <check_off.h>
 #include <debug_off.h>

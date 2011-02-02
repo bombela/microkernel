@@ -13,10 +13,6 @@
 #include KERNEL_CXXRUNTIME_DEBUG
 #include KERNEL_CXXRUNTIME_CHECK
 
-namespace std {
-	using namespace kernel::std;
-} // namespace std
-
 // --- delete operator (used by virtual destructor for example)
 
 void operator delete(UNUSED void* ptr) noexcept

@@ -1,4 +1,3 @@
-
 /* vim: ft=cpp
  * Local Variables:
  * mode:c++
@@ -12,17 +11,18 @@
 #ifndef OSTREAM_H
 #define OSTREAM_H
 
-#include <kernel/std/ios.h>
-#include <kernel/std/streambuf.h>
+#include <kernel/std/bits/config.h>
+#include <kernel/std/ios>
+#include <kernel/std/streambuf>
+#include <kernel/std/formatter>
 #include <kernel/console.h>
-#include <kernel/std/formatter.hpp>
 #include <attributes.h>
 
 #define DEBUG_REENTRANT
 #include KERNEL_STD_OSTREAM_CHECK
 
-namespace kernel {
 namespace std {
+namespace kernel_std {
 
 UNUSED static struct ostream_endl { } endl;
 
@@ -89,8 +89,8 @@ class ostream: public ios
 		// inline std::ostream& operator<<(double);
 };
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel
 
 #include <check_off.h>
 #undef DEBUG_REENTRANT

@@ -6,11 +6,9 @@
 
 #include <test.h>
 
-#include <kernel/std/stack.hpp>
+#include <kernel/std/stack>
 
-#include <kernel/ioports.h>
-
-using namespace kernel::std;
+using namespace ::std::kernel_std;
 
 BOOST_AUTO_TEST_CASE(construction)
 {

@@ -278,9 +278,9 @@ void VGAConsole::putChar(const char c)
 	
 	if (_idx == _video_mem.size())
 	{
-		kernel::std::copy(_video_mem.begin() + line_len, _video_mem.end(),
+		std::copy(_video_mem.begin() + line_len, _video_mem.end(),
 				_video_mem.begin());
-		kernel::std::fill(_video_mem.end() - line_len, _video_mem.end(),
+		std::fill(_video_mem.end() - line_len, _video_mem.end(),
 				vga_char{ 0, fgcolor::ltgray bitor bgcolor::black });
 		_idx -= line_len;
 	}
@@ -289,13 +289,13 @@ void VGAConsole::putChar(const char c)
 
 void VGAConsole::updateVGACursor()
 {
-	// kernel::io::out::byte(VGA_SET_CURSOR_HIGH, VGA_CMD_PORT);
-	// kernel::io::out::byte((_idx >> 8), VGA_DTA_PORT);
-	// kernel::io::out::byte(VGA_SET_CURSOR_LOW, VGA_CMD_PORT);
-	// kernel::io::out::byte((_idx bitand 0xFF), VGA_DTA_PORT);
+	// kernel_std::io::out::byte(VGA_SET_CURSOR_HIGH, VGA_CMD_PORT);
+	// kernel_std::io::out::byte((_idx >> 8), VGA_DTA_PORT);
+	// kernel_std::io::out::byte(VGA_SET_CURSOR_LOW, VGA_CMD_PORT);
+	// kernel_std::io::out::byte((_idx bitand 0xFF), VGA_DTA_PORT);
 
-	kernel::io::out::word((_idx bitand 0xFF00) bitor VGA_SET_CURSOR_HIGH, VGA_CMD_PORT);
-	kernel::io::out::word((_idx << 8) bitor VGA_SET_CURSOR_LOW, VGA_CMD_PORT);
+	io::out::word((_idx bitand 0xFF00) bitor VGA_SET_CURSOR_HIGH, VGA_CMD_PORT);
+	io::out::word((_idx << 8) bitor VGA_SET_CURSOR_LOW, VGA_CMD_PORT);
 }
 
 } // namespace kernel

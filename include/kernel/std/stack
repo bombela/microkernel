@@ -1,4 +1,4 @@
-/*
+/* vim: ft=cpp
  * stack.hpp
  * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *
@@ -8,13 +8,13 @@
 #ifndef STACK_H
 #define STACK_H
 
-#include <kernel/std/array.hpp>
+#include <kernel/std/array>
 
 #include KERNEL_STD_STACK_DEBUG
 #include KERNEL_STD_STACK_CHECK
 
-namespace kernel {
 namespace std {
+namespace kernel_std {
 
 template <typename T, size_t SIZE = 8>
 class stack
@@ -62,8 +62,8 @@ class stack
 		size_t                          _size;
 };
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel
 
 #include <check_off.h>
 #include <debug_off.h>

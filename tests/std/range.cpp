@@ -6,10 +6,10 @@
 
 #include <test.h>
 
-#include <kernel/std/range.hpp>
-#include <kernel/std/array.hpp>
+#include <kernel/std/range>
+#include <kernel/std/array>
 
-using namespace kernel::std;
+using namespace ::std::kernel_std;
 
 BOOST_AUTO_TEST_CASE(basic)
 {

@@ -11,15 +11,16 @@
 #ifndef IOSTREAM_H
 #define IOSTREAM_H
 
-#include <kernel/std/ostream.h>
+#include <kernel/std/bits/config.h>
+#include <kernel/std/ostream>
 
-namespace kernel {
 namespace std {
+namespace kernel_std {
 
 extern std::ostream cout;
 extern const bool cout_initialized;
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel
 
 #endif /* IOSTREAM_H */

@@ -12,10 +12,11 @@
 #define IOS_H
 
 #include <kernel/types.h>
-#include <kernel/std/streambuf.h>
+#include <kernel/std/bits/config.h>
+#include <kernel/std/streambuf>
 
-namespace kernel {
 namespace std {
+namespace kernel_std {
 
 enum numbase {
 	human     = 0U,
@@ -125,7 +126,7 @@ class ios
 		streambuf* _streambuf;
 };
 
+} // namespace kernel_std
 } // namespace std
-} // namespace kernel
 
 #endif /* IOS_H */
