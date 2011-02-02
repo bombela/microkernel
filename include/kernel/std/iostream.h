@@ -11,7 +11,7 @@
 #ifndef IOSTREAM_H
 #define IOSTREAM_H
 
-#include <kernel/std/ostream>
+#include <kernel/std/ostream.h>
 
 namespace kernel {
 namespace std {

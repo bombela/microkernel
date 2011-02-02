@@ -9,8 +9,8 @@
 */
 
 #pragma once
-#ifndef INITIALIZER_LIST_H
-#define INITIALIZER_LIST_H
+#ifndef INITIALIZER_LIST_H_STD
+#define INITIALIZER_LIST_H_STD
 
 namespace std
 {
@@ -50,4 +50,4 @@ constexpr const T* end(initializer_list<T> il) { return il.end(); }
 
 }
 
-#endif /* INITIALIZER_LIST_H */
+#endif /* INITIALIZER_LIST_H_STD */

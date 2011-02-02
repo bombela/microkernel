@@ -44,7 +44,7 @@ if (Boost_FOUND)
 		set(name "test_${name}")
 
 		set_property(SOURCE ${src} APPEND
-			PROPERTY COMPILE_DEFINITIONS ${KERNEL_DEFINES} "USE_EXTERNAL_STL=1"
+			PROPERTY COMPILE_DEFINITIONS ${KERNEL_DEFINES}
 			)
 
 		add_executable(${name} ${src} ${UTILITIES_SRCS})

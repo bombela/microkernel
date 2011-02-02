@@ -10,7 +10,7 @@
 
 #include <is_printable.hpp>
 #include <enable_if.hpp>
-#include <kernel/std/ios>
+#include <kernel/std/ios.h>
 
 namespace kernel {
 namespace std {

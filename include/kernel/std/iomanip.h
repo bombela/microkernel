@@ -11,7 +11,7 @@
 #ifndef IOMANIP_H
 #define IOMANIP_H
 
-#include <kernel/std/ostream>
+#include <kernel/std/ostream.h>
 #include <kernel/std/formatter.hpp>
 
 namespace kernel {

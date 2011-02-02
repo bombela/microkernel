@@ -9,7 +9,7 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 
-#include <array.hpp>
+#include <array>
 
 #define EXCEPT_DIVIDE_ERROR                  0         // No error code
 #define EXCEPT_DEBUG                         1         // No error code

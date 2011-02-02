@@ -4,8 +4,8 @@
  *
 */
 
-#include <kernel/std/iostream>
-#include <kernel/std/streambuf>
+#include <kernel/std/iostream.h>
+#include <kernel/std/streambuf.h>
 #include <kernel/console.h>
 #include <attributes.h>
 

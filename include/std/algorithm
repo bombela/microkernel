@@ -1,0 +1,19 @@
+/* vim: ft=cpp
+ * Local Variables:
+ * mode:c++
+ * End:
+ * algorithm
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+*/
+
+#pragma once
+#ifndef ALGORITHM_H_STD
+#define ALGORITHM_H_STD
+
+#include <kernel/std/algorithm.hpp>
+
+namespace std {
+using namespace kernel::std;
+} // namespace std
+
+#endif /* ALGORITHM_H_STD */

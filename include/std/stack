@@ -1,0 +1,19 @@
+/* vim: ft=cpp
+ * Local Variables:
+ * mode:c++
+ * End:
+ * stack
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+*/
+
+#pragma once
+#ifndef STACK_H_STD
+#define STACK_H_STD
+
+#include <kernel/std/stack.hpp>
+
+namespace std {
+using namespace kernel::std;
+} // namespace std
+
+#endif /* STACK_H_STD */

@@ -10,7 +10,7 @@
 #include <test.h>
 
 #include <kernel/std/array.hpp>
-#include <kernel/std/algo.hpp>
+#include <kernel/std/algorithm.hpp>
 
 using namespace kernel::std;
 

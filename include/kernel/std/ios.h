@@ -12,7 +12,7 @@
 #define IOS_H
 
 #include <kernel/types.h>
-#include <kernel/std/streambuf>
+#include <kernel/std/streambuf.h>
 
 namespace kernel {
 namespace std {

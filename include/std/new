@@ -1,0 +1,19 @@
+/* vim: ft=cpp
+ * Local Variables:
+ * mode:c++
+ * End:
+ * new
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+*/
+
+#pragma once
+#ifndef NEW_H_STD
+#define NEW_H_STD
+
+#include <kernel/std/new.h>
+
+namespace std {
+using namespace kernel::std;
+} // namespace std
+
+#endif /* NEW_H_STD */

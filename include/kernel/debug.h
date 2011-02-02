@@ -8,7 +8,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include <kernel/std/iostream>
+#include <iostream>
 #include <kernel/std/formatter.hpp>
 
 namespace kernel {

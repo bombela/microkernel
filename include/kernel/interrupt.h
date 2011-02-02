@@ -9,7 +9,7 @@
 #define __H_INTERRUPT__
 
 #include <kernel/types.h>
-#include <kernel/std/array.hpp>
+#include <array>
 
 #define IDT_SIZE 47
 

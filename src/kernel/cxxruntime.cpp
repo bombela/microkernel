@@ -4,7 +4,7 @@
  *
 */
 
-#include <stack.hpp>
+#include <stack>
 #include <new>
 #include <kernel/die.h>
 #include <ostream>

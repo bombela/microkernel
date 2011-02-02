@@ -8,7 +8,7 @@
 #ifndef VGA_CONSOLE_H
 #define VGA_CONSOLE_H
 
-#include <array.hpp>
+#include <array>
 #include <kernel/console.h>
 
 /*

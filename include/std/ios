@@ -1,0 +1,19 @@
+/* vim: ft=cpp
+ * Local Variables:
+ * mode:c++
+ * End:
+ * ios
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+*/
+
+#pragma once
+#ifndef IOS_H_STD
+#define IOS_H_STD
+
+#include <kernel/std/ios.h>
+
+namespace std {
+using namespace kernel::std;
+} // namespace std
+
+#endif /* IOS_H_STD */

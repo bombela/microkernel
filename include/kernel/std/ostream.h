@@ -12,8 +12,8 @@
 #ifndef OSTREAM_H
 #define OSTREAM_H
 
-#include <kernel/std/ios>
-#include <kernel/std/streambuf>
+#include <kernel/std/ios.h>
+#include <kernel/std/streambuf.h>
 #include <kernel/console.h>
 #include <kernel/std/formatter.hpp>
 #include <attributes.h>

@@ -1,0 +1,19 @@
+/* vim: ft=cpp
+ * Local Variables:
+ * mode:c++
+ * End:
+ * iostream
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+*/
+
+#pragma once
+#ifndef IOSTREAM_H_STD
+#define IOSTREAM_H_STD
+
+#include <kernel/std/iostream.h>
+
+namespace std {
+using namespace kernel::std;
+} // namespace std
+
+#endif /* IOSTREAM_H_STD */

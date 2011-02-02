@@ -7,7 +7,7 @@
 
 #include <kernel/vga_console.h>
 #include <kernel/ioports.h>
-#include <kernel/std/algo.hpp>
+#include <algorithm>
 #include <new>
 
 // Enable REENTRENT check if array compiling with debug/check on.

@@ -9,11 +9,8 @@
 #define ARRAY_H
 
 #include <kernel/types.h>
-#include <kernel/std/algo.hpp>
-
-#ifndef USE_EXTERNAL_STL
-#	include <initializer_list>
-#endif
+#include <kernel/std/algorithm.hpp>
+#include <initializer_list>
 
 #include KERNEL_STD_ARRAY_DEBUG
 #include KERNEL_STD_ARRAY_CHECK

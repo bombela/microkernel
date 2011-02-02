@@ -1,4 +1,10 @@
-#include <kernel/std/ostream>
+/*
+ * ostream.cpp
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#include <kernel/std/ostream.h>
 #include <kernel/std/nbprinter.hpp>
 
 namespace kernel {
