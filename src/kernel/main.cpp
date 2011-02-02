@@ -8,7 +8,6 @@
 
 #include <kernel/multiboot.h>
 #include <kernel/console.h>
-#include <kernel/std/array.hpp>
 #include <kernel/die.h>
 #include <cxxruntime.h>
 #include <kernel/interrupt.h>
@@ -57,7 +56,7 @@ extern "C" void kernel_main(UNUSED int magic, UNUSED void* multiboot_addr)
 	using namespace kernel::std;
 
 	cout("Kernel running...") << endl;
-	
+
 	// kernel::Interrupt interrupt;
 	// driver::PIC_i8259 pic;
 	// interrupt.setInterrupt(33, (void*)tt);

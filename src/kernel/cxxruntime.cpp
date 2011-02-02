@@ -7,13 +7,19 @@
 #include <stack.hpp>
 #include <new>
 #include <kernel/die.h>
+#include <ostream>
+#include <attributes.h>
 
 #include KERNEL_CXXRUNTIME_DEBUG
 #include KERNEL_CXXRUNTIME_CHECK
 
+namespace std {
+	using namespace kernel::std;
+} // namespace std
+
 // --- delete operator (used by virtual destructor for example)
 
-void operator delete(void* ptr) noexcept
+void operator delete(UNUSED void* ptr) noexcept
 {
 	dbg("%", ptr);
 }
@@ -54,11 +60,18 @@ struct Destructor
 	void (*dtor)(void*);
 	void* obj;
 	void destroy() { dtor(obj); }
+
+	friend std::ostream& operator<<(std::ostream& os, const Destructor& d)
+	{
+		os << "Destructor/dtor_func=" << reinterpret_cast<void*>(d.dtor)
+			<< ", obj=" << d.obj << "/";
+		return os;
+	}
 };
 
 namespace {
 
-typedef kernel::std::stack<Destructor, 16> CleanupStack;
+typedef std::stack<Destructor, 16> CleanupStack;
 static char cleanupStack [sizeof (CleanupStack)];
 
 } // namespace 
