@@ -45,8 +45,22 @@ struct bind_impl<F, R (Args...)>
 	F f;
 	bind_impl(F f): f(f) {}
 
-	R operator()(Args&&...) { return f(forward(Args)...); }
+	R operator()(Args&&... args) { return f(forward(args)...); }
 };
+
+template <typename T>
+struct ref_impl
+{
+	T& ref;
+	ref_impl(T& ref): ref(ref) {}
+	// check boost::ref
+};
+
+template <typename T>
+AUTO_FUN( ref(T& obj) )
+(
+	ref_impl<T>(obj)
+)
 
 } // namespace kernel_std
 } // namespace std
