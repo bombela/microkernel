@@ -1,0 +1,14 @@
+/* vim: ft=cpp
+ * autofunc
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef AUTOFUN_H
+#define AUTOFUN_H
+
+#define AUTO_FUN_IMPL(...) decltype(__VA_ARGS__) { return __VA_ARGS__; }
+#define AUTO_FUN(name_and_param_list) auto name_and_param_list -> AUTO_FUN_IMPL
+
+#endif /* AUTOFUN_H */

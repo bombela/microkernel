@@ -76,6 +76,8 @@ foreach(src
 		stack.cpp
 		range.cpp
 		algo.cpp
+		memfn.cpp
+		bind.cpp
 		)
 	kern0x_add_test(${src})
 endforeach()

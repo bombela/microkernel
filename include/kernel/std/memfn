@@ -1,0 +1,60 @@
+/* vim: ft=cpp
+ * memfn
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef MEMFN_H
+#define MEMFN_H
+
+#include <kernel/std/bits/config.h>
+#include <kernel/std/autofun>
+#include <kernel/std/forward>
+
+namespace std {
+namespace kernel_std {
+
+template <typename F> struct mem_fn_impl_m;
+template <typename F> struct mem_fn_impl_c;
+
+template <typename R, typename T, typename... Args>
+struct mem_fn_impl_m<R (T::*)(Args...)>
+{
+	typedef R (T::*mpf_t)(Args...);
+
+	mpf_t mpf;
+	constexpr mem_fn_impl_m(mpf_t mpf): mpf(mpf) {}
+
+	R operator()(T& obj, Args&&... args) const { return (obj.*mpf)(forward(args)...); }
+	R operator()(T* obj, Args&&... args) const { return (obj->*mpf)(forward(args)...); }
+};
+
+template <typename R, typename T, typename... Args>
+struct mem_fn_impl_c<R (T::*)(Args...) const>
+{
+	typedef R (T::*mpf_t)(Args...) const;
+
+	mpf_t mpf;
+	constexpr mem_fn_impl_c(mpf_t mpf): mpf(mpf) {}
+
+	R operator()(const T& obj, Args&&... args) const { return (obj.*mpf)(forward(args)...); }
+	R operator()(const T* obj, Args&&... args) const { return (obj->*mpf)(forward(args)...); }
+};
+
+template <typename R, typename T, typename... Args>
+AUTO_FUN( mem_fn (R (T::*mpf)(Args...)) )
+(
+	mem_fn_impl_m<R (T::*)(Args...)>(mpf)
+)
+
+template <typename R, typename T, typename... Args>
+AUTO_FUN( mem_fn (R (T::*mpf)(Args...) const) )
+(
+	mem_fn_impl_c<R (T::*)(Args...) const>(mpf)
+)
+
+} // namespace kernel_std
+} // namespace std
+
+#endif /* MEMFN_H */

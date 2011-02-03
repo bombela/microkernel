@@ -1,0 +1,56 @@
+/* vim: ft=cpp
+ * bind
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef BIND_H
+#define BIND_H
+
+#include <kernel/std/bits/config.h>
+#include <kernel/std/autofun>
+#include <kernel/std/forward>
+#include <kernel/std/memfn>
+
+namespace std {
+namespace kernel_std {
+
+namespace placeholder {
+
+template <size_t IDX>
+struct arg { static const size_t value = IDX; };
+
+} // namespace placeholder
+
+namespace placeholder_defs {
+	
+placeholder::arg<1> _1;
+placeholder::arg<2> _2;
+placeholder::arg<3> _3;
+placeholder::arg<4> _4;
+placeholder::arg<5> _5;
+placeholder::arg<6> _6;
+placeholder::arg<7> _7;
+placeholder::arg<8> _8;
+placeholder::arg<9> _9;
+
+} // namespace placeholder_defs
+
+template <typename F, typename S> struct bind_impl;
+
+template <typename R, typename F, typename... Args>
+struct bind_impl<F, R (Args...)>
+{
+	F f;
+	bind_impl(F f): f(f) {}
+
+	R operator()(Args&&...) { return f(forward(Args)...); }
+};
+
+} // namespace kernel_std
+} // namespace std
+
+using namespace std::kernel_std::placeholder_defs;
+
+#endif /* BIND_H */
