@@ -68,31 +68,35 @@ template <typename F>
 template <typename... Args>
 	struct storage;
 
-template <int I, typename T>
+template <int I, typename T, typename... Args2>
 	struct storage_getter;
 
-template <typename T, typename... Args>
-	struct storage_getter<0, storage<T, Args...>>
+template <typename T, typename... Args, typename... Args2>
+	struct storage_getter<0, storage<T, Args...>, Args2...>
 	{
 		static AUTO_FUN( get(const storage<T, Args...>& s) ) ( s.arg )
 	};
 
-template <int I, typename T, typename... Args>
-	struct storage_getter<I, storage<T, Args...>>:
-	storage_getter<I - 1, storage<Args...>> {};
+template <int I, typename T, typename... Args, typename... Args2>
+	struct storage_getter<I, storage<T, Args...>, Args2...>:
+	storage_getter<I - 1, storage<Args...>, Args2...> {};
 
 template<unsigned... Indices>
 	struct invoke_helper
 	{
-		template <typename F, typename... Args>
-			static auto invoke(F& f, UNUSED const storage<Args...>& s)
+		template <typename F, typename... Args, typename... Args2>
+			static auto invoke(F& f,
+					UNUSED const storage<Args...>& s,
+					Args2&&... args2)
 			-> decltype(
 				unwrapper<F>::unwrap(f)
-					(storage_getter<Indices, storage<Args...>>::get(s)...)
+					(storage_getter<Indices,
+					 storage<Args...>, Args2...>::get(s)...)
 					)
 			{
 				return unwrapper<F>::unwrap(f)
-					(storage_getter<Indices, storage<Args...>>::get(s)...);
+					(storage_getter<Indices,
+					 storage<Args...>, Args2...>::get(s)...);
 			}
 	}; 
 
@@ -136,7 +140,7 @@ template <typename T, typename... Args>
 } // namespace details
 
 template <typename F, typename... Args>
-struct bind_impl: details::storage<Args...>
+struct bind_impl: private details::storage<Args...>
 {
 	typedef typename
 		details::invoke_helper_generator<sizeof...(Args)>::type invoker;

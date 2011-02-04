@@ -93,6 +93,10 @@ BOOST_AUTO_TEST_CASE(impl_simple_fun_ref)
 	int v = 4;
 	(kstd::bind_impl<void (*)(int&), int&>(&kiki, v))();
 	BOOST_CHECK(v == 7);
+	v = 2;
+	(kstd::bind_impl<void (*)(int&),
+	 kstd::ref_wrapper<int>>(&kiki, kstd::ref(v)))();
+	BOOST_CHECK(v == 5);
 }
 
 BOOST_AUTO_TEST_CASE(impl_functor)
