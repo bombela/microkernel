@@ -26,14 +26,41 @@ struct Toto {
 	void operator()(float) { _v = 55; a__ = 133; }
 };
 
-BOOST_AUTO_TEST_CASE(impl_simple_fun)
+/*BOOST_AUTO_TEST_CASE(impl_simple_fun)
 {
 	a__ = 4;
 	kstd::bind_impl<void (*)(), void ()> f(&lolita);
 	f();
 	BOOST_CHECK(a__ == 2);
+}*/
+
+void match(int a, float b, int c)
+{
+	std::cout << a << ", " << b << ", " << c << std::endl;
 }
 
+template <typename F>
+void const_call(const F& f) {
+	const_cast<const F&>(f)();
+}
+
+BOOST_AUTO_TEST_CASE(impl_simple_fun_bind1)
+{
+	//kstd::details::storage<kstd::placeholder::arg<1>, kstd::placeholder::arg<2>> b(_1, _2);
+	//std::cout << sizeof b << std::endl;
+
+	kstd::bind_impl<void (*)(int, float, int), int, float, int> s(&match, 2, 22.f, 3);
+	s();
+	const_call(s);
+	//std::cout << s.expand<int>() << std::endl;
+
+	//a__ = 4;
+	//kstd::bind_impl<void (*)(), void ()> f(&pouet, 42);
+	//f();
+	//BOOST_CHECK(a__ == 3);
+}
+
+/*
 BOOST_AUTO_TEST_CASE(impl_simple_fun_const)
 {
 	a__ = 4;
@@ -73,3 +100,4 @@ BOOST_AUTO_TEST_CASE(impl_functor_by_ref)
 	BOOST_CHECK(t._v == 55);
 	BOOST_CHECK(a__ == 133);
 }
+*/

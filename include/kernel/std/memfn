@@ -26,8 +26,12 @@ struct mem_fn_impl_m<R (T::*)(Args...)>
 	mpf_t mpf;
 	constexpr mem_fn_impl_m(mpf_t mpf): mpf(mpf) {}
 
-	R operator()(T& obj, Args&&... args) const { return (obj.*mpf)(forward(args)...); }
-	R operator()(T* obj, Args&&... args) const { return (obj->*mpf)(forward(args)...); }
+	R operator()(T& obj, Args&&... args) const {
+		return (obj.*mpf)(forward<Args>(args)...);
+	}
+	R operator()(T* obj, Args&&... args) const {
+		return (obj->*mpf)(forward<Args>(args)...);
+	}
 };
 
 template <typename R, typename T, typename... Args>
@@ -38,8 +42,12 @@ struct mem_fn_impl_c<R (T::*)(Args...) const>
 	mpf_t mpf;
 	constexpr mem_fn_impl_c(mpf_t mpf): mpf(mpf) {}
 
-	R operator()(const T& obj, Args&&... args) const { return (obj.*mpf)(forward(args)...); }
-	R operator()(const T* obj, Args&&... args) const { return (obj->*mpf)(forward(args)...); }
+	R operator()(const T& obj, Args&&... args) const {
+		return (obj.*mpf)(forward<Args>(args)...);
+	}
+	R operator()(const T* obj, Args&&... args) const {
+		return (obj->*mpf)(forward<Args>(args)...);
+	}
 };
 
 template <typename R, typename T, typename... Args>

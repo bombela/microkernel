@@ -65,17 +65,87 @@ template <typename F>
 		static F& unwrap(ref_wrapper<F> w) { return static_cast<F&>(w); }
 	};
 
+template <typename... Args>
+	struct storage;
+
+template <int I, typename T>
+	struct storage_getter;
+
+template <typename T, typename... Args>
+	struct storage_getter<0, storage<T, Args...>>
+	{
+		static AUTO_FUN( get(const storage<T, Args...>& s) ) ( s.arg )
+	};
+
+template <int I, typename T, typename... Args>
+	struct storage_getter<I, storage<T, Args...>>:
+	storage_getter<I - 1, storage<Args...>> {};
+
+template<unsigned... Indices>
+	struct invoke_helper 
+	{
+		template <typename F, typename... Args>
+			static void invoke(F& f, const storage<Args...>& s)
+			{
+				unwrapper<F>::unwrap(f)
+					(storage_getter<Indices, storage<Args...>>::get(s)...);
+			}
+	}; 
+
+template<int N, int... A> 
+	struct invoke_helper_generator:
+		invoke_helper_generator<N - 1, A..., sizeof...(A)> { };
+
+template<int... A> 
+	struct invoke_helper_generator<0, A...> {
+		typedef invoke_helper<A...> type;
+	};
+
+template <>
+	struct storage<> {};
+
+template <typename T, typename... Args>
+	struct storage<T, Args...>: storage<Args...>
+	{
+		T arg;
+		storage(T&& arg, Args&&... args):
+			storage<Args...>(forward<Args>(args)...),
+			arg(forward<T>(arg)) {}
+
+	};
+
+/*template <int I, typename... Args>
+	struct storage<placeholder::arg<I>, Args...>: storage<Args...>
+	{
+		typedef placeholder::arg<I> A1;
+
+		storage(A1, const Args&... args):
+			storage<Args...>(args...) {}
+
+		template <typename F, typename... Args2>
+			AUTO_FUN( operator() (F f) )
+			(
+			 details::unwrapper<F>::unwrap(f)()
+			)
+	};*/
+
 } // namespace details
 
-template <typename F, typename S> struct bind_impl;
-
-template <typename R, typename F, typename... Args>
-struct bind_impl<F, R (Args...)>
+template <typename F, typename... Args>
+struct bind_impl: details::storage<Args...>
 {
-	bind_impl(F f): f(f) {}
+	typedef typename
+		details::invoke_helper_generator<sizeof...(Args)>::type invoker;
 
-	R operator()(Args&&... args) {
-		return details::unwrapper<F>::unwrap(f) (forward(args)...);
+	bind_impl(F f, Args&&... args):
+		details::storage<Args...>(forward<Args>(args)...),
+		f(f) {}
+
+	void operator()() const
+	{
+		invoker::invoke(f,
+				static_cast<const details::storage<Args...>&>(*this)
+				);
 	}
 
 private:
