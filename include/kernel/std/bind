@@ -10,6 +10,7 @@
 
 #include <kernel/std/bits/config.h>
 #include <kernel/std/autofun>
+#include <kernel/std/ref>
 #include <kernel/std/forward>
 #include <kernel/std/memfn>
 
@@ -18,49 +19,68 @@ namespace kernel_std {
 
 namespace placeholder {
 
-template <size_t IDX>
-struct arg { static const size_t value = IDX; };
+template <int I>
+struct arg {
+	static const int value = I;
+	arg() {}
+};
+
+template <typename T>
+struct is_placeholder {
+	static const int value = 0;
+};
+
+template <int I>
+struct is_placeholder<arg<I>> {
+	static const int value = I;
+};
 
 } // namespace placeholder
 
 namespace placeholder_defs {
 	
-placeholder::arg<1> _1;
-placeholder::arg<2> _2;
-placeholder::arg<3> _3;
-placeholder::arg<4> _4;
-placeholder::arg<5> _5;
-placeholder::arg<6> _6;
-placeholder::arg<7> _7;
-placeholder::arg<8> _8;
-placeholder::arg<9> _9;
+static const placeholder::arg<1> _1;
+static const placeholder::arg<2> _2;
+static const placeholder::arg<3> _3;
+static const placeholder::arg<4> _4;
+static const placeholder::arg<5> _5;
+static const placeholder::arg<6> _6;
+static const placeholder::arg<7> _7;
+static const placeholder::arg<8> _8;
+static const placeholder::arg<9> _9;
 
 } // namespace placeholder_defs
+
+namespace details {
+	
+template <typename F>
+	struct unwrapper
+	{
+		static F& unwrap(F& f) { return f; }
+	};
+
+template <typename F>
+	struct unwrapper<ref_wrapper<F>>
+	{
+		static F& unwrap(ref_wrapper<F> w) { return static_cast<F&>(w); }
+	};
+
+} // namespace details
 
 template <typename F, typename S> struct bind_impl;
 
 template <typename R, typename F, typename... Args>
 struct bind_impl<F, R (Args...)>
 {
-	F f;
 	bind_impl(F f): f(f) {}
 
-	R operator()(Args&&... args) { return f(forward(args)...); }
-};
+	R operator()(Args&&... args) {
+		return details::unwrapper<F>::unwrap(f) (forward(args)...);
+	}
 
-template <typename T>
-struct ref_impl
-{
-	T& ref;
-	ref_impl(T& ref): ref(ref) {}
-	// check boost::ref
+private:
+	F f;
 };
-
-template <typename T>
-AUTO_FUN( ref(T& obj) )
-(
-	ref_impl<T>(obj)
-)
 
 } // namespace kernel_std
 } // namespace std

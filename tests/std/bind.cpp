@@ -67,7 +67,9 @@ BOOST_AUTO_TEST_CASE(impl_functor_by_ref)
 {
 	a__ = 4;
 	Toto t;
-	(kstd::bind_impl<kstd::ref_impl<Toto>, void (float)>(kstd::ref(t)))(22.f);
+	(
+	 kstd::bind_impl<kstd::ref_wrapper<Toto>, void (float)>(kstd::ref(t))
+	 )(22.f);
 	BOOST_CHECK(t._v == 55);
 	BOOST_CHECK(a__ == 133);
 }
