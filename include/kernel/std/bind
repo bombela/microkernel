@@ -82,12 +82,16 @@ template <int I, typename T, typename... Args>
 	storage_getter<I - 1, storage<Args...>> {};
 
 template<unsigned... Indices>
-	struct invoke_helper 
+	struct invoke_helper
 	{
 		template <typename F, typename... Args>
-			static void invoke(F& f, const storage<Args...>& s)
-			{
+			static auto invoke(F& f, UNUSED const storage<Args...>& s)
+			-> decltype(
 				unwrapper<F>::unwrap(f)
+					(storage_getter<Indices, storage<Args...>>::get(s)...)
+					)
+			{
+				return unwrapper<F>::unwrap(f)
 					(storage_getter<Indices, storage<Args...>>::get(s)...);
 			}
 	}; 
@@ -141,9 +145,30 @@ struct bind_impl: details::storage<Args...>
 		details::storage<Args...>(forward<Args>(args)...),
 		f(f) {}
 
-	void operator()() const
+	auto operator()() const
+		-> decltype(
+				invoker::invoke(*(F*)0,
+					static_cast<const details::storage<Args...>&>(
+						*(bind_impl*)0
+						)
+					)
+		)
 	{
-		invoker::invoke(f,
+		return invoker::invoke(f,
+				static_cast<const details::storage<Args...>&>(*this)
+				);
+	}
+
+	auto operator()()
+		-> decltype(
+				invoker::invoke(*(F*)0,
+					static_cast<const details::storage<Args...>&>(
+						*(bind_impl*)0
+						)
+					)
+		)
+	{
+		return invoker::invoke(f,
 				static_cast<const details::storage<Args...>&>(*this)
 				);
 	}
