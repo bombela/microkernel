@@ -1,0 +1,40 @@
+/* vim: ft=cpp
+ * ref
+ * Copyright © 2010 François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef REF_H
+#define REF_H
+
+#include <kernel/std/autofun>
+
+namespace std {
+namespace kernel_std {
+
+template <typename T>
+struct ref_wrapper
+{
+	explicit ref_wrapper(T& ref): obj(&ref) {}
+	operator T& () const { return *obj; }
+private:
+	T* obj;
+};
+
+template <typename T>
+AUTO_FUN( ref(T& obj) )
+(
+	ref_wrapper<T>(obj)
+)
+
+template <typename T>
+AUTO_FUN( ref(const T& obj) )
+(
+	ref_wrapper<const T>(obj)
+)
+
+} // namespace kernel_std
+} // namespace std
+
+#endif /* REF_H */
