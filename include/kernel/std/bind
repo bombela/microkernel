@@ -56,7 +56,7 @@ namespace details {
 template <typename F>
 	struct unwrapper
 	{
-		static F& unwrap(F& f) { return f; }
+		static const F& unwrap(const F& f) { return f; }
 	};
 
 template <typename F>
@@ -85,7 +85,7 @@ template<unsigned... Indices>
 	struct invoke_helper
 	{
 		template <typename F, typename... Args, typename... Args2>
-			static auto invoke(F& f,
+			static auto invoke(const F& f,
 					UNUSED const storage<Args...>& s,
 					Args2&&... args2)
 			-> decltype(
@@ -100,11 +100,11 @@ template<unsigned... Indices>
 			}
 	}; 
 
-template<int N, int... A> 
+template<unsigned N, unsigned... A> 
 	struct invoke_helper_generator:
 		invoke_helper_generator<N - 1, A..., sizeof...(A)> { };
 
-template<int... A> 
+template<unsigned... A> 
 	struct invoke_helper_generator<0, A...> {
 		typedef invoke_helper<A...> type;
 	};
@@ -119,7 +119,6 @@ template <typename T, typename... Args>
 		storage(T&& arg, Args&&... args):
 			storage<Args...>(forward<Args>(args)...),
 			arg(forward<T>(arg)) {}
-
 	};
 
 /*template <int I, typename... Args>
@@ -150,20 +149,6 @@ struct bind_impl: private details::storage<Args...>
 		f(f) {}
 
 	auto operator()() const
-		-> decltype(
-				invoker::invoke(*(F*)0,
-					static_cast<const details::storage<Args...>&>(
-						*(bind_impl*)0
-						)
-					)
-		)
-	{
-		return invoker::invoke(f,
-				static_cast<const details::storage<Args...>&>(*this)
-				);
-	}
-
-	auto operator()()
 		-> decltype(
 				invoker::invoke(*(F*)0,
 					static_cast<const details::storage<Args...>&>(
