@@ -10,9 +10,29 @@
 
 namespace std {
 namespace kernel_std {
-	
+
 template <typename T>
-T&& forward(T&& arg) { return static_cast<T&&>(arg); }
+struct remove_ref
+{
+   	typedef T type;	
+};
+
+template <typename T>
+struct remove_ref<T&>
+{
+   	typedef T type;
+};
+
+template <typename T>
+struct remove_ref<T&&>
+{
+   	typedef T type;
+};
+
+template <typename T>
+T&& forward(typename remove_ref<T>::type& arg) {
+	return static_cast<T&&>(arg);
+}
 
 } // namespace kernel_std
 } // namespace std
