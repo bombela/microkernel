@@ -8,26 +8,10 @@
 #ifndef FORWARD_H
 #define FORWARD_H
 
+#include <kernel/std/bits/decay.hpp>
+
 namespace std {
 namespace kernel_std {
-
-template <typename T>
-struct remove_ref
-{
-   	typedef T type;	
-};
-
-template <typename T>
-struct remove_ref<T&>
-{
-   	typedef T type;
-};
-
-template <typename T>
-struct remove_ref<T&&>
-{
-   	typedef T type;
-};
 
 template <typename T>
 T&& forward(typename remove_ref<T>::type& arg) {

@@ -80,6 +80,14 @@ BOOST_AUTO_TEST_CASE(bind_simple_func_tryret)
 	BOOST_CHECK(r == 42);
 }
 
+BOOST_AUTO_TEST_CASE(bind_simple_const_arg)
+{
+	const int v = 21;
+	kstd::bind_impl<int (*)(int), int> f(&tryret, v);
+	int r = f();
+	BOOST_CHECK(r == 42);
+}
+
 BOOST_AUTO_TEST_CASE(impl_simple_fun_constref)
 {
 	a__ = 4;
@@ -142,4 +150,11 @@ BOOST_AUTO_TEST_CASE(check_movector_usage)
 	 kstd::bind_impl<Tata, int>(t, 101)
 	)();
 	BOOST_CHECK(a__ == (14 + 5 + 101));
+}
+
+BOOST_AUTO_TEST_CASE(placeholder_basic)
+{
+	kstd::bind_impl<int (*)(int), decltype(_1)> f(&tryret, _1);
+	int r = f(22);
+	BOOST_CHECK(r == 44);
 }

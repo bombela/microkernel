@@ -19,35 +19,56 @@ namespace kernel_std {
 
 namespace placeholder {
 
-template <int I>
+template <unsigned I>
 struct arg {
-	static const int value = I;
-	arg() {}
+	constexpr arg() {}
 };
+
+namespace details {
 
 template <typename T>
 struct is_placeholder {
-	static const int value = 0;
+	static const bool value = false;
 };
 
-template <int I>
+template <unsigned I>
 struct is_placeholder<arg<I>> {
-	static const int value = I;
+	static const bool value = true;
+};
+
+} // namespace details
+
+template <typename T>
+struct is_placeholder:
+	details::is_placeholder<typename decay<T>::type> {};
+
+template <typename... Args>
+struct count;
+
+template <>
+struct count<> {
+	static const unsigned value = 0;
+};
+
+template <typename T, typename... Args>
+struct count<T, Args...> {
+	static const unsigned value =
+		count<Args...>::value + (is_placeholder<T>::value ? 1 : 0);
 };
 
 } // namespace placeholder
 
 namespace placeholder_defs {
 	
-static const placeholder::arg<1> _1;
-static const placeholder::arg<2> _2;
-static const placeholder::arg<3> _3;
-static const placeholder::arg<4> _4;
-static const placeholder::arg<5> _5;
-static const placeholder::arg<6> _6;
-static const placeholder::arg<7> _7;
-static const placeholder::arg<8> _8;
-static const placeholder::arg<9> _9;
+static const placeholder::arg<0> _1;
+static const placeholder::arg<1> _2;
+static const placeholder::arg<2> _3;
+static const placeholder::arg<3> _4;
+static const placeholder::arg<4> _5;
+static const placeholder::arg<5> _6;
+static const placeholder::arg<6> _7;
+static const placeholder::arg<7> _8;
+static const placeholder::arg<8> _9;
 
 } // namespace placeholder_defs
 
@@ -65,6 +86,29 @@ template <typename F>
 		static F& unwrap(ref_wrapper<F> w) { return static_cast<F&>(w); }
 	};
 
+template <unsigned I, typename... Args>
+	struct arg_getter;
+
+template <typename T, typename... Args>
+	struct arg_getter<0, T, Args...> {
+		static T&& get(T&& a, Args&&...)
+			{
+				return forward<T>(a);
+			}
+	};
+
+template <unsigned I, typename T, typename... Args>
+	struct arg_getter<I, T, Args...> {
+		static AUTO_FUN ( get(T&&, Args&&... args) )
+			(
+			 forward<T>(
+				 arg_getter<I - 1, Args...>::get(
+					 forward<Args...>(args...)
+					 )
+				 )
+			)
+	};
+
 template <typename... Args>
 	struct storage;
 
@@ -74,7 +118,31 @@ template <int I, typename T, typename... Args2>
 template <typename T, typename... Args, typename... Args2>
 	struct storage_getter<0, storage<T, Args...>, Args2...>
 	{
-		static AUTO_FUN( get(const storage<T, Args...>& s) ) ( s.arg )
+		static AUTO_FUN( get(const storage<T, Args...>& s, Args2&&...) )
+			(
+			 s.arg
+			)
+	};
+
+template <unsigned I, typename... Args, typename... Args2>
+	struct storage_getter<0, storage< placeholder::arg<I> , Args...>, Args2...>
+	{
+		static AUTO_FUN( get(const storage<placeholder::arg<I>, Args...>&,
+					Args2&&... args2) )
+			(
+			 arg_getter<I, Args2...>::get(forward<Args2>(args2)...)
+			)
+	};
+
+template <unsigned I, typename... Args, typename... Args2>
+	struct storage_getter<0,
+	storage< const placeholder::arg<I> , Args...>, Args2...>
+	{
+		static AUTO_FUN( get(const storage<const placeholder::arg<I>, Args...>&,
+					Args2&&... args2) )
+			(
+			 arg_getter<I, Args2...>::get(forward<Args2>(args2)...)
+			)
 	};
 
 template <int I, typename T, typename... Args, typename... Args2>
@@ -84,21 +152,38 @@ template <int I, typename T, typename... Args, typename... Args2>
 template<unsigned... Indices>
 	struct invoke_helper
 	{
-		template <typename F, typename... Args, typename... Args2>
-			static auto invoke(const F& f,
-					UNUSED const storage<Args...>& s,
-					Args2&&... args2)
-			-> decltype(
-				unwrapper<F>::unwrap(f)
-					(storage_getter<Indices,
-					 storage<Args...>, Args2...>::get(s)...)
-					)
-			{
-				return unwrapper<F>::unwrap(f)
-					(storage_getter<Indices,
-					 storage<Args...>, Args2...>::get(s)...);
-			}
+		template <typename F, typename Args, typename Args2>
+			struct invoke_dispatcher;
 	}; 
+
+template <typename... Args>
+	struct packer {};
+
+template <unsigned... Indices>
+	template <typename F, typename... Args, typename... Args2>
+	struct invoke_helper<Indices...>::invoke_dispatcher<F, packer<Args...>, packer<Args2...>>
+	{
+		typedef decltype(
+				unwrapper<F>::unwrap(*(F*)0)
+				(
+				 storage_getter<Indices,
+					storage<Args...>, Args2...>::get(*(storage<Args...>*)0,
+					   forward<Args2>(*(Args2*)0)...)...
+					)
+				) return_t;
+
+		static auto invoke(const F& f,
+				UNUSED const storage<Args...>& s,
+				Args2&&... args2) -> return_t
+		{
+			return unwrapper<F>::unwrap(f)
+				(
+				 storage_getter<Indices,
+				 storage<Args...>, Args2...>::get(s,
+					 forward<Args2>(args2)...)...
+				 );
+		}
+	};
 
 template<unsigned N, unsigned... A> 
 	struct invoke_helper_generator:
@@ -116,35 +201,34 @@ template <typename T, typename... Args>
 	struct storage<T, Args...>: storage<Args...>
 	{
 		T arg;
-		storage(T&& arg, Args&&... args):
-			storage<Args...>(forward<Args>(args)...),
-			arg(forward<T>(arg)) {}
+		
+		template <typename T2, typename... Args2>
+			storage(T2&& arg, Args2&&... args):
+				storage<Args...>(forward<Args2>(args)...),
+				arg(forward<T2>(arg)) {}
 	};
 
-/*template <int I, typename... Args>
+template <unsigned I, typename... Args>
 	struct storage<placeholder::arg<I>, Args...>: storage<Args...>
 	{
-		typedef placeholder::arg<I> A1;
+		storage(placeholder::arg<I>, Args&&... args):
+			storage<Args...>(forward<Args>(args)...) {}
+	};
 
-		storage(A1, const Args&... args):
-			storage<Args...>(args...) {}
-
-		template <typename F, typename... Args2>
-			AUTO_FUN( operator() (F f) )
-			(
-			 details::unwrapper<F>::unwrap(f)()
-			)
-	};*/
+template <unsigned I, typename... Args>
+	struct storage<const placeholder::arg<I>, Args...>: storage<Args...>
+	{
+		storage(placeholder::arg<I>, Args&&... args):
+			storage<Args...>(forward<Args>(args)...) {}
+	};
 
 template <typename F, typename... Args>
 struct bind_base: protected storage<Args...>
 {
-	bind_base(F&& f, Args&&... args):
-		storage<Args...>(forward<Args>(args)...),
-		f(forward<F>(f)) {}
-	bind_base(const F& f, Args&&... args):
-		storage<Args...>(forward<Args>(args)...),
-		f(f) {}
+	template <typename F2, typename... Args2>
+		bind_base(F2&& f, Args2&&... args):
+			storage<Args...>(forward<Args2>(args)...),
+			f(forward<F2>(f)) {}
 
 	F f;
 };
@@ -158,18 +242,20 @@ struct bind_functor<0, F, Args...>: bind_base<F, Args...>
 	typedef typename
 		invoke_helper_generator<sizeof...(Args)>::type invoker;
 	
-	bind_functor(F&& f, Args&&... args):
-		details::bind_base<F, Args...>(forward<F>(f), forward<Args>(args)...) {}
-	bind_functor(const F& f, Args&&... args):
-		details::bind_base<F, Args...>(f, forward<Args>(args)...) {}
+	template <typename F2, typename... Args2>
+		bind_functor(F2&& f, Args2&&... args):
+			details::bind_base<F, Args...>(
+					forward<F2>(f), forward<Args2>(args)...) {}
 
 	auto operator()() const
-		-> decltype(invoker::invoke(*(F*)0, *(storage<Args...>*)0)
-				)
+		-> typename invoker::
+		template invoke_dispatcher<F, packer<Args...>, packer<>>::return_t
 		{
-			return invoker::invoke(this->f,
-					static_cast<const storage<Args...>&>(*this)
-					);
+			return invoker::
+				template invoke_dispatcher<F, packer<Args...>, packer<>>
+				::invoke(this->f,
+						static_cast<const storage<Args...>&>(*this)
+						);
 		}
 };
 
@@ -179,21 +265,22 @@ struct bind_functor<1, F, Args...>: bind_base<F, Args...>
 	typedef typename
 		invoke_helper_generator<sizeof...(Args)>::type invoker;
 
-	bind_functor(F&& f, Args&&... args):
-		details::bind_base<F, Args...>(forward<F>(f), forward<Args>(args)...) {}
-	bind_functor(const F& f, Args&&... args):
-		details::bind_base<F, Args...>(f, forward<Args>(args)...) {}
+	template <typename F2, typename... Args2>
+		bind_functor(F2&& f, Args2&&... args):
+			details::bind_base<F, Args...>(
+					forward<F2>(f), forward<Args2>(args)...) {}
 
 	template <typename A1>
 		auto operator()(A1&& a1) const
-		-> decltype(invoker::invoke(*(F*)0, *(storage<Args...>*)0
-					,*(A1*)0)
-				)
+		-> typename invoker::
+		template invoke_dispatcher<F, packer<Args...>, packer<A1>>::return_t
 		{
-			return invoker::invoke(this->f,
+			return invoker::
+				template invoke_dispatcher<F, packer<Args...>, packer<A1>>
+				::invoke(this->f,
 					static_cast<const storage<Args...>&>(*this)
 					,forward<A1>(a1)
-					);
+						);
 		}
 };
 
@@ -201,15 +288,14 @@ struct bind_functor<1, F, Args...>: bind_base<F, Args...>
 
 template <typename F, typename... Args>
 struct bind_impl:
-	details::bind_functor<0, F, Args...>
+	details::bind_functor<placeholder::count<Args...>::value, F, Args...>
 {
-	bind_impl(F&& f, Args&&... args):
-		details::bind_functor<0, F, Args...>(
-				forward<F>(f), forward<Args>(args)...) {}
-	
-	bind_impl(const F& f, Args&&... args):
-		details::bind_functor<0, F, Args...>(
-				f, forward<Args>(args)...) {}
+	static const unsigned NP = placeholder::count<Args...>::value;
+
+	template <typename F2, typename... Args2>
+		bind_impl(F2&& f, Args2&&... args):
+			details::bind_functor<NP, F, Args...>(
+					forward<F2>(f), forward<Args2>(args)...) {}
 };
 
 } // namespace kernel_std
