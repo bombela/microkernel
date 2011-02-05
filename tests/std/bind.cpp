@@ -44,8 +44,7 @@ BOOST_AUTO_TEST_CASE(impl_simple_fun)
 
 void match(int a, float b, int c)
 {
-	std::cout << a << ", " << b << ", " << c << std::endl;
-	a__ = 99;
+	a__ = 99 + a + b + c;
 }
 
 template <typename F>
@@ -58,11 +57,11 @@ BOOST_AUTO_TEST_CASE(bind_impl_basic_test)
 	a__ = 4;
 	kstd::bind_impl<void (*)(int, float, int), int, float, int> s(&match, 2, 22.f, 3);
 	s();
-	BOOST_CHECK(a__ == 99);
+	BOOST_CHECK(a__ == 126);
 	
 	a__ = 4;
 	const_call(s);
-	BOOST_CHECK(a__ == 99);
+	BOOST_CHECK(a__ == 126);
 
 }
 
