@@ -28,10 +28,10 @@ struct Toto {
 };
 
 struct Titi {
-	mutable int _v;
+	int _v;
 	Titi(): _v(42) {}
 
-	void operator()(int v) const { _v = v; a__ = 154; }
+	void operator()(int v) { _v = v; a__ = 154; }
 };
 
 BOOST_AUTO_TEST_CASE(impl_simple_fun)
@@ -115,4 +115,31 @@ BOOST_AUTO_TEST_CASE(impl_functor_by_ref)
 	 )();
 	BOOST_CHECK(f._v == 98);
 	BOOST_CHECK(a__ == 154);
+}
+
+struct Tata {
+	Tata() {}
+	~Tata() {}
+
+	Tata(const Tata&) { a__ += 5; }
+	Tata(Tata&&) { a__ += 10; }
+	Tata& operator=(const Tata&) { return *this; }
+
+	void operator()(int v) const { a__ += v; }
+};
+
+BOOST_AUTO_TEST_CASE(check_movector_usage)
+{
+	a__ = 14;
+	(
+	 kstd::bind_impl<Tata, int>(Tata(), 101)
+	)();
+	BOOST_CHECK(a__ == (14 + 10 + 101));
+
+	Tata t;
+	a__ = 14;
+	(
+	 kstd::bind_impl<Tata, int>(t, 101)
+	)();
+	BOOST_CHECK(a__ == (14 + 5 + 101));
 }

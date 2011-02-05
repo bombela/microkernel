@@ -136,34 +136,80 @@ template <typename T, typename... Args>
 			)
 	};*/
 
+template <typename F, typename... Args>
+struct bind_base: protected storage<Args...>
+{
+	bind_base(F&& f, Args&&... args):
+		storage<Args...>(forward<Args>(args)...),
+		f(forward<F>(f)) {}
+	bind_base(const F& f, Args&&... args):
+		storage<Args...>(forward<Args>(args)...),
+		f(f) {}
+
+	F f;
+};
+
+template <unsigned NP, typename F, typename... Args>
+struct bind_functor;
+
+template <typename F, typename... Args>
+struct bind_functor<0, F, Args...>: bind_base<F, Args...>
+{
+	typedef typename
+		invoke_helper_generator<sizeof...(Args)>::type invoker;
+	
+	bind_functor(F&& f, Args&&... args):
+		details::bind_base<F, Args...>(forward<F>(f), forward<Args>(args)...) {}
+	bind_functor(const F& f, Args&&... args):
+		details::bind_base<F, Args...>(f, forward<Args>(args)...) {}
+
+	auto operator()() const
+		-> decltype(invoker::invoke(*(F*)0, *(storage<Args...>*)0)
+				)
+		{
+			return invoker::invoke(this->f,
+					static_cast<const storage<Args...>&>(*this)
+					);
+		}
+};
+
+template <typename F, typename... Args>
+struct bind_functor<1, F, Args...>: bind_base<F, Args...>
+{
+	typedef typename
+		invoke_helper_generator<sizeof...(Args)>::type invoker;
+
+	bind_functor(F&& f, Args&&... args):
+		details::bind_base<F, Args...>(forward<F>(f), forward<Args>(args)...) {}
+	bind_functor(const F& f, Args&&... args):
+		details::bind_base<F, Args...>(f, forward<Args>(args)...) {}
+
+	template <typename A1>
+		auto operator()(A1&& a1) const
+		-> decltype(invoker::invoke(*(F*)0, *(storage<Args...>*)0
+					,*(A1*)0)
+				)
+		{
+			return invoker::invoke(this->f,
+					static_cast<const storage<Args...>&>(*this)
+					,forward<A1>(a1)
+					);
+		}
+};
+
 } // namespace details
 
 template <typename F, typename... Args>
-struct bind_impl: private details::storage<Args...>
+struct bind_impl:
+	details::bind_functor<0, F, Args...>
 {
-	typedef typename
-		details::invoke_helper_generator<sizeof...(Args)>::type invoker;
-
-	bind_impl(F f, Args&&... args):
-		details::storage<Args...>(forward<Args>(args)...),
-		f(f) {}
-
-	auto operator()() const
-		-> decltype(
-				invoker::invoke(*(F*)0,
-					static_cast<const details::storage<Args...>&>(
-						*(bind_impl*)0
-						)
-					)
-		)
-	{
-		return invoker::invoke(f,
-				static_cast<const details::storage<Args...>&>(*this)
-				);
-	}
-
-private:
-	F f;
+	bind_impl(F&& f, Args&&... args):
+		details::bind_functor<0, F, Args...>(
+				forward<F>(f), forward<Args>(args)...) {}
+	
+	bind_impl(const F& f, Args&&... args):
+		details::bind_functor<0, F, Args...>(
+				f, forward<Args>(args)...) {}
 };
 
 } // namespace kernel_std
