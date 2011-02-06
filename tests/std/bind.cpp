@@ -94,18 +94,15 @@ BOOST_AUTO_TEST_CASE(impl_simple_fun_constref)
 	(kstd::bind_impl<void (*)(const int&), const int&>(&pouet, 22))();
 	BOOST_CHECK(a__ == 3);
 }
-
+/*
 BOOST_AUTO_TEST_CASE(impl_simple_fun_ref)
 {
 	int v = 4;
-	(kstd::bind_impl<void (*)(int&), int&>(&kiki, v))();
-	BOOST_CHECK(v == 7);
-	v = 2;
 	(kstd::bind_impl<void (*)(int&),
 	 kstd::ref_wrapper<int>>(&kiki, kstd::ref(v)))();
 	BOOST_CHECK(v == 5);
 }
-
+*/
 BOOST_AUTO_TEST_CASE(impl_functor)
 {
 	a__ = 4;
@@ -152,9 +149,106 @@ BOOST_AUTO_TEST_CASE(check_movector_usage)
 	BOOST_CHECK(a__ == (14 + 5 + 101));
 }
 
+BOOST_AUTO_TEST_CASE(bind_impl_lvalue_scalar)
+{
+	a__ = 4;
+	const int a = 1;
+	const float b = 2;
+	const int c = 3;
+	kstd::bind_impl<void (*)(int, float, int), int, float, int>
+		s(&match, a, b, c);
+	s();
+	BOOST_CHECK(a__ == 105);
+	
+	a__ = 4;
+	const_call(s);
+	BOOST_CHECK(a__ == 105);
+}
+
+struct A { A() {} };
+struct B { B() {} };
+
+static const A testA;
+static const B testB;
+
+void lvaluetest(A, B) { a__ = 66; }
+
+BOOST_AUTO_TEST_CASE(bind_impl_lvalue_obj)
+{
+	a__ = 4;
+	kstd::bind_impl<void (*)(A, B), A, B>
+		s(&lvaluetest, testA, testB);
+	s();
+	BOOST_CHECK(a__ == 66);
+	
+	a__ = 4;
+	const_call(s);
+	BOOST_CHECK(a__ == 66);
+}
+
 BOOST_AUTO_TEST_CASE(placeholder_basic)
 {
 	kstd::bind_impl<int (*)(int), decltype(_1)> f(&tryret, _1);
 	int r = f(22);
 	BOOST_CHECK(r == 44);
+}
+
+int adder(int a, char b)
+{
+	return a + b;
+}
+
+BOOST_AUTO_TEST_CASE(placeholder_bind2st)
+{
+	kstd::bind_impl<int (*)(int, char), int, char> f(&adder, 255, 127);
+	int r = f();
+	BOOST_CHECK(r == 255 + 127);
+	
+	kstd::bind_impl<int (*)(int, char), int, decltype(_1)>
+		f2(&adder, 255, _1);
+	int r2 = f2(127);
+	BOOST_CHECK(r2 == 255 + 127);
+}
+
+BOOST_AUTO_TEST_CASE(placeholder_bind1st)
+{
+	kstd::bind_impl<int (*)(int, char), decltype(_1), char>
+		f(&adder, _1, 127);
+	int r = f(255);
+	BOOST_CHECK(r == 255 + 127);
+}
+
+BOOST_AUTO_TEST_CASE(placeholder_nonconst)
+{
+	kstd::placeholder::arg<1> my1;
+	kstd::bind_impl<int (*)(int, char), decltype(my1), char>
+		f(&adder, my1, 127);
+	int r = f(255);
+	BOOST_CHECK(r == 255 + 127);
+}
+
+BOOST_AUTO_TEST_CASE(placeholder_call_lvalue)
+{
+	kstd::bind_impl<int (*)(int, char), decltype(_1), char>
+		f(&adder, _1, 127);
+	int a = 255;
+	int r = f(a);
+	BOOST_CHECK(r == 255 + 127);
+	const int b = 256;
+	r = f(b);
+	BOOST_CHECK(r == 256 + 127);
+}
+
+int bigadder(float, int a, char b)
+{
+	return a + b;
+}
+
+BOOST_AUTO_TEST_CASE(placeholder_bind2args)
+{
+	//kstd::bind_impl<int (*)(float, int, char), float,
+	//	decltype(_1), decltype(_2)> f(&bigadder, 22.f, _1, _2);
+
+	//int r = f(255, 127);
+	//BOOST_CHECK(r == 255 + 127);
 }
