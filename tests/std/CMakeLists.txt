@@ -78,6 +78,7 @@ foreach(src
 		algo.cpp
 		memfn.cpp
 		bind.cpp
+		function.cpp
 		)
 	kern0x_add_test(${src})
 endforeach()

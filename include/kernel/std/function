@@ -1,0 +1,13 @@
+/* vim: ft=cpp
+ * function
+ * Copyright © 2011, François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef FUNCTION_H
+#define FUNCTION_H
+
+
+
+#endif /* FUNCTION_H */
