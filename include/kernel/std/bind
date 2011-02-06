@@ -93,20 +93,17 @@ template <unsigned I, typename... Args>
 
 template <typename T, typename... Args>
 	struct arg_getter<1, T, Args...> {
-		static T&& get(T&& a, Args&&...)
-			{
-				return forward<T>(a);
-			}
+		static T&& get(T&& a, Args&&...) {
+			return forward<T>(a);
+		}
 	};
 
 template <unsigned I, typename T, typename... Args>
 	struct arg_getter<I, T, Args...> {
 		static AUTO_FUN ( get(T&&, Args&&... args) )
 			(
-			 forward<T>(
-				 arg_getter<I - 1, Args...>::get(
-					 forward<Args...>(args...)
-					 )
+			 arg_getter<I - 1, Args...>::get(
+				 forward<Args...>(args...)
 				 )
 			)
 	};
@@ -176,17 +173,18 @@ template <unsigned... Indices>
 					)
 				) return_t;
 
-		static auto invoke(const F& f,
-				UNUSED const storage<Args...>& s,
-				Args2&&... args2) -> return_t
-		{
-			return unwrapper<F>::unwrap(f)
-				(
-				 storage_getter<Indices,
-				 storage<Args...>, Args2...>::get(s,
-					 forward<Args2>(args2)...)...
-				 );
-		}
+		template <typename... Args3>
+			static auto invoke(const F& f,
+					UNUSED const storage<Args...>& s,
+					Args3&&... args2) -> return_t
+			{
+				return unwrapper<F>::unwrap(f)
+					(
+					 storage_getter<Indices,
+					 storage<Args...>, Args3...>::get(s,
+						 forward<Args3>(args2)...)...
+					);
+			}
 	};
 
 template<unsigned N, unsigned... A> 

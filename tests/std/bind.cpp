@@ -239,6 +239,27 @@ BOOST_AUTO_TEST_CASE(placeholder_call_lvalue)
 	BOOST_CHECK(r == 256 + 127);
 }
 
+void tryreference(int& o, int a, int b) { o = a + b; }
+void tryreference2(int a, int b, int& o) { o = a + b; }
+
+BOOST_AUTO_TEST_CASE(placeholder_call_ref)
+{
+	kstd::bind_impl<void (*)(int&, int, int), decltype(_1), int, int>
+		f(&tryreference, _1, 4, 6);
+	int r = 0;
+	f(r);
+	BOOST_CHECK(r == 10);
+}
+
+BOOST_AUTO_TEST_CASE(placeholder_call_ref2)
+{
+	kstd::bind_impl<void (*)(int, int, int&), int, int, decltype(_1)>
+		f(&tryreference2, 4, 6, _1);
+	int r = 0;
+	f(r);
+	BOOST_CHECK(r == 10);
+}
+
 int bigadder(float, int a, char b)
 {
 	return a + b;
@@ -246,9 +267,86 @@ int bigadder(float, int a, char b)
 
 BOOST_AUTO_TEST_CASE(placeholder_bind2args)
 {
-	//kstd::bind_impl<int (*)(float, int, char), float,
-	//	decltype(_1), decltype(_2)> f(&bigadder, 22.f, _1, _2);
+	kstd::bind_impl<int (*)(float, int, char), float,
+		decltype(_1), decltype(_2)> f(&bigadder, 22.f, _1, _2);
 
-	//int r = f(255, 127);
-	//BOOST_CHECK(r == 255 + 127);
+	int r = f(255, 127);
+	BOOST_CHECK(r == 255 + 127);
+	
+	int a = 255;
+	const int b = 127;
+	r = f(a, b);
+	BOOST_CHECK(r == 255 + 127);
 }
+
+BOOST_AUTO_TEST_CASE(placeholder_bind2args_reverse)
+{
+	kstd::bind_impl<int (*)(float, int, char),
+		decltype(_1), decltype(_2), char> f(&bigadder, _1, _2, 127);
+
+	int r = f(22.f, 255);
+	BOOST_CHECK(r == 255 + 127);
+	
+	float a = 22.f;
+	const int b = 255;
+	r = f(a, b);
+	BOOST_CHECK(r == 255 + 127);
+}
+
+BOOST_AUTO_TEST_CASE(placeholder_bind2args_middle)
+{
+	kstd::bind_impl<int (*)(float, int, char),
+		decltype(_1), int, decltype(_2)> f(&bigadder, _1, 255, _2);
+
+	int r = f(22.f, 127);
+	BOOST_CHECK(r == 255 + 127);
+	
+	float a = 22.f;
+	const int b = 127;
+	r = f(a, b);
+	BOOST_CHECK(r == 255 + 127);
+}
+
+int sub(int a, int b) { return a - b; }
+
+BOOST_AUTO_TEST_CASE(placeholder_bind_xchang)
+{
+	kstd::bind_impl<int (*)(int, int),
+		decltype(_1), decltype(_2)> f(&sub, _1, _2);
+
+	int r = f(10, 5);
+	BOOST_CHECK(r == 5);
+	
+	kstd::bind_impl<int (*)(int, int),
+		decltype(_2), decltype(_1)> g(&sub, _2, _1);
+
+	r = g(10, 5);
+	BOOST_CHECK(r == -5);
+}
+
+int extrem(int a, int b, int c, int d,
+		int e, int f, int g, int h, int i, int j, int k)
+{
+	return a + b + c + d + e + f + g + h + i + j + k;
+}
+
+/*BOOST_AUTO_TEST_CASE(placeholder_bind_extrem)
+{
+	kstd::bind_impl<
+		int (*)(int, int, int, int, int, int, int, int, int, int, int),
+			decltype(_1),
+			decltype(_2),
+			decltype(_3),
+			decltype(_4),
+			decltype(_5),
+			int,
+			decltype(_6),
+			decltype(_7),
+			decltype(_8),
+			decltype(_9),
+			kstd::placeholder::arg<10>
+				> f(&extrem, _1, _2, _3, _4, _5, 42, _6, _7, _8, _9,
+						kstd::placeholder::arg<10>());
+
+	int r = f(1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+}*/
