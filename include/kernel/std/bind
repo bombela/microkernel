@@ -17,26 +17,33 @@
 namespace std {
 namespace kernel_std {
 
+namespace details {
+	
+template <typename...>
+	struct pack {};
+
+} // namespace details
+
 namespace placeholder {
 
 template <unsigned I>
-struct arg {
-	constexpr arg() {}
-	arg(const arg&) = delete;
-	arg(arg&&) = delete;
-};
+	struct arg {
+		constexpr arg() {}
+		arg(const arg&) = delete;
+		arg(arg&&) = delete;
+	};
 
 namespace details {
 
 template <typename T>
-struct is_placeholder {
-	static const bool value = false;
-};
+	struct is_placeholder {
+		static const bool value = false;
+	};
 
 template <unsigned I>
-struct is_placeholder<arg<I>> {
-	static const bool value = true;
-};
+	struct is_placeholder<arg<I>> {
+		static const bool value = true;
+	};
 
 } // namespace details
 
@@ -45,39 +52,98 @@ struct is_placeholder:
 	details::is_placeholder<typename decay<T>::type> {};
 
 template <typename... Args>
-struct count;
+	struct count;
 
 template <>
-struct count<> {
-	static const unsigned value = 0;
-};
+	struct count<> {
+		static const unsigned value = 0;
+	};
 
 template <typename T, typename... Args>
-struct count<T, Args...> {
-	static const unsigned value =
-		count<Args...>::value + (is_placeholder<T>::value ? 1 : 0);
-};
+	struct count<T, Args...> {
+		static const unsigned value =
+			count<Args...>::value + (is_placeholder<T>::value ? 1 : 0);
+	};
 
 namespace details {
 	
 template <typename... Args>
-struct max;
+	struct max;
 
 template <>
-struct max<> {
-	static const unsigned value = 0;
-};
+	struct max<> {
+		static const unsigned value = 0;
+	};
 
-template <unsigned I, unsigned... Indices>
-struct max< arg<I>, arg<Indices>... > {
-	static const unsigned tailmax = max< arg<Indices>... >::value;
-	static const unsigned value = (tailmax > I) ? tailmax : I;
-};
+template <unsigned I, typename... Args>
+	struct max< arg<I>, Args... > {
+		static const unsigned tailmax = max< Args... >::value;
+		static const unsigned value = (tailmax > I) ? tailmax : I;
+	};
+
+template <typename T, typename... Args>
+	struct max< T, Args... >: max<Args...> {};
 
 } // namespace details
 
 template <typename... Args>
-struct max: details::max<typename remove_const<Args>::type...> {};
+	struct max: details::max<typename remove_const<Args>::type...> {};
+
+namespace details {
+
+template<unsigned I, typename... Args>
+	struct contain;
+
+template<unsigned I>
+	struct contain<I> {
+		static const bool value = false;
+	};
+
+template<unsigned I, typename... Args>
+	struct contain< I, arg<I>, Args... > {
+		static const bool value = true;
+	};
+
+template<unsigned I, typename T, typename... Args>
+	struct contain< I, T, Args... >: contain<I, Args...> {};
+
+} // namespace details
+
+template<unsigned I, typename... Args>
+	struct contain:
+		details::contain<I, typename remove_const<Args>::type...> {};
+
+namespace details {
+	
+template<unsigned N, typename... Args>
+struct rangechecker: rangechecker<N - 1, Args...> {
+
+	static const bool is_contained = placeholder::contain<N, Args...>::value;
+	static_assert(is_contained,
+			"Placeholder(s) missing! "
+			"(eg: if you use _3, you must also use _1 and _2).");
+};
+
+template<typename... Args>
+	struct rangechecker<0, Args...> {};
+
+} // namespace details
+
+template <typename... Args>
+struct fillrangecheck
+{
+	static const unsigned max = max<Args...>::value;
+	typedef details::rangechecker<max, Args...> check;
+};
+
+/*
+4, int, 2, float, 2, 2, 3
+
+1, 2, 3, 4
+^
+
+
+*/
 
 } // namespace placeholder
 
@@ -176,13 +242,11 @@ template<unsigned... Indices>
 			struct invoke_dispatcher;
 	}; 
 
-template <typename... Args>
-	struct packer {};
-
 template <unsigned... Indices>
 	template <typename F, typename... Args, typename... Args2>
-	struct invoke_helper<Indices...>::invoke_dispatcher<F, packer<Args...>,
-	packer<Args2...>>
+	struct invoke_helper<
+		Indices...>::invoke_dispatcher<F, details::pack<Args...>,
+		details::pack<Args2...>>
 	{
 		typedef decltype(
 				unwrapper<F>::unwrap(*(F*)0)
@@ -272,14 +336,14 @@ struct bind_functor: bind_base<F, Args...>
 	template <typename... Args2>
 		auto operator()(Args2&&... args2) const
 		-> typename invoker::
-		template invoke_dispatcher<F, packer<Args...>,
-				 packer<Args2...>> ::return_t
+		template invoke_dispatcher<F, details::pack<Args...>,
+				 details::pack<Args2...>> ::return_t
 		{
 			return invoker::
-				template invoke_dispatcher<F, packer<Args...>, packer<Args2...>>
-				::invoke(this->f,
-					static_cast<const storage<Args...>&>(*this)
-					,forward<Args2>(args2)...
+				template invoke_dispatcher<F, details::pack<Args...>,
+			details::pack<Args2...>>::invoke(this->f,
+						static_cast<const storage<Args...>&>(*this)
+						,forward<Args2>(args2)...
 						);
 		}
 };
@@ -290,6 +354,8 @@ template <typename F, typename... Args>
 struct bind_impl:
 	details::bind_functor<placeholder::count<Args...>::value, F, Args...>
 {
+	static const typename placeholder::fillrangecheck<Args...>::check
+		_fillrangecheck;
 	static const unsigned NP = placeholder::count<Args...>::value;
 
 	template <typename F2, typename... Args2>

@@ -415,20 +415,60 @@ BOOST_AUTO_TEST_CASE(placeholder_algo_max)
 			>::value) == 1);
 }
 
+BOOST_AUTO_TEST_CASE(placeholder_algo_contain)
+{
+	BOOST_CHECK((kstd::placeholder::contain<3,
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<4>,
+			kstd::placeholder::arg<2>
+			>::value) == true);
+	BOOST_CHECK((kstd::placeholder::contain<9,
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<4>,
+			decltype(_9),
+			kstd::placeholder::arg<2>
+			>::value) == true);
+	BOOST_CHECK((kstd::placeholder::contain<2,
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<4>,
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<3>
+			>::value) == false);
+	BOOST_CHECK((kstd::placeholder::contain<1
+			>::value) == false);
+	BOOST_CHECK((kstd::placeholder::contain<1,
+			kstd::placeholder::arg<1>
+			>::value) == true);
+	BOOST_CHECK((kstd::placeholder::contain<1,
+			kstd::placeholder::arg<2>
+			>::value) == false);
+}
+
+BOOST_AUTO_TEST_CASE(placeholder_sometest)
+{
+//    typedef kstd::placeholder::fillrangecheck<
+//            kstd::placeholder::arg<2>
+//                >::check a;
+//    a b;
+}
+
 // MUST NOT COMPILE
-#if 1
 namespace donotcompile {
 	
 void eater(int, float, double, char) {}
 
-void test1()
+#if 0
+void test0()
 {
 	kstd::bind_impl<void (*)(int, float, double, char),
-		int, float, double, decltype(_1)>
-			a(&eater, 1, 2, 3, _1);
+		int, float, double, decltype(_2)>
+			a(&eater, 1, 2, 3, _2);
+}
+#endif
 
-	a(1, 2);
+void test1()
+{
 }
 
 } // namespace donotcompile
-#endif
