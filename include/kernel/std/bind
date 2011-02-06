@@ -248,6 +248,11 @@ template <unsigned... Indices>
 		Indices...>::invoke_dispatcher<F, details::pack<Args...>,
 		details::pack<Args2...>>
 	{
+		static_assert(!(sizeof...(Args2) < placeholder::max<Args...>::value),
+				"Not enough arguments !");
+		static_assert(!(sizeof...(Args2) > placeholder::max<Args...>::value),
+				"To much arguments !");
+
 		typedef decltype(
 				unwrapper<F>::unwrap(*(F*)0)
 				(

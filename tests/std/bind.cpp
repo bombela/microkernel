@@ -467,8 +467,26 @@ void test0()
 }
 #endif
 
+#if 0
 void test1()
 {
+	kstd::bind_impl<void (*)(int, float, double, char),
+		int, float, double, decltype(_1)>
+			a(&eater, 1, 2, 3, _1);
+
+	a();
 }
+#endif
+
+#if 0
+void test2()
+{
+	kstd::bind_impl<void (*)(int, float, double, char),
+		int, float, double, decltype(_1)>
+			a(&eater, 1, 2, 3, _1);
+
+	a(1, 2);
+}
+#endif
 
 } // namespace donotcompile
