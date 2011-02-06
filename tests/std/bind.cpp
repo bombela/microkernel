@@ -445,14 +445,6 @@ BOOST_AUTO_TEST_CASE(placeholder_algo_contain)
 			>::value) == false);
 }
 
-BOOST_AUTO_TEST_CASE(placeholder_sometest)
-{
-//    typedef kstd::placeholder::fillrangecheck<
-//            kstd::placeholder::arg<2>
-//                >::check a;
-//    a b;
-}
-
 // MUST NOT COMPILE
 namespace donotcompile {
 	
@@ -490,3 +482,47 @@ void test2()
 #endif
 
 } // namespace donotcompile
+
+BOOST_AUTO_TEST_CASE(bind_itself)
+{
+	auto a = kstd::bind(&adder, 1, 2);
+	BOOST_CHECK(a() == 3);
+	
+	const auto b = kstd::bind(&adder, 1, 2);
+	BOOST_CHECK(b() == 3);
+	
+	kstd::bind_impl<
+		int (*)(int, char),
+			decltype(_1), int
+		> c = kstd::bind(&adder, _1, 2);
+	BOOST_CHECK(c(4) == 6);
+	
+	auto d = kstd::bind(&adder, _1, 2);
+	BOOST_CHECK(d(4) == 6);
+	
+	auto e = kstd::bind(&adder, _2, _1);
+	BOOST_CHECK(e(4, 1) == 5);
+}
+
+struct Lolita
+{
+	void doit(int& a) { a += 2; }
+	void doitconst(int& a) const { a += 4; }
+};
+
+BOOST_AUTO_TEST_CASE(bind_itself_memfn)
+{
+	Lolita a;
+	int r = 1;
+	auto f = kstd::bind(&Lolita::doit, kstd::ref(a), kstd::ref(r));
+	f();
+	BOOST_CHECK(r == 3);
+	
+	auto f2 = kstd::bind(&Lolita::doitconst, a, kstd::ref(r));
+	f2();
+	BOOST_CHECK(r == 7);
+	
+	auto f3 = kstd::bind(&Lolita::doitconst, Lolita(), _1);
+	f3(r);
+	BOOST_CHECK(r == 11);
+}

@@ -364,10 +364,25 @@ struct bind_impl:
 	static const unsigned NP = placeholder::count<Args...>::value;
 
 	template <typename F2, typename... Args2>
-		bind_impl(F2&& f, Args2&&... args):
+		explicit bind_impl(F2&& f, Args2&&... args):
 			details::bind_functor<NP, F, Args...>(
 					forward<F2>(f), forward<Args2>(args)...) {}
 };
+
+template <typename F, typename... Args>
+AUTO_FUN( bind(F&& f, Args&&... args) )
+	( bind_impl<
+	  typename remove_ref<F>::type,
+	  typename remove_ref<Args>::type...>(
+		  forward<F>(f), forward<Args>(args)...) )
+
+template <typename R, typename T, typename... Args2, typename... Args>
+AUTO_FUN( bind(R (T::*f)(Args2...), Args&&... args) )
+	( bind(mem_fn(f), forward<Args>(args)...) )
+
+template <typename R, typename T, typename... Args2, typename... Args>
+AUTO_FUN( bind(R (T::*f)(Args2...) const, Args&&... args) )
+	( bind(mem_fn(f), forward<Args>(args)...) )
 
 } // namespace kernel_std
 } // namespace std
