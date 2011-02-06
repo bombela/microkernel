@@ -58,6 +58,27 @@ struct count<T, Args...> {
 		count<Args...>::value + (is_placeholder<T>::value ? 1 : 0);
 };
 
+namespace details {
+	
+template <typename... Args>
+struct max;
+
+template <>
+struct max<> {
+	static const unsigned value = 0;
+};
+
+template <unsigned I, unsigned... Indices>
+struct max< arg<I>, arg<Indices>... > {
+	static const unsigned tailmax = max< arg<Indices>... >::value;
+	static const unsigned value = (tailmax > I) ? tailmax : I;
+};
+
+} // namespace details
+
+template <typename... Args>
+struct max: details::max<typename remove_const<Args>::type...> {};
+
 } // namespace placeholder
 
 namespace placeholder_defs {

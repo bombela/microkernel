@@ -354,3 +354,81 @@ BOOST_AUTO_TEST_CASE(placeholder_bind_extrem)
 	r = f(1, 1, 1, 1, a, 1, 1, 1, 1, 1);
 	BOOST_CHECK(r == 53);
 }
+
+BOOST_AUTO_TEST_CASE(placeholder_algo_count)
+{
+	BOOST_CHECK((kstd::placeholder::count<
+			int, float, double,
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<4>,
+			kstd::placeholder::arg<2>,
+			float, char, Toto
+			>::value) == 3);
+	BOOST_CHECK((kstd::placeholder::count<
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<4>,
+			decltype(_9),
+			int,
+			kstd::placeholder::arg<2>
+			>::value) == 4);
+	BOOST_CHECK((kstd::placeholder::count<
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<4>,
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<3>,
+			>::value) == 5);
+	BOOST_CHECK((kstd::placeholder::count<
+			>::value) == 0);
+	BOOST_CHECK((kstd::placeholder::count<
+			kstd::placeholder::arg<1>,
+			>::value) == 1);
+	BOOST_CHECK((kstd::placeholder::count<
+			int, float
+			>::value) == 0);
+}
+
+BOOST_AUTO_TEST_CASE(placeholder_algo_max)
+{
+	BOOST_CHECK((kstd::placeholder::max<
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<4>,
+			kstd::placeholder::arg<2>
+			>::value) == 4);
+	BOOST_CHECK((kstd::placeholder::max<
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<4>,
+			decltype(_9),
+			kstd::placeholder::arg<2>
+			>::value) == 9);
+	BOOST_CHECK((kstd::placeholder::max<
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<4>,
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<3>,
+			kstd::placeholder::arg<3>,
+			>::value) == 4);
+	BOOST_CHECK((kstd::placeholder::max<
+			>::value) == 0);
+	BOOST_CHECK((kstd::placeholder::max<
+			kstd::placeholder::arg<1>,
+			>::value) == 1);
+}
+
+// MUST NOT COMPILE
+#if 1
+namespace donotcompile {
+	
+void eater(int, float, double, char) {}
+
+void test1()
+{
+	kstd::bind_impl<void (*)(int, float, double, char),
+		int, float, double, decltype(_1)>
+			a(&eater, 1, 2, 3, _1);
+
+	a(1, 2);
+}
+
+} // namespace donotcompile
+#endif
