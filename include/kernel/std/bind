@@ -103,7 +103,7 @@ template <unsigned I, typename T, typename... Args>
 		static AUTO_FUN ( get(T&&, Args&&... args) )
 			(
 			 arg_getter<I - 1, Args...>::get(
-				 forward<Args...>(args...)
+				 forward<Args>(args)...
 				 )
 			)
 	};

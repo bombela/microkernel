@@ -324,13 +324,13 @@ BOOST_AUTO_TEST_CASE(placeholder_bind_xchang)
 	BOOST_CHECK(r == -5);
 }
 
-int extrem(int a, int b, int c, int d,
-		int e, int f, int g, int h, int i, int j, int k)
+int extrem(int a, int b, int c, int d, int e,
+		int f, int g, int h, int i, int j, int k)
 {
 	return a + b + c + d + e + f + g + h + i + j + k;
 }
 
-/*BOOST_AUTO_TEST_CASE(placeholder_bind_extrem)
+BOOST_AUTO_TEST_CASE(placeholder_bind_extrem)
 {
 	kstd::bind_impl<
 		int (*)(int, int, int, int, int, int, int, int, int, int, int),
@@ -349,4 +349,8 @@ int extrem(int a, int b, int c, int d,
 						kstd::placeholder::arg<10>());
 
 	int r = f(1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-}*/
+	BOOST_CHECK(r == 52);
+	int a = 2;
+	r = f(1, 1, 1, 1, a, 1, 1, 1, 1, 1);
+	BOOST_CHECK(r == 53);
+}
