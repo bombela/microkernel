@@ -526,3 +526,36 @@ BOOST_AUTO_TEST_CASE(bind_itself_memfn)
 	f3(r);
 	BOOST_CHECK(r == 11);
 }
+
+BOOST_AUTO_TEST_CASE(bind_check_size)
+{
+	{
+		auto a = kstd::bind(&Lolita::doitconst, Lolita(), _1);
+		struct { decltype(&Lolita::doitconst) a; Lolita b; } b;
+
+		BOOST_CHECK( sizeof a == sizeof b );
+	}
+	
+	{
+		int r = 1;
+		auto a = kstd::bind(&Lolita::doitconst, Lolita(), kstd::ref(r));
+		struct B { decltype(&Lolita::doitconst) a; Lolita b;
+			decltype(kstd::ref(r)) c; B(int& r): c(r){} } b(r);
+
+		BOOST_CHECK( sizeof a == sizeof b );
+	}
+	
+	{
+		auto a = kstd::bind(&adder, 1, char(2));
+		struct B { decltype(&adder) a; int b; char c; } b;
+
+		BOOST_CHECK( sizeof a == sizeof b );
+	}
+	
+	{
+		auto a = kstd::bind(&adder, _2, _1);
+		struct B { decltype(&adder) a; } b;
+
+		BOOST_CHECK( sizeof a == sizeof b );
+	}
+}
