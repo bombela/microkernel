@@ -15,8 +15,7 @@
 namespace std {
 namespace kernel_std {
 
-template <typename F> struct mem_fn_impl_m;
-template <typename F> struct mem_fn_impl_c;
+template <typename F> struct mem_fn_impl;
 
 template <typename R, typename T, typename MPF>
 	struct mem_fn_base
@@ -38,35 +37,35 @@ template <typename R, typename T, typename MPF>
 	};
 
 template <typename R, typename T, typename... Args>
-	struct mem_fn_impl_m<R (T::*)(Args...)>:
+	struct mem_fn_impl<R (T::*)(Args...)>:
 		mem_fn_base<R, T, R (T::*)(Args...)>
 	{
 		typedef mem_fn_base<R, T, R (T::*)(Args...)> base_t;
 		typedef typename base_t::mpf_t mpf_t;
 
-		constexpr mem_fn_impl_m(mpf_t mpf): base_t(mpf) {}
+		constexpr mem_fn_impl(mpf_t mpf): base_t(mpf) {}
 	};
 
 template <typename R, typename T, typename... Args>
-	struct mem_fn_impl_c<R (T::*)(Args...) const>:
+	struct mem_fn_impl<R (T::*)(Args...) const>:
 		mem_fn_base<R, const T, R (T::*)(Args...) const>
 	{
 		typedef mem_fn_base<R, const T, R (T::*)(Args...) const> base_t;
 		typedef typename base_t::mpf_t mpf_t;
 
-		constexpr mem_fn_impl_c(mpf_t mpf): base_t(mpf) {}
+		constexpr mem_fn_impl(mpf_t mpf): base_t(mpf) {}
 	};
 
 template <typename R, typename T, typename... Args>
 AUTO_FUN( mem_fn (R (T::*mpf)(Args...)) )
 (
-	mem_fn_impl_m<R (T::*)(Args...)>(mpf)
+	mem_fn_impl<R (T::*)(Args...)>(mpf)
 )
 
 template <typename R, typename T, typename... Args>
 AUTO_FUN( mem_fn (R (T::*mpf)(Args...) const) )
 (
-	mem_fn_impl_c<R (T::*)(Args...) const>(mpf)
+	mem_fn_impl<R (T::*)(Args...) const>(mpf)
 )
 
 } // namespace kernel_std
