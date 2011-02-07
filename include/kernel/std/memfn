@@ -18,42 +18,44 @@ namespace kernel_std {
 template <typename F> struct mem_fn_impl_m;
 template <typename F> struct mem_fn_impl_c;
 
+template <typename R, typename T, typename MPF>
+	struct mem_fn_base
+	{
+		typedef MPF mpf_t;
+
+		constexpr mem_fn_base(mpf_t mpf): mpf(mpf) {}
+
+		template <typename... Args2>
+			R operator()(T& obj, Args2&&... args) const {
+				return (obj.*mpf)(forward<Args2>(args)...);
+			}
+		template <typename... Args2>
+			R operator()(T* obj, Args2&&... args) const {
+				return (obj->*mpf)(forward<Args2>(args)...);
+			}
+
+		mpf_t mpf;
+	};
+
 template <typename R, typename T, typename... Args>
-struct mem_fn_impl_m<R (T::*)(Args...)>
-{
-	typedef R (T::*mpf_t)(Args...);
+	struct mem_fn_impl_m<R (T::*)(Args...)>:
+		mem_fn_base<R, T, R (T::*)(Args...)>
+	{
+		typedef mem_fn_base<R, T, R (T::*)(Args...)> base_t;
+		typedef typename base_t::mpf_t mpf_t;
 
-	mpf_t mpf;
-	constexpr mem_fn_impl_m(mpf_t mpf): mpf(mpf) {}
-
-	template <typename... Args2>
-		R operator()(T& obj, Args2&&... args) const {
-			return (obj.*mpf)(forward<Args2>(args)...);
-		}
-	template <typename... Args2>
-		R operator()(T* obj, Args2&&... args) const {
-			return (obj->*mpf)(forward<Args2>(args)...);
-		}
-};
+		constexpr mem_fn_impl_m(mpf_t mpf): base_t(mpf) {}
+	};
 
 template <typename R, typename T, typename... Args>
-struct mem_fn_impl_c<R (T::*)(Args...) const>
-{
-	typedef R (T::*mpf_t)(Args...) const;
+	struct mem_fn_impl_c<R (T::*)(Args...) const>:
+		mem_fn_base<R, const T, R (T::*)(Args...) const>
+	{
+		typedef mem_fn_base<R, const T, R (T::*)(Args...) const> base_t;
+		typedef typename base_t::mpf_t mpf_t;
 
-	mpf_t mpf;
-	constexpr mem_fn_impl_c(mpf_t mpf): mpf(mpf) {}
-
-	template <typename... Args2>
-		R operator()(const T& obj, Args2&&... args) const {
-			return (obj.*mpf)(forward<Args2>(args)...);
-		}
-
-	template <typename... Args2>
-		R operator()(const T* obj, Args2&&... args) const {
-			return (obj->*mpf)(forward<Args2>(args)...);
-		}
-};
+		constexpr mem_fn_impl_c(mpf_t mpf): base_t(mpf) {}
+	};
 
 template <typename R, typename T, typename... Args>
 AUTO_FUN( mem_fn (R (T::*mpf)(Args...)) )
