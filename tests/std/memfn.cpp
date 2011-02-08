@@ -144,3 +144,12 @@ BOOST_AUTO_TEST_CASE(static_adder)
 	r = kstd::static_mem_fn(&Toto::adder)(a, 1, 2);
 	BOOST_CHECK(r == 3);
 }
+
+// ---- prefered version
+//
+BOOST_AUTO_TEST_CASE(prefered_version_test)
+{
+	int r = MEM_FN(&Toto::adder)(Toto(), 1, 2);
+	BOOST_CHECK(r == 3);
+	std::cout << (sizeof MEM_FN(&Toto::adder)) << std::endl;
+}

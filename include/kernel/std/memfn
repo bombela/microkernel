@@ -15,12 +15,12 @@
 namespace std {
 namespace kernel_std {
 
-#define PREFER_MEM_FN_VERSION storepmf
-
-#if    PREFER_MEM_FN_VERSION == static 
-	#define MEM_FN mem_fn_static::static_mem_fn
-#elif  PREFER_MEM_FN_VERSION == storepmf
-	#define MEM_FN mem_fn_storepmf::storepmf_mem_fn
+#if   defined(PREFER_MEM_FN_STATIC)
+#	define MEM_FN ::std::kernel_std::static_mem_fn
+#elif defined(PREFER_MEM_FN_STOREPMF)
+#	define MEM_FN ::std::kernel_std::storepmf_mem_fn
+#else
+#	warning No PREFERD MEM_FN selected (set a correct PREFER_MEM_FN_"VERSION")
 #endif
 
 inline namespace mem_fn_storepmf {

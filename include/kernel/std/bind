@@ -378,11 +378,11 @@ AUTO_FUN( bind(F&& f, Args&&... args) )
 
 template <typename R, typename T, typename... Args2, typename... Args>
 AUTO_FUN( bind(R (T::*f)(Args2...), Args&&... args) )
-	( bind(mem_fn(f), forward<Args>(args)...) )
+	( bind(storepmf_mem_fn(f), forward<Args>(args)...) )
 
 template <typename R, typename T, typename... Args2, typename... Args>
 AUTO_FUN( bind(R (T::*f)(Args2...) const, Args&&... args) )
-	( bind(mem_fn(f), forward<Args>(args)...) )
+	( bind(storepmf_mem_fn(f), forward<Args>(args)...) )
 
 } // namespace kernel_std
 } // namespace std
