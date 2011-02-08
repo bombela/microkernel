@@ -15,6 +15,9 @@
 namespace std {
 namespace kernel_std {
 
+inline namespace mem_fn_storepmf {};
+inline namespace mem_fn_static {};
+
 inline namespace mem_fn_storepmf {
 
 template <typename R, typename T, typename PMF>
@@ -72,7 +75,7 @@ AUTO_FUN( mem_fn (R (T::*pmf)(Args...) const) )
 
 } // namespace mem_fn_storepmf
 
-inline namespace mem_fn_static {
+namespace mem_fn_static {
 
 template <typename T, typename PMF, PMF pmf>
 	struct mem_fn_static_base
@@ -88,28 +91,35 @@ template <typename T, typename PMF, PMF pmf>
 					seem to fix the problem:
 				*/
 				decltype(
-						(((T*)0)->*pmf)(forward<Args>(args)...)
+						(((T*)0)->*pmf)(forward<Args>(*(Args*)0)...)
 						)
 			{
 				return (obj.*pmf)(forward<Args>(args)...);
 			}
 		template <typename... Args>
-			AUTO_FUN( inline constexpr operator()
-					(T* obj, Args&&... args) const )
-			(
-				(obj->*pmf)(forward<Args>(args)...)
-			)
+			inline constexpr auto operator() (T* obj, Args&&... args) const ->
+			/*
+			 * Another common problem with the same version of gcc is the
+			 * "sorry, unimplemented: use of ‘type_pack_expansion’ in template"
+			 * problem, that can be fixed by using "fake" instance (*(Args*)0)
+			 */
+				decltype(
+						(obj->*pmf)(forward<Args>(*(Args*)0)...)
+						)
+			{
+				return (obj->*pmf)(forward<Args>(args)...);
+			}
 	};
 
 template <typename PMF, PMF pmf>
-struct mem_fn_static;
+struct mem_fn_static_impl;
 
 template <typename R, typename T, typename... Args, R (T::*pmf)(Args...)>
-struct mem_fn_static<R (T::*)(Args...), pmf>:
+struct mem_fn_static_impl<R (T::*)(Args...), pmf>:
 	mem_fn_static_base<T, R (T::*)(Args...), pmf> {};
 
 template <typename R, typename T, typename... Args, R (T::*pmf)(Args...) const>
-struct mem_fn_static<R (T::*)(Args...) const, pmf>:
+struct mem_fn_static_impl<R (T::*)(Args...) const, pmf>:
 	mem_fn_static_base<const T, R (T::*)(Args...) const, pmf> {};
 
 template <typename PMF>
@@ -118,7 +128,7 @@ template <typename PMF>
 		template <PMF pmf>
 			AUTO_FUN ( inline constexpr build() const )
 			(
-				mem_fn_static<PMF, pmf>()
+				mem_fn_static_impl<PMF, pmf>()
 			)
 	};
 
@@ -127,6 +137,15 @@ AUTO_FUN ( inline constexpr mem_fn_builder (R (T::*)(Args...)) )
 (
  mem_fn_static_builder<R (T::*)(Args...)>()
 )
+
+template <typename R, typename T, typename... Args>
+AUTO_FUN ( inline constexpr mem_fn_builder (R (T::*)(Args...) const) )
+(
+ mem_fn_static_builder<R (T::*)(Args...) const>()
+)
+
+#define static_mem_fn(__pmf) \
+	mem_fn_static::mem_fn_builder((__pmf)).build<(__pmf)>()
 
 } // namespace mem_fn_static
 
