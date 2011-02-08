@@ -69,38 +69,44 @@ BOOST_AUTO_TEST_CASE(basic_const)
 BOOST_AUTO_TEST_CASE(helper_ref)
 {
 	Toto a;
-	kstd::mem_fn_storepmf::mem_fn(&Toto::job)(a);
+	kstd::mem_fn_storepmf::storepmf_mem_fn(&Toto::job)(a);
 	BOOST_CHECK(a._v == 10);
 }
 
 BOOST_AUTO_TEST_CASE(helper_ptr)
 {
 	Toto a;
-	kstd::mem_fn_storepmf::mem_fn(&Toto::job)(&a);
+	kstd::mem_fn_storepmf::storepmf_mem_fn(&Toto::job)(&a);
 	BOOST_CHECK(a._v == 10);
 }
 
 BOOST_AUTO_TEST_CASE(helper_const)
 {
 	Toto a;
-	kstd::mem_fn_storepmf::mem_fn(&Toto::job2)(a, 42);
+	kstd::mem_fn_storepmf::storepmf_mem_fn(&Toto::job2)(a, 42);
 	BOOST_CHECK(a._v == 12);
 	a._v = 2;
-	kstd::mem_fn_storepmf::mem_fn(&Toto::job2)(const_cast<const Toto*>(&a), 42);
+	kstd::mem_fn_storepmf::storepmf_mem_fn(&Toto::job2)
+		(const_cast<const Toto*>(&a), 42);
 	BOOST_CHECK(a._v == 12);
 }
 
 BOOST_AUTO_TEST_CASE(helper_adder)
 {
-	int r = kstd::mem_fn(&Toto::adder)(Toto(), 1, 2);
+	int r = kstd::storepmf_mem_fn(&Toto::adder)(Toto(), 1, 2);
 	BOOST_CHECK(r == 3);
 	
 	Toto a;
-	r = kstd::mem_fn(&Toto::adder)(a, 1, 2);
+	r = kstd::storepmf_mem_fn(&Toto::adder)(a, 1, 2);
 	BOOST_CHECK(r == 3);
 }
 
 // ---- static version
+
+BOOST_AUTO_TEST_CASE(static_sizecheck)
+{
+	BOOST_CHECK(sizeof kstd::static_mem_fn(&Toto::job) == 1);
+}
 
 BOOST_AUTO_TEST_CASE(static_helper_ref)
 {

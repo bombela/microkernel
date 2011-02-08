@@ -15,8 +15,13 @@
 namespace std {
 namespace kernel_std {
 
-inline namespace mem_fn_storepmf {};
-inline namespace mem_fn_static {};
+#define PREFER_MEM_FN_VERSION storepmf
+
+#if    PREFER_MEM_FN_VERSION == static 
+	#define MEM_FN mem_fn_static::static_mem_fn
+#elif  PREFER_MEM_FN_VERSION == storepmf
+	#define MEM_FN mem_fn_storepmf::storepmf_mem_fn
+#endif
 
 inline namespace mem_fn_storepmf {
 
@@ -62,20 +67,20 @@ template <typename R, typename T, typename... Args>
 	};
 
 template <typename R, typename T, typename... Args>
-AUTO_FUN( mem_fn (R (T::*pmf)(Args...)) )
+AUTO_FUN( storepmf_mem_fn (R (T::*pmf)(Args...)) )
 (
 	mem_fn_impl<R (T::*)(Args...)>(pmf)
 )
 
 template <typename R, typename T, typename... Args>
-AUTO_FUN( mem_fn (R (T::*pmf)(Args...) const) )
+AUTO_FUN( storepmf_mem_fn (R (T::*pmf)(Args...) const) )
 (
 	mem_fn_impl<R (T::*)(Args...) const>(pmf)
 )
 
 } // namespace mem_fn_storepmf
 
-namespace mem_fn_static {
+inline namespace mem_fn_static {
 
 template <typename T, typename PMF, PMF pmf>
 	struct mem_fn_static_base
