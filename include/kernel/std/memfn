@@ -15,35 +15,37 @@
 namespace std {
 namespace kernel_std {
 
-template <typename F> struct mem_fn_impl;
+inline namespace mem_fn_storepmf {
 
-template <typename R, typename T, typename MPF>
+template <typename R, typename T, typename PMF>
 	struct mem_fn_base
 	{
-		typedef MPF mpf_t;
+		typedef PMF pmf_t;
 
-		constexpr mem_fn_base(mpf_t mpf): mpf(mpf) {}
+		constexpr mem_fn_base(pmf_t pmf): pmf(pmf) {}
 
 		template <typename... Args2>
 			R operator()(T& obj, Args2&&... args) const {
-				return (obj.*mpf)(forward<Args2>(args)...);
+				return (obj.*pmf)(forward<Args2>(args)...);
 			}
 		template <typename... Args2>
 			R operator()(T* obj, Args2&&... args) const {
-				return (obj->*mpf)(forward<Args2>(args)...);
+				return (obj->*pmf)(forward<Args2>(args)...);
 			}
 
-		mpf_t mpf;
+		const pmf_t pmf;
 	};
+
+template <typename F> struct mem_fn_impl;
 
 template <typename R, typename T, typename... Args>
 	struct mem_fn_impl<R (T::*)(Args...)>:
 		mem_fn_base<R, T, R (T::*)(Args...)>
 	{
 		typedef mem_fn_base<R, T, R (T::*)(Args...)> base_t;
-		typedef typename base_t::mpf_t mpf_t;
+		typedef typename base_t::pmf_t pmf_t;
 
-		constexpr mem_fn_impl(mpf_t mpf): base_t(mpf) {}
+		constexpr mem_fn_impl(pmf_t pmf): base_t(pmf) {}
 	};
 
 template <typename R, typename T, typename... Args>
@@ -51,22 +53,82 @@ template <typename R, typename T, typename... Args>
 		mem_fn_base<R, const T, R (T::*)(Args...) const>
 	{
 		typedef mem_fn_base<R, const T, R (T::*)(Args...) const> base_t;
-		typedef typename base_t::mpf_t mpf_t;
+		typedef typename base_t::pmf_t pmf_t;
 
-		constexpr mem_fn_impl(mpf_t mpf): base_t(mpf) {}
+		constexpr mem_fn_impl(pmf_t pmf): base_t(pmf) {}
 	};
 
 template <typename R, typename T, typename... Args>
-AUTO_FUN( mem_fn (R (T::*mpf)(Args...)) )
+AUTO_FUN( mem_fn (R (T::*pmf)(Args...)) )
 (
-	mem_fn_impl<R (T::*)(Args...)>(mpf)
+	mem_fn_impl<R (T::*)(Args...)>(pmf)
 )
 
 template <typename R, typename T, typename... Args>
-AUTO_FUN( mem_fn (R (T::*mpf)(Args...) const) )
+AUTO_FUN( mem_fn (R (T::*pmf)(Args...) const) )
 (
-	mem_fn_impl<R (T::*)(Args...) const>(mpf)
+	mem_fn_impl<R (T::*)(Args...) const>(pmf)
 )
+
+} // namespace mem_fn_storepmf
+
+inline namespace mem_fn_static {
+
+template <typename T, typename PMF, PMF pmf>
+	struct mem_fn_static_base
+	{
+		template <typename... Args>
+			inline constexpr auto operator() (T& obj, Args&&... args) const ->
+				/* gcc-4.6 (GCC) 4.6.0 20110205 (experimental)
+				 * crash with this code:
+				 decltype(
+						((*(T*)0).*pmf)(forward<Args>(args)...)
+						)
+					using ->* in decltype rather than .*
+					seem to fix the problem:
+				*/
+				decltype(
+						(((T*)0)->*pmf)(forward<Args>(args)...)
+						)
+			{
+				return (obj.*pmf)(forward<Args>(args)...);
+			}
+		template <typename... Args>
+			AUTO_FUN( inline constexpr operator()
+					(T* obj, Args&&... args) const )
+			(
+				(obj->*pmf)(forward<Args>(args)...)
+			)
+	};
+
+template <typename PMF, PMF pmf>
+struct mem_fn_static;
+
+template <typename R, typename T, typename... Args, R (T::*pmf)(Args...)>
+struct mem_fn_static<R (T::*)(Args...), pmf>:
+	mem_fn_static_base<T, R (T::*)(Args...), pmf> {};
+
+template <typename R, typename T, typename... Args, R (T::*pmf)(Args...) const>
+struct mem_fn_static<R (T::*)(Args...) const, pmf>:
+	mem_fn_static_base<const T, R (T::*)(Args...) const, pmf> {};
+
+template <typename PMF>
+	struct mem_fn_static_builder
+	{
+		template <PMF pmf>
+			AUTO_FUN ( inline constexpr build() const )
+			(
+				mem_fn_static<PMF, pmf>()
+			)
+	};
+
+template <typename R, typename T, typename... Args>
+AUTO_FUN ( inline constexpr mem_fn_builder (R (T::*)(Args...)) )
+(
+ mem_fn_static_builder<R (T::*)(Args...)>()
+)
+
+} // namespace mem_fn_static
 
 } // namespace kernel_std
 } // namespace std
