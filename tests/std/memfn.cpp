@@ -19,6 +19,13 @@ struct Toto {
 	int adder(int a, int b) const { return a + b; }
 };
 
+struct Titi {
+   	virtual int adder(int, int)	const = 0;
+};
+
+// from memfn_noinline_test.cpp
+extern const Titi& getTata();
+
 // ---- store PMF version
 
 BOOST_AUTO_TEST_CASE(basic_ref)
@@ -101,6 +108,24 @@ BOOST_AUTO_TEST_CASE(helper_adder)
 	BOOST_CHECK(r == 3);
 }
 
+__attribute__ ((noinline))
+AUTO_FUN( storepmf_test_virtual_build_memfn() )
+(
+ kstd::storepmf_mem_fn(&Titi::adder)
+)
+
+__attribute__ ((noinline)) int storepmf_test_virtual_impl()
+{
+	auto f = storepmf_test_virtual_build_memfn();
+	return f(getTata(), 1, 2);
+}
+
+BOOST_AUTO_TEST_CASE(storepmf_test_virtual)
+{
+	int r = storepmf_test_virtual_impl();
+	BOOST_CHECK(r == 3);
+}
+
 // ---- static version
 
 BOOST_AUTO_TEST_CASE(static_sizecheck)
@@ -145,11 +170,28 @@ BOOST_AUTO_TEST_CASE(static_adder)
 	BOOST_CHECK(r == 3);
 }
 
+__attribute__ ((noinline))
+AUTO_FUN( static_test_virtual_build_memfn() )
+(
+ kstd::static_mem_fn(&Titi::adder)
+)
+
+__attribute__ ((noinline)) int static_test_virtual_impl()
+{
+	auto f = static_test_virtual_build_memfn();
+	return f(getTata(), 1, 2);
+}
+
+BOOST_AUTO_TEST_CASE(static_test_virtual)
+{
+	int r = static_test_virtual_impl();
+	BOOST_CHECK(r == 3);
+}
+
 // ---- prefered version
 //
 BOOST_AUTO_TEST_CASE(prefered_version_test)
 {
 	int r = MEM_FN(&Toto::adder)(Toto(), 1, 2);
 	BOOST_CHECK(r == 3);
-	std::cout << (sizeof MEM_FN(&Toto::adder)) << std::endl;
 }

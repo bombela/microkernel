@@ -47,7 +47,7 @@ if (Boost_FOUND)
 			PROPERTY COMPILE_DEFINITIONS ${KERNEL_DEFINES} "USE_EXTERNAL_STL=1"
 			)
 
-		add_executable(${name} ${src} ${UTILITIES_SRCS})
+		add_executable(${name} ${src} ${ARGN} ${UTILITIES_SRCS})
 		add_test(${name} ${name})
 	endmacro()
 else()
@@ -76,9 +76,10 @@ foreach(src
 		stack.cpp
 		range.cpp
 		algo.cpp
-		memfn.cpp
 		bind.cpp
 		function.cpp
 		)
 	kern0x_add_test(${src})
 endforeach()
+
+kern0x_add_test(memfn.cpp memfn_noinline_test.cpp)
