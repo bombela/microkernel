@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 2.8)
 ###############################################################################
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_COMPILER_IS_GNUCXX)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=gnu++0x")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=gnu++0x -Wno-pmf-conversions")
 endif()
 
 ###############################################################################

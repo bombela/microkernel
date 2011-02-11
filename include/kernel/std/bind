@@ -12,6 +12,7 @@
 #include <kernel/std/autofun>
 #include <kernel/std/ref>
 #include <kernel/std/forward>
+#include <kernel/std/move>
 #include <kernel/std/memfn>
 
 namespace std {
@@ -211,7 +212,8 @@ template <typename T, typename... Args, typename... Args2>
 	};
 
 template <unsigned I, typename... Args, typename... Args2>
-	struct storage_getter<0, storage< placeholder::arg<I> , Args...>, Args2...>
+	struct storage_getter<0,
+		storage< placeholder::arg<I> , Args...>, Args2...>
 	{
 		static AUTO_FUN( get(const storage<placeholder::arg<I>, Args...>&,
 					Args2&&... args2) )
@@ -222,7 +224,7 @@ template <unsigned I, typename... Args, typename... Args2>
 
 template <unsigned I, typename... Args, typename... Args2>
 	struct storage_getter<0,
-	storage< const placeholder::arg<I> , Args...>, Args2...>
+		storage< const placeholder::arg<I> , Args...>, Args2...>
 	{
 		static AUTO_FUN( get(const storage<const placeholder::arg<I>, Args...>&,
 					Args2&&... args2) )
@@ -295,16 +297,27 @@ template <typename T, typename... Args>
 		typename remove_ref<T>::type arg;
 		
 		template <typename T2, typename... Args2>
-			storage(UNUSED T2&& arg, Args2&&... args):
+			explicit storage(UNUSED T2&& arg, Args2&&... args):
 				storage<Args...>(forward<Args2>(args)...),
 				arg(forward<T2>(arg)) {}
+		
+		// gcc-4.6 (GCC) 4.6.0 20110205 (experimental)
+		// overload error with the code under...
+	
+		/*explicit storage(const storage& o):
+			storage<Args...>(o),
+			arg(o.arg) {}*/
+
+		/*explicit storage(storage&& o):
+			storage<Args...>(std::move(o)),
+			arg(std::move(o.arg)) {}*/
 	};
 
 template <unsigned I, typename... Args>
 	struct storage<placeholder::arg<I>, Args...>: storage<Args...>
 	{
 		template <typename... Args2>
-			storage(const placeholder::arg<I>&, Args2&&... args):
+			explicit storage(const placeholder::arg<I>&, Args2&&... args):
 				storage<Args...>(forward<Args2>(args)...) {}
 	};
 
@@ -312,7 +325,7 @@ template <unsigned I, typename... Args>
 	struct storage<const placeholder::arg<I>, Args...>: storage<Args...>
 	{
 		template <typename... Args2>
-			storage(const placeholder::arg<I>&, Args2&&... args):
+			explicit storage(const placeholder::arg<I>&, Args2&&... args):
 				storage<Args...>(forward<Args2>(args)...) {}
 	};
 
@@ -320,9 +333,20 @@ template <typename F, typename... Args>
 struct bind_base: protected storage<Args...>
 {
 	template <typename F2, typename... Args2>
-		bind_base(F2&& f, Args2&&... args):
+		explicit bind_base(F2&& f, Args2&&... args):
 			storage<Args...>(forward<Args2>(args)...),
 			f(forward<F2>(f)) {}
+	
+	// gcc-4.6 (GCC) 4.6.0 20110205 (experimental)
+	// overload error with the code under...
+
+	/*explicit bind_base(const bind_base& o):
+		storage<Args...>(o),
+		f(o.f) {}*/
+	
+	/*bind_base(bind_base&& o):
+		storage<Args...>(move(o)),
+		f(move(o.f)) {}*/
 
 	F f;
 };
@@ -354,6 +378,88 @@ struct bind_functor: bind_base<F, Args...>
 };
 
 } // namespace details
+
+namespace bind_memfn {
+
+template <typename R, typename T, typename PMF, typename PF>
+	struct memfn_base
+	{
+		typedef PMF pmf_t;
+		typedef PF  pf_t;
+
+		constexpr memfn_base(pmf_t pmf, T* obj):
+			pf( (pf_t)(obj->*pmf) ), obj(obj) {}
+
+		template <typename... Args2>
+			R operator()(Args2&&... args) const {
+				return pf(obj, forward<Args2>(args)...);
+			}
+
+		const pf_t pf;
+		T* const obj;
+	};
+
+template <typename F> struct memfn_impl;
+
+template <typename R, typename T, typename... Args>
+	struct memfn_impl<R (T::*)(Args...)>:
+		memfn_base<R, T,
+			R (T::*)(Args...),
+			R (*)(T*, Args...)>
+	{
+		typedef
+			memfn_base<R, T,
+				R (T::*)(Args...),
+				R (*)(T*, Args...)>
+		base_t;
+		typedef typename base_t::pmf_t pmf_t;
+
+		constexpr memfn_impl(pmf_t pmf, T* obj):
+			base_t(pmf, obj) {}
+	};
+
+template <typename R, typename T, typename... Args>
+	struct memfn_impl<R (T::*)(Args...) const>:
+		memfn_base<R, const T,
+			R (T::*)(Args...) const,
+			R (*)(const T*, Args...)>
+	{
+		typedef
+			memfn_base<R, const T,
+				R (T::*)(Args...) const,
+				R (*)(const T*, Args...)>
+			base_t;
+		typedef typename base_t::pmf_t pmf_t;
+
+		constexpr memfn_impl(pmf_t pmf, const T* obj):
+			base_t(pmf, obj) {}
+	};
+
+template <typename R, typename T, typename... Args>
+AUTO_FUN( storepf_mem_fn (R (T::*pmf)(Args...), T& obj) )
+(
+	memfn_impl<R (T::*)(Args...)>(pmf, &obj)
+)
+
+template <typename R, typename T, typename... Args>
+AUTO_FUN( storepf_mem_fn (R (T::*pmf)(Args...), T* obj) )
+(
+	memfn_impl<R (T::*)(Args...)>(pmf, obj)
+)
+
+template <typename R, typename T, typename... Args>
+AUTO_FUN( storepf_mem_fn (R (T::*pmf)(Args...) const, const T& obj) )
+(
+	memfn_impl<R (T::*)(Args...) const>(pmf, &obj)
+)
+
+template <typename R, typename T, typename... Args>
+AUTO_FUN( storepf_mem_fn (R (T::*pmf)(Args...) const, const T* obj) )
+(
+	memfn_impl<R (T::*)(Args...) const>(pmf, obj)
+)
+
+} // namespace bind_memfn
 
 template <typename F, typename... Args>
 struct bind_impl:

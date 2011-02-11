@@ -559,3 +559,19 @@ BOOST_AUTO_TEST_CASE(bind_check_size)
 		BOOST_CHECK( sizeof a == sizeof b );
 	}
 }
+
+BOOST_AUTO_TEST_CASE(bind_wrapping)
+{
+	auto a = kstd::bind(kstd::bind(&adder, 2, _1), _1);
+	BOOST_CHECK(a(2) == 4);
+
+
+	// gcc-4.6 (GCC) 4.6.0 20110205 (experimental)
+	// overload error
+	// but the implicit move (above) seem to work well.
+	
+	/*
+	auto sub = kstd::bind(&adder, 2, _1);
+	auto b = kstd::bind(sub, _1);
+	BOOST_CHECK(b(2) == 4); */
+}
