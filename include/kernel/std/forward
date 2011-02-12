@@ -18,6 +18,16 @@ T&& forward(typename remove_ref<T>::type& arg) {
 	return static_cast<T&&>(arg);
 }
 
+template <typename T>
+struct is_rvalue {
+	static const bool value = false;
+};
+
+template <typename T>
+struct is_rvalue<T&&> {
+	static const bool value = true;
+};
+
 } // namespace kernel_std
 } // namespace std
 

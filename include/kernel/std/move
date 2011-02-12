@@ -1,0 +1,24 @@
+/* vim: ft=cpp
+ * move
+ * Copyright © 2011, François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef MOVE_H
+#define MOVE_H
+
+#include <kernel/std/bits/decay.hpp>
+
+namespace std {
+namespace kernel_std {
+	
+template<typename T>
+typename remove_ref<T>::type&& move(T&& arg) {
+	return static_cast<typename remove_ref<T>::type&&>(arg);
+}
+
+} // namespace kernel_std
+} // namespace std
+
+#endif /* MOVE_H */
