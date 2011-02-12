@@ -55,12 +55,13 @@ kern0x_add_define(STD_STACK "std::stack")
 kern0x_add_define(STD_LIST  "std::list")
 kern0x_add_define(STD_OSTREAM  "std::ostream")
 kern0x_add_define(STD_IOSTREAM  "std::cout & co")
+kern0x_add_define(STD_FUNCTION  "function holder")
 kern0x_add_define(CXXRUNTIME  "C++ runtime support")
 kern0x_add_define(CONSOLE  "standard console")
 
 set(MEM_FN_VERSION "static" CACHE STRING
 	"mem_fn implemetation version (storepmf or static)")
-message(STATUS "mem_fn implemetation: ${MEM_FN_VERSION}")
+message(STATUS "mem_fn implementation: ${MEM_FN_VERSION}")
 string(TOUPPER "${MEM_FN_VERSION}" MEM_FN_VERSION)
 list(APPEND KERNEL_DEFINES "PREFER_MEM_FN_${MEM_FN_VERSION}")
 

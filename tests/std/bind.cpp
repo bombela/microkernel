@@ -598,6 +598,14 @@ BOOST_AUTO_TEST_CASE(bind_check_size)
 
 		BOOST_CHECK( sizeof a == sizeof b );
 	}
+	
+	{
+		Lolita l;
+		auto a = kstd::bind(&Lolita::doitconst, l, _1);
+		struct { void* a; void* b; } b;
+
+		BOOST_CHECK( sizeof a == sizeof b );
+	}
 }
 
 BOOST_AUTO_TEST_CASE(bind_wrapping)
