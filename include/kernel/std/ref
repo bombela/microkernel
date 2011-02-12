@@ -34,6 +34,12 @@ AUTO_FUN( ref(const T& obj) )
 	ref_wrapper<const T>(obj)
 )
 
+template <typename T>
+AUTO_FUN( cref(T& obj) )
+(
+	ref_wrapper<const T>(obj)
+)
+
 } // namespace kernel_std
 } // namespace std
 
