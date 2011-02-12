@@ -45,14 +45,14 @@ BOOST_AUTO_TEST_CASE(fct_functor)
 
 struct Big {
 	void set(char c) { for(auto& i : data) i = c; }
-	void check(char c) const { for(auto i : data) BOOST_CHECK(i == c); }
+	void check(char c) const { for(auto i : data) BOOST_REQUIRE(i == c); }
 	char data[1024];
 };
 
 BOOST_AUTO_TEST_CASE(fct_big_functor)
 {
 	Big one;
-	kstd::function<void (char)> f;
+	kstd::function<void (char), 1024 + 64> f;
 	
 	one.set('a');
 	one.check('a');
@@ -60,7 +60,11 @@ BOOST_AUTO_TEST_CASE(fct_big_functor)
 	f('b');
 	one.check('b');
 	
-	f = kstd::bind(&Big::set, one, _1); // SHOULD NOT COMPILE!!!!
+	f = kstd::bind(&Big::set, kstd::ref(one), _1);
 	f('c');
-	one.check('c');
+	f = kstd::bind(&Big::check, kstd::cref(one), _1);
+	f('c');
+	f = kstd::bind(&Big::check, one, _1); // copy one
+	one.set('a');
+	f('c');
 }

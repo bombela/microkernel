@@ -400,16 +400,6 @@ AUTO_FUN( bind(F&& f, Args&&... args) )
 	  typename remove_ref<Args>::type...>(
 		  forward<F>(f), forward<Args>(args)...) )
 
-/*
-template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...), Args&&... args) )
-	( bind(storepmf_mem_fn(f), forward<Args>(args)...) )
-
-template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...) const, Args&&... args) )
-	( bind(storepmf_mem_fn(f), forward<Args>(args)...) )
-*/
-
 namespace bind_mem_fn {
 
 template <typename R, typename T, typename PMF, typename PF>
@@ -419,47 +409,31 @@ template <typename R, typename T, typename PMF, typename PF>
 		typedef PF  pf_t;
 
 		constexpr mem_fn_base(pmf_t pmf, T* obj):
-			pf( (pf_t)(obj->*pmf) ), obj(obj) {}
-
+			pf( (pf_t)(obj->*pmf) ) {}
+		
 		template <typename... Args2>
-			R operator()(Args2&&... args) const {
+			R operator()(T* obj, Args2&&... args) const {
 				return pf(obj, forward<Args2>(args)...);
 			}
-
-		const pf_t pf;
-		T* const obj;
-	};
-
-template <typename R, typename T, typename PMF, typename PF>
-	struct mem_fn_base_rvalue
-	{
-		typedef PMF pmf_t;
-		typedef PF  pf_t;
-
-		constexpr mem_fn_base_rvalue(pmf_t pmf, T&& obj):
-			pf( (pf_t)(obj.*pmf) ), obj(forward<T>(obj)) {}
-
+		
 		template <typename... Args2>
-			R operator()(Args2&&... args) const {
+			R operator()(T& obj, Args2&&... args) const {
 				return pf(&obj, forward<Args2>(args)...);
 			}
-
+		
 		const pf_t pf;
-		T obj;
 	};
 
-template <template <typename, typename, typename, typename> class SUPER,
-		 typename F> struct mem_fn_impl;
+template <typename F> struct mem_fn_impl;
 
-template <template <typename, typename, typename, typename> class SUPER,
-		 typename R, typename T, typename... Args>
-	struct mem_fn_impl<SUPER, R (T::*)(Args...)>:
-		SUPER<R, T,
+template <typename R, typename T, typename... Args>
+	struct mem_fn_impl<R (T::*)(Args...)>:
+		mem_fn_base<R, T,
 			R (T::*)(Args...),
 			R (*)(T*, Args...)>
 	{
 		typedef
-			SUPER<R, T,
+			mem_fn_base<R, T,
 				R (T::*)(Args...),
 				R (*)(T*, Args...)>
 		base_t;
@@ -467,19 +441,16 @@ template <template <typename, typename, typename, typename> class SUPER,
 
 		constexpr mem_fn_impl(pmf_t pmf, T* obj):
 			base_t(pmf, obj) {}
-		constexpr mem_fn_impl(pmf_t pmf, T&& obj):
-			base_t(pmf, obj) {}
 	};
 
-template <template <typename, typename, typename, typename> class SUPER,
-		 typename R, typename T, typename... Args>
-	struct mem_fn_impl<SUPER, R (T::*)(Args...) const>:
-		SUPER<R, const T,
+template <typename R, typename T, typename... Args>
+	struct mem_fn_impl<R (T::*)(Args...) const>:
+		mem_fn_base<R, const T,
 			R (T::*)(Args...) const,
 			R (*)(const T*, Args...)>
 	{
 		typedef
-			SUPER<R, const T,
+			mem_fn_base<R, const T,
 				R (T::*)(Args...) const,
 				R (*)(const T*, Args...)>
 			base_t;
@@ -487,39 +458,30 @@ template <template <typename, typename, typename, typename> class SUPER,
 
 		constexpr mem_fn_impl(pmf_t pmf, const T* obj):
 			base_t(pmf, obj) {}
-		constexpr mem_fn_impl(pmf_t pmf, T&& obj):
-			base_t(pmf, forward<T>(obj)) {}
 	};
 
 template <typename R, typename T, typename... Args>
 AUTO_FUN( mem_fn (R (T::*pmf)(Args...), T& obj) )
 (
-	mem_fn_impl<mem_fn_base, R (T::*)(Args...)>(pmf, &obj)
+	mem_fn_impl<R (T::*)(Args...)>(pmf, &obj)
 )
 
 template <typename R, typename T, typename... Args>
 AUTO_FUN( mem_fn (R (T::*pmf)(Args...), T* obj) )
 (
-	mem_fn_impl<mem_fn_base, R (T::*)(Args...)>(pmf, obj)
+	mem_fn_impl<R (T::*)(Args...)>(pmf, obj)
 )
 
 template <typename R, typename T, typename... Args>
 AUTO_FUN( mem_fn (R (T::*pmf)(Args...) const, const T& obj) )
 (
-	mem_fn_impl<mem_fn_base, R (T::*)(Args...) const>(pmf, &obj)
-)
-
-template <typename R, typename T, typename... Args>
-AUTO_FUN( mem_fn (R (T::*pmf)(Args...) const, T&& obj) )
-(
-	mem_fn_impl<mem_fn_base_rvalue, R (T::*)(Args...) const>
-	(pmf, forward<T>(obj))
+	mem_fn_impl<R (T::*)(Args...) const>(pmf, &obj)
 )
 
 template <typename R, typename T, typename... Args>
 AUTO_FUN( mem_fn (R (T::*pmf)(Args...) const, const T* obj) )
 (
-	mem_fn_impl<mem_fn_base, R (T::*)(Args...) const>(pmf, obj)
+	mem_fn_impl<R (T::*)(Args...) const>(pmf, obj)
 )
 
 template <typename R, typename T, typename... Args>
@@ -537,51 +499,36 @@ AUTO_FUN( mem_fn (R (T::*pmf)(Args...) const, ref_wrapper<T> ref) )
 template <typename R, typename T, typename... Args>
 AUTO_FUN( mem_fn (R (T::*pmf)(Args...) const, ref_wrapper<const T> ref) )
 (
-	mem_fn(pmf, &static_cast<T&>(ref))
+	mem_fn(pmf, &static_cast<const T&>(ref))
 )
 
-// first arg is not a placeholder (so should be an object ref/ptr)
+// first arg is NOT a placeholder (so should be an object ref/ptr)
 // use bind_mem_fn::mem_fn
 template <bool, typename PMF>
 struct selector_impl {
 
 	// hack to go over gcc (gcc-4.6 (GCC) 4.6.0 20110205 (experimental)) bugs
-	template <bool A1isRVALUE, typename A1, typename... Args>
-		struct return_t;
+	template <typename A1, typename... Args>
+		struct return_t {
+			typedef decltype(
+					kernel_std::bind(
+						bind_mem_fn::mem_fn(*(PMF*)0, *(A1*)0)
+						, forward<A1>(*(A1*)0)
+						, forward<Args>(*(Args*)0)...)
+					) type;
+		};
 
 	template <typename A1, typename... Args>
 		static auto bind(PMF f, A1&& a1, Args&&... args)
 		-> typename return_t<
-				is_rvalue<decltype(a1)>::value,
 				typename remove_ref<A1>::type,
 				typename remove_ref<Args>::type...
-					>::type
+				>::type
 		{
 			return kernel_std::bind( bind_mem_fn::mem_fn(f, forward<A1>(a1))
-						, forward<Args>(args)...);
+					, forward<A1>(a1)
+					, forward<Args>(args)...);
 		}
-};
-
-template <bool B, typename PMF>
-template <typename A1, typename... Args>
-struct selector_impl<B, PMF>::return_t<false, A1, Args...> {
-	typedef decltype(
-			kernel_std::bind(
-				bind_mem_fn::mem_fn(*(PMF*)0, (*(A1*)0))
-				, forward<Args>(*(Args*)0)...
-				)
-			) type;
-};
-
-template <bool B, typename PMF>
-template <typename A1, typename... Args>
-struct selector_impl<B, PMF>::return_t<true, A1, Args...> {
-	typedef decltype(
-			kernel_std::bind(
-				bind_mem_fn::mem_fn(*(PMF*)0, forward<A1>(*(A1*)0))
-				, forward<Args>(*(Args*)0)...
-				)
-			) type;
 };
 
 // first arg is a placeholder, use storepmf_mem_fn
@@ -626,50 +573,6 @@ template <typename R, typename T, typename A1,
 AUTO_FUN( bind(R (T::*f)(Args2...) const, A1&& a1, Args&&... args) )
 	( bind_mem_fn::selector<A1, R (T::*)(Args2...) const>::bind(f,
 									 forward<A1>(a1), forward<Args>(args)...) )
-
-/*
-template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...), T& o, Args&&... args) )
-	( bind(bind_mem_fn::mem_fn(f, o), forward<Args>(args)...) )
-
-template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...) const, T& o, Args&&... args) )
-	( bind(bind_mem_fn::mem_fn(f, o), forward<Args>(args)...) )
-
-	template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...) const, const T& o, Args&&... args) )
-	( bind(bind_mem_fn::mem_fn(f, o), forward<Args>(args)...) )
-
-template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...) const, T&& o, Args&&... args) )
-	( bind(bind_mem_fn::mem_fn(f, o), forward<Args>(args)...) )
-
-
-
-template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...), T* o, Args&&... args) )
-	( bind(bind_mem_fn::mem_fn(f, o), forward<Args>(args)...) )
-
-template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...) const, T* o, Args&&... args) )
-	( bind(bind_mem_fn::mem_fn(f, o), forward<Args>(args)...) )
-
-template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...) const, const T* o, Args&&... args) )
-	( bind(bind_mem_fn::mem_fn(f, o), forward<Args>(args)...) )*/
-
-
-
-/*template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...), const ref_wrapper<T>& o, Args&&... args) )
-	( bind(bind_mem_fn::mem_fn(&static_cast<R (T::*f)(Args2...)>(f), o),
-		   forward<Args>(args)...) )*/
-
-/*template <typename R, typename T, typename... Args2, typename... Args>
-AUTO_FUN( bind(R (T::*f)(Args2...) const,
-			const ref_wrapper<const T>& o, Args&&... args) )
-	( bind(bind_mem_fn::mem_fn(&static_cast<R (T::*f)(Args2...) const>(f), o),
-		   forward<Args>(args)...) )*/
 
 } // namespace kernel_std
 } // namespace std
