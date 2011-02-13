@@ -46,6 +46,7 @@ set(SRCS
 	${SRC_KERNEL_DIR}/cxxruntime.cpp
 	${SRC_KERNEL_DIR}/iostream.cpp
 	${SRC_KERNEL_DIR}/ostream.cpp
+	${SRC_KERNEL_DIR}/segmentation.cpp
 	${SRC_KERNEL_DIR}/interrupt.cpp
 	#${SRC_KERNEL_DIR}/exception.cpp
 	#${SRC_KERNEL_DIR}/exception_wrapper.s

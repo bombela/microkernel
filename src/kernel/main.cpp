@@ -32,7 +32,8 @@ void divide_error(UNUSED int nb)
 	::kernel::die();
 }
 
-extern "C" void kernel_main(UNUSED int magic, UNUSED void* multiboot_addr)
+extern "C" void kernel_main(UNUSED int magic,
+		UNUSED const multiboot::info* const mbi)
 {
 	{
 		using namespace kernel;
@@ -65,6 +66,9 @@ extern "C" void kernel_main(UNUSED int magic, UNUSED void* multiboot_addr)
 		kernel::die();
 	}
 
+	std::cout("Mem = %MB (upper limit = %xkB)\n",
+			(mbi->mem_upper >> 10), mbi->mem_upper);
+
 	//kernel::InterruptManager interrupManager;
 
 	/*const int max = 3;
@@ -74,4 +78,6 @@ extern "C" void kernel_main(UNUSED int magic, UNUSED void* multiboot_addr)
 			<< std::format(" (%//%)", i, max) << std::endl;
 		asm ("hlt");
 	}*/
+
+	std::cout("kernel stopping...\n");
 }
