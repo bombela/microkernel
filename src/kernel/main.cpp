@@ -16,7 +16,6 @@
 #include <iostream>
 #include <iomanip>
 #include <bind>
-#include <enumcast>
 
 namespace kernel {
 
@@ -79,11 +78,6 @@ extern "C" void kernel_main(UNUSED int magic,
 			<< std::format(" (%//%)", i, max) << std::endl;
 		asm ("hlt");
 	}*/
-
-	enum class Toto { l = -1, blue = 1, red, green, black, lol=9 };
-
-	unsigned v = std::enum_cast<int, 2>(Toto::black);
-	std::cout << "->" << v << std::endl;
 
 	std::cout("kernel stopping...\n");
 }
