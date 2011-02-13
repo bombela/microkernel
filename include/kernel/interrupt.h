@@ -1,51 +1,62 @@
 /*
  * interrupt.h
- * Copyright © 2010 François-Régis 'fregux' Robert <robert.fregis@gmail.com>
- * Copyright © 2010 Alexandre Gau <gau.alexandre@gmail.com>
+ * Copyright © 2011, François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
  *
 */
 
-#ifndef __H_INTERRUPT__
-#define __H_INTERRUPT__
+#pragma once
+#ifndef INTERRUPT_H
+#define INTERRUPT_H
 
 #include <kernel/types.h>
+#include <attributes.h>
 #include <array>
 
-#define IDT_SIZE 47
-
 namespace kernel {
-	struct IDT_Item {
-		uint16_t Offset_Low;
-		uint16_t Selecteur;
-		uint16_t Type;
-		uint16_t Offset_High;
-	} __attribute__((packed));
 
-	
-	struct IDT_ptrIDTR {
-		uint16_t Limite;
-		void* Base;
-	} __attribute__((packed));
-
-
-	class Interrupt {
-
-		friend class Exception;
-		friend class Irq;
-
+class InterruptManager
+{
 	public:
-		Interrupt();
-		~Interrupt();
+		InterruptManager();
+		~InterruptManager();
 
-		inline void	enableInterrupt()	{ asm volatile ("sti"); }
-		inline void	disableInterrupt()	{ asm volatile ("cli"); }
+		InterruptManager(const InterruptManager& from) = default;
+		InterruptManager(InterruptManager&& from) = default;
+		InterruptManager& operator=(const InterruptManager& from) = default;
+		InterruptManager& operator=(InterruptManager&& from) = default;
+
+		inline void	setInts() { asm volatile ("sti"); }
+		inline void	clsInts() { asm volatile ("cli"); }
 
 	private:
-		int		setInterruptHandler(uint16_t, void*);
-		void*	getInterruptHandler(uint16_t);
+		struct IDTEntry {
+			uint16_t offset_low;
+			uint16_t segment_selector;
+	
+			uint8_t reserved:5;
+			uint8_t flags:3;
 
-		::std::array<IDT_Item, IDT_SIZE> Idt;
-	};
-} /* namespace kernel */
+			enum Type { interrupt = 0, trap = 1 };
+			uint8_t type:3;
 
-#endif /* __H_INTERRUPT__ */
+			enum OpSize { op16 = 0, op32 = 1 };
+			uint8_t op_size:1;
+
+			uint8_t zero:1;
+			uint8_t dpl:2;
+			uint8_t present:1;
+
+			uint16_t offset_high;
+
+			inline void setOffset(uint32_t off) {
+				offset_low  = static_cast<uint16_t>(off);
+				offset_high = static_cast<uint16_t>(off >> 16);
+			}
+		} PACKED ALIGNED(8);
+
+		std::array<IDTEntry, 256> _idt;
+};
+
+} // namespace kernel
+
+#endif /* INTERRUPT_H */

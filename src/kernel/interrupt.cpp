@@ -1,63 +1,77 @@
+/*
+ * interrupt.cpp
+ * Copyright © 2011, François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
 #include <kernel/interrupt.h>
 
 #include <kernel/console.h>
 #include <kernel/vga_console.h>
 #include <attributes.h>
 
+#include KERNEL_INTERRUPT_DEBUG
+#include KERNEL_INTERRUPT_CHECK
+
 namespace kernel {
 
+InterruptManager::InterruptManager()
+{
+	dbg("starting");
 
-	Interrupt::Interrupt()
-	{
-		kernel::main_console->write("Initialisation interrupt\n");		
+	struct {
+		uint16_t idt_size;
+		void*    idt_addr;
+	} PACKED ptrIDTR{
+		static_cast<uint16_t>(_idt.size() / sizeof _idt[0]), &_idt[0]
+	};
 
-		IDT_ptrIDTR ptrIDT;
-		ptrIDT.Base = &Idt;
-		ptrIDT.Limite = IDT_SIZE * 8;
-		asm("lidtl %0"::"m"(ptrIDT));
-	}
-
-	Interrupt::~Interrupt()
-	{
-		kernel::main_console->write("bye interrupt\n");
-	}
-
-	int	Interrupt::setInterruptHandler(uint16_t NbInt, void* Offset)
-	{
-		if (NbInt > IDT_SIZE)
-			return -1;
-		if (Offset != nullptr)
-		{
-			if (this->Idt[NbInt].Type == 0x8E00)
-			{
-				kernel::main_console->write("Int déjà allouée.");
-				return -1;
-			}
-			this->Idt[NbInt].Selecteur = 8;
-			this->Idt[NbInt].Type = 0x8E00;
-			this->Idt[NbInt].Offset_Low  = ((uint32_t)Offset) & 0xffff;
-			this->Idt[NbInt].Offset_High = (((uint32_t) Offset) >> 16) & 0xffff;
-		}
-		else
-		{
-			// Disable this IDT entry
-			this->Idt[NbInt].Selecteur = 0;
-			this->Idt[NbInt].Type = 0;
-			this->Idt[NbInt].Offset_Low  = 0;
-			this->Idt[NbInt].Offset_High = 0;
-		}
-		return 0;
-	}
-
-	void*	Interrupt::getInterruptHandler(uint16_t NbInt)
-	{
-		if (NbInt > IDT_SIZE)
-			return nullptr;
-		return (void*)(uint32_t)(this->Idt[NbInt].Offset_Low | (this->Idt[NbInt].Offset_High << 16));
-	}
-
-INIT_PRIORITY(65533) Interrupt interrupt;
-
+	asm volatile ("lidtl %0" :: "m" (ptrIDTR));
+	setInts();
+	dbg("started");
 }
 
+InterruptManager::~InterruptManager()
+{
+	dbg("stopping");
+	clsInts();
+	dbg("stopped");
+}
 
+//int	InterruptManager::setInterruptManagerHandler(uint16_t NbInt, void* Offset)
+//{
+//        if (NbInt > IDT_SIZE)
+//            return -1;
+//        if (Offset != nullptr)
+//        {
+//            if (this->_idt[NbInt].Type == 0x8E00)
+//            {
+//                kernel::main_console->write("Int déjà allouée.");
+//                return -1;
+//            }
+//            this->_idt[NbInt].Selecteur = 8;
+//            this->_idt[NbInt].Type = 0x8E00;
+//            this->_idt[NbInt].Offset_Low  = ((uint32_t)Offset) & 0xffff;
+//            this->_idt[NbInt].Offset_High = (((uint32_t) Offset) >> 16) & 0xffff;
+//        }
+//        else
+//        {
+//         Disable this IDT entry
+//            this->_idt[NbInt].Selecteur = 0;
+//            this->_idt[NbInt].Type = 0;
+//            this->_idt[NbInt].Offset_Low  = 0;
+//            this->_idt[NbInt].Offset_High = 0;
+//        }
+//    return 0;
+//}
+
+//void*	InterruptManager::getInterruptManagerHandler(uint16_t NbInt)
+//{
+//        if (NbInt > IDT_SIZE)
+//            return nullptr;
+//        return (void*)(uint32_t)(this->_idt[NbInt].Offset_Low | (this->_idt[NbInt].Offset_High << 16));
+//}
+
+//INIT_PRIORITY(65533) InterruptManager interrupt;
+
+} // namespace kernel

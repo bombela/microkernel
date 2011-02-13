@@ -15,6 +15,7 @@
 #include <kernel/exception.h>
 #include <iostream>
 #include <iomanip>
+#include <bind>
 
 namespace kernel {
 
@@ -55,20 +56,22 @@ extern "C" void kernel_main(UNUSED int magic, UNUSED void* multiboot_addr)
 
 	cxxruntime::Run running;
 	
-	std::cout << "Kernel running..." << std::endl;
+	std::cout("Kernel %running%...",
+			std::color::green, std::color::ltgray) << std::endl;
 
-	// kernel::Interrupt interrupt;
-	// driver::PIC_i8259 pic;
-	// interrupt.setInterrupt(33, (void*)tt);
-	// pic.enable(1);
+	if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
+	{
+		std::cout("%Not loaded by a multiboot compliant loader\n", std::color::red);
+		kernel::die();
+	}
 
-	// make a "double fault exception"
-	// while (true)
-	// {
-	// 	main_console->write("Wait for Interupt");
-	// 	asm ("hlt");
-	// }
+	//kernel::InterruptManager interrupManager;
 
-	//make a "divide by zero exception"
-	//int i = 42 / 0;
+	/*const int max = 3;
+	for (int i = 1; i <= max; ++i)
+	{
+		std::cout << "Waiting wakeup..."
+			<< std::format(" (%//%)", i, max) << std::endl;
+		asm ("hlt");
+	}*/
 }
