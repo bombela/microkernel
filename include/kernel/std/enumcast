@@ -1,0 +1,116 @@
+/* vim: ft=cpp
+ * enumcast.hpp
+ * Copyright © 2011, François-Xavier 'Bombela' Bourlet <bombela@gmail.com>
+ *
+*/
+
+#pragma once
+#ifndef ENUMCAST_H
+#define ENUMCAST_H
+
+#include <static_if.hpp>
+
+#include KERNEL_STD_ENUMCAST_DEBUG
+#include KERNEL_STD_ENUMCAST_CHECK
+
+namespace std {
+namespace kernel_std {
+
+namespace details {
+
+template <unsigned B, unsigned P>
+struct pow {
+   	static const unsigned value = pow<B, P - 1>::value * B;	
+};
+
+template <unsigned B>
+struct pow<B, 1> {
+   	static const unsigned value = B;
+};
+
+template <typename E>
+struct make_unsigned {
+	static_assert(sizeof (E) <= sizeof(uint32_t),
+			"enum size not supported");
+
+	typedef typename static_if<
+		sizeof (E) <= sizeof(uint8_t), uint8_t,
+			typename static_if<
+				sizeof (E) <= sizeof(uint16_t), uint16_t,
+					typename static_if<
+						sizeof (E) <= sizeof(uint16_t), uint16_t,
+							uint32_t
+					>::type
+			>::type
+	>::type type;
+};
+
+template <typename E>
+struct enum_bits {
+private:
+	typedef typename details::make_unsigned<E>::type unsigned_type;
+
+	template <bool, typename E2>
+		struct bits {
+			static const unsigned value = (sizeof (unsigned_type) << 3);
+		};
+	
+	template <typename E2>
+		struct bits<true, E2> {
+			static const unsigned value = static_cast<unsigned>(E2::BITS);
+		};
+	
+	typedef struct { char _[1]; } yes;
+	typedef struct { char _[2]; } no;
+
+	template <E>
+		struct helper {};
+
+	template <typename E2>
+		static yes check(E2*, helper<E2::BITS>* = 0);
+	static  no check(...);
+
+	static const bool haveBITS = sizeof check((E*)0) == sizeof (yes);
+public:
+	static const unsigned value = bits<haveBITS, E>::value;
+};
+
+} // namespace details
+
+template <typename D,
+		 unsigned BITS = 0,
+		 typename E>
+inline D enum_cast(E e) {
+	typedef typename details::make_unsigned<E>::type unsigned_type;
+
+	static const unsigned bits = BITS > 0 ? BITS :
+		details::enum_bits<E>::value;
+
+	const D r = static_cast<D>(e) & (details::pow<2, bits>::value -1);
+
+#ifdef CHECK_ON
+	unsigned_type original_value = static_cast<unsigned_type>(e);
+	unsigned_type casted_value = static_cast<unsigned_type>(r);
+	assert(original_value == casted_value);
+#endif
+	return r;
+}
+
+template <unsigned BITS = 0,
+		 typename E>
+inline typename details::make_unsigned<E>::type enum_cast(E e) {
+	typedef typename details::make_unsigned<E>::type unsigned_type;
+
+	static const unsigned bits = BITS > 0 ? BITS :
+		details::enum_bits<E>::value;
+
+	return enum_cast<unsigned_type, bits, E>(e);
+}
+
+} // namespace kernel_std
+} // namespace std
+
+#include <check_off.h>
+#include <debug_off.h>
+
+#endif /* ENUMCAST_H */

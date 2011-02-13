@@ -6,12 +6,16 @@
 
 #include <kernel/segmentation.h>
 
-SegmentationManager::SegmentationManager()
+namespace segmentation {
+
+Manager::Manager()
 {
 
 }
 
-SegmentationManager::~SegmentationManager()
+Manager::~Manager()
 {
 
 }
+
+} // namespace segmentation
