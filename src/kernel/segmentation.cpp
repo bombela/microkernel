@@ -22,16 +22,16 @@ Manager::Manager()
 		= Descriptor();
 
 	(*this)[Segment::kernel_code]
-		= Descriptor(Privilege::kernel, SegmentType::code);
+		= Descriptor(memory::Privilege::kernel, SegmentType::code);
 
 	(*this)[Segment::kernel_data]
-		= Descriptor(Privilege::kernel, SegmentType::data);
+		= Descriptor(memory::Privilege::kernel, SegmentType::data);
 
 	(*this)[Segment::userland_code]
-		= Descriptor(Privilege::userland, SegmentType::code);
+		= Descriptor(memory::Privilege::userland, SegmentType::code);
 
 	(*this)[Segment::userland_data]
-		= Descriptor(Privilege::userland, SegmentType::data);
+		= Descriptor(memory::Privilege::userland, SegmentType::data);
 	
 	struct {
 		uint16_t maxoffset;
@@ -52,7 +52,8 @@ Manager::Manager()
 			"movw %%ax,  %%gs \n"
 			::
 			"m"  (gdt_reg),
-			"ax" (buildSelector(Privilege::kernel, Segment::kernel_data))
+			"ax" (buildSelector(memory::Privilege::kernel,
+					Segment::kernel_data))
 			:"memory");
 
 	dbg("started");

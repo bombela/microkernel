@@ -16,6 +16,128 @@
 namespace kernel {
 namespace interrupt {
 
+namespace documentation {
+
+enum class Type      { fault, trap, interrupt, abort };
+enum class ErrorCode { yes, zero, no };
+
+struct ExceptionDoc {
+
+	uint8_t     idx;
+	const char* mnemnonic;
+	const char* desc;
+	Type        type;
+	ErrorCode   errorCode;
+	const char* source;
+
+} const exceptionsDoc[] = {
+
+	{  0, "#DE", "Divide Error",
+		Type::fault, ErrorCode::no,
+		"DIV and IDIV instructions."
+	},
+	{  1, "#DB", "RESERVED",
+		Type::fault, ErrorCode::no,
+		"For Intel use only." 
+	},
+	{  2, "-", "NMI Interrupt",
+		Type::interrupt, ErrorCode::no,
+		"Nonmaskable external interrupt." 
+	},
+	{  3, "#BP", "Breakpoint",
+		Type::trap, ErrorCode::no,
+		"INT 3 instruction." 
+	},
+	{  4, "#OF", "Overflow",
+		Type::trap, ErrorCode::no,
+		"INTO instruction." 
+	},
+	{  5, "#BR", "BOUND Range Exceeded",
+		Type::fault, ErrorCode::no,
+		"BOUND instruction." 
+	},
+	{  6, "#UD", "Invalid Opcode (Undefined Opcode)",
+		Type::fault, ErrorCode::no,
+		"UD2 instruction or reserved opcode." 
+	},
+	{  7, "#NM", "Device Not Available (No Math Coprocessor)",
+		Type::fault, ErrorCode::no,
+		"Floating-point or WAIT/FWAIT instruction." 
+	},
+	{  8, "#DF", "Double Fault",
+		Type::abort, ErrorCode::zero,
+		"Any instruction that can generate an exception, an NMI, or an INTR." 
+	},
+	{  9, "-", "Coprocessor Segment Overrun (reserved)",
+		Type::fault, ErrorCode::no,
+		"Floating-point instruction." 
+	},
+	{ 10, "#TS", "Invalid TSS",
+		Type::fault, ErrorCode::yes,
+		"Task switch or TSS access." 
+	},
+	{ 11, "#NP", "Segment Not Present",
+		Type::fault, ErrorCode::yes,
+		"Loading segment registers or accessing system segments." 
+	},
+	{ 12, "#SS", "Stack-Segment Fault",
+		Type::fault, ErrorCode::yes,
+		"Stack operations and SS register loads." 
+	},
+	{ 13, "#GP", "General Protection",
+		Type::fault, ErrorCode::yes,
+		"Any memory reference and other protection checks." 
+	},
+	{ 14, "#PF", "Page Fault",
+		Type::fault, ErrorCode::yes,
+		"Any memory reference." 
+	},
+	{ 15, "-", "Intel reserved. Do not use.",
+		Type::fault, ErrorCode::no,
+		"Intel reserved. Do not use." 
+	},
+	{ 16, "#MF", "x87 FPU Floating-Point Error (Math Fault)",
+		Type::fault, ErrorCode::no,
+		"x87 FPU floating-point or WAIT/FWAIT instruction." 
+	},
+	{ 17, "#AC", "Alignment Check",
+		Type::fault, ErrorCode::yes,
+		"Any data reference in (zero, memory.3)" 
+	},
+	{ 18, "#MC", "Machine Check",
+		Type::abort, ErrorCode::no,
+		"Error codes (if any) and source are model dependent." 
+	},
+	{ 19, "#XM", "SIMD Floating-Point Exception",
+		Type::fault, ErrorCode::no,
+		"SSE/SSE2/SSE3 floating-point instructions" 
+	}
+};
+
+const ExceptionDoc exceptionReserveddoc = {
+	20 /* .. 31 */, "-", "Intel reserved. Do not use.",
+		Type::fault, ErrorCode::no,
+		"Intel reserved. Do not use." 
+	};
+
+const ExceptionDoc exceptionDoNotKnowdoc = {
+	32 /* .. 256 */, "-", "Not a valid exception.",
+		Type::fault, ErrorCode::no,
+		"Not a valid exception." 
+	};
+
+ExceptionDoc get(unsigned idx) {
+	if (idx <= 19)
+		return exceptionsDoc[idx];
+	auto r = exceptionDoNotKnowdoc;
+	if (idx <= 31)
+		r = exceptionReserveddoc;
+	r.idx = idx;
+	return r;
+}
+
+} // namespace documentation
+
 Manager::Manager()
 {
 	dbg("starting");
@@ -28,52 +150,16 @@ Manager::Manager()
 	};
 
 	asm volatile ("lidtl %0" :: "m" (ptrIDTR));
-	setInts();
+	enable();
 	dbg("started");
 }
 
 Manager::~Manager()
 {
 	dbg("stopping");
-	clsInts();
+	disable();
 	dbg("stopped");
 }
-
-//int	Manager::setManagerHandler(uint16_t NbInt, void* Offset)
-//{
-//        if (NbInt > IDT_SIZE)
-//            return -1;
-//        if (Offset != nullptr)
-//        {
-//            if (this->_idt[NbInt].Type == 0x8E00)
-//            {
-//                kernel::main_console->write("Int déjà allouée.");
-//                return -1;
-//            }
-//            this->_idt[NbInt].Selecteur = 8;
-//            this->_idt[NbInt].Type = 0x8E00;
-//            this->_idt[NbInt].Offset_Low  = ((uint32_t)Offset) & 0xffff;
-//            this->_idt[NbInt].Offset_High = (((uint32_t) Offset) >> 16) & 0xffff;
-//        }
-//        else
-//        {
-//         Disable this IDT entry
-//            this->_idt[NbInt].Selecteur = 0;
-//            this->_idt[NbInt].Type = 0;
-//            this->_idt[NbInt].Offset_Low  = 0;
-//            this->_idt[NbInt].Offset_High = 0;
-//        }
-//    return 0;
-//}
-
-//void*	Manager::getManagerHandler(uint16_t NbInt)
-//{
-//        if (NbInt > IDT_SIZE)
-//            return nullptr;
-//        return (void*)(uint32_t)(this->_idt[NbInt].Offset_Low | (this->_idt[NbInt].Offset_High << 16));
-//}
-
-//INIT_PRIORITY(65533) Manager interrupt;
 
 } // namespace interrupt
 } // namespace kernel

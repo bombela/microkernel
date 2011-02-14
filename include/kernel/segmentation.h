@@ -10,6 +10,7 @@
 
 #include <array>
 #include <enumcast>
+#include <kernel/memory.h>
 
 #include KERNEL_SEGMENTATION_DEBUG
 #include KERNEL_SEGMENTATION_CHECK
@@ -17,10 +18,8 @@
 namespace kernel {
 namespace segmentation {
 
-enum class Privilege      { BITS = 2, kernel = 0, userland = 3 };
 enum class Table          { BITS = 1, global = 0, local = 1 };
 enum class SegmentType    { BITS = 4, code = 0b1011, data = 0b0011 };
-enum class OperationSize  { BITS = 1, mode16 = 0, mode32 = 1 };
 
 union Descriptor
 {
@@ -37,13 +36,13 @@ union Descriptor
 		//    and 3.5 (system) of Intel x86 vol 3
 
 		uint8_t  descriptor_type:1;     // Descriptor::Type
-		uint8_t  privilege:2;           // Privilege
+		uint8_t  privilege:2;           // memory::Privilege
 		bool     present:1;             // Present in memory
 
 		uint8_t  limit_19_16:4;         // Segment limit, bits 19..16
 		uint8_t  custom:1;              // For custom use.
 		uint8_t  zero:1;                // Only for IA-32e, must be 0 however.
-		uint8_t  op_size:1;             // OperationSize
+		uint8_t  op_size:1;             // memory::OperationSize
 		uint8_t  granularity:1;         // Descriptor::Granularity
 
 		uint8_t base_paged_addr_31_24;  // Base address bits 31..24
@@ -56,13 +55,13 @@ union Descriptor
 	Descriptor(): value_high(0), value_low(0) {}
 
 	// build a flat model segment.
-	Descriptor(Privilege p, SegmentType st):
+	Descriptor(memory::Privilege p, SegmentType st):
 		segment_type(std::enum_cast(st)),
 		descriptor_type(std::enum_cast(Type::datacode)),
 		privilege(std::enum_cast(p)),
 		present(true),
 		zero(0),
-		op_size(std::enum_cast(OperationSize::mode32)),
+		op_size(std::enum_cast(memory::OperationSize::mode32)),
 		granularity(std::enum_cast(Granularity::pages))
 	{
 		setBase(0);
@@ -83,19 +82,19 @@ union Descriptor
 
 struct Selector
 {
-	uint8_t  requestedPrivilegeLevel: 2; // Privilege
+	uint8_t  requestedPrivilegeLevel: 2; // memory::Privilege
 	uint8_t  tableIndicator: 1;          // Table
 	uint16_t index: 12;                  // 4 bytes aligned
 
-	inline Privilege getRequestPrivilegeLevel() const {
-		return std::enum_cast<Privilege>(requestedPrivilegeLevel);
+	inline memory::Privilege getRequestPrivilegeLevel() const {
+		return std::enum_cast<memory::Privilege>(requestedPrivilegeLevel);
 	}
 	inline Table getTable() const {
 		return std::enum_cast<Table>(tableIndicator);
 	}
 	inline uint16_t getIndex() const { return index; }
 
-	inline void setRequestPrivilegeLevel(Privilege p) {
+	inline void setRequestPrivilegeLevel(memory::Privilege p) {
 		requestedPrivilegeLevel = std::enum_cast(p);
 	}
 	inline void setTable(Table t) {
@@ -106,9 +105,10 @@ struct Selector
 	}
 
 	Selector() = default;
-	constexpr Selector(Privilege requestedPrivilegeLevel,
+	constexpr Selector(memory::Privilege requestedPrivilegeLevel,
 			Table table, uint16_t index):
-		requestedPrivilegeLevel(static_cast<uint8_t>(requestedPrivilegeLevel)),
+		requestedPrivilegeLevel(
+				static_cast<uint8_t>(requestedPrivilegeLevel)),
 		tableIndicator(static_cast<uint8_t>(table)),
 		index(index)
 		{}
@@ -142,7 +142,9 @@ public:
 		return getSegmentDesc(s);
 	}
 
-	static inline constexpr Selector buildSelector(Privilege rpl, Segment s) {
+	static inline constexpr Selector buildSelector(
+			memory::Privilege rpl, Segment s)
+	{
 		return Selector(rpl, Table::global, static_cast<uint16_t>(s));
 	}
 private:

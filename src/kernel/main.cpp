@@ -22,9 +22,12 @@ namespace kernel {
 SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 	multiboot_header(MULTIBOOT_PAGE_ALIGN bitor MULTIBOOT_MEMORY_INFO);
 
-} // namespace kernel
+// essential harware management
 
-kernel::segmentation::Manager segmentationManager;
+segmentation::Manager segmentationManager;
+interrupt::Manager    interruptManager;
+
+} // namespace kernel
 
 extern "C" void kernel_main(UNUSED int magic,
 		UNUSED const multiboot::info* const mbi)
@@ -56,12 +59,25 @@ extern "C" void kernel_main(UNUSED int magic,
 
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
 	{
-		std::cout("%Not loaded by a multiboot compliant loader\n", std::color::red);
+		std::cout("%Not loaded by a multiboot compliant loader%\n",
+				std::color::red, std::color::ltgray);
 		kernel::die();
 	}
 
 	std::cout("Mem = %MB (upper limit = %xkB)\n",
 			(mbi->mem_upper >> 10), mbi->mem_upper);
+
+	struct APICVersionRegister {
+		uint8_t version;
+		uint8_t reserved1;
+		uint8_t maxlvtentry;
+		uint8_t supportsupressEOIbroadcast:1;
+		uint8_t reserved2:7;
+	} PACKED volatile const * const avr
+	= reinterpret_cast<APICVersionRegister*>(0xFEE00030);
+
+	std::cout("APIC version=%c maxlvtentry=%c\n",
+			avr->version, avr->maxlvtentry);
 
 	//kernel::InterruptManager interrupManager;
 
