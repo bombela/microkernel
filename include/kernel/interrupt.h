@@ -13,17 +13,18 @@
 #include <array>
 
 namespace kernel {
+namespace interrupt {
 
-class InterruptManager
+class Manager
 {
 	public:
-		InterruptManager();
-		~InterruptManager();
+		Manager();
+		~Manager();
 
-		InterruptManager(const InterruptManager& from) = default;
-		InterruptManager(InterruptManager&& from) = default;
-		InterruptManager& operator=(const InterruptManager& from) = default;
-		InterruptManager& operator=(InterruptManager&& from) = default;
+		Manager(const Manager& from) = default;
+		Manager(Manager&& from) = default;
+		Manager& operator=(const Manager& from) = default;
+		Manager& operator=(Manager&& from) = default;
 
 		inline void	setInts() { asm volatile ("sti"); }
 		inline void	clsInts() { asm volatile ("cli"); }
@@ -58,5 +59,6 @@ class InterruptManager
 };
 
 } // namespace kernel
+} // namespace interrupt
 
 #endif /* INTERRUPT_H */

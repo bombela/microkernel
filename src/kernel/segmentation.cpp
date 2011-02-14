@@ -41,9 +41,6 @@ Manager::Manager()
 		reinterpret_cast<uint32_t>(&_gdt[0])
 	};
 
-	uint16_t code_selector
-		= buildSelector(Privilege::kernel, Segment::kernel_code);
-
 	asm volatile (
 			"lgdt %0          \n"
 			"jmp 1f           \n"
@@ -55,7 +52,6 @@ Manager::Manager()
 			"movw %%ax,  %%gs \n"
 			::
 			"m"  (gdt_reg),
-			"m"  (code_selector),
 			"ax" (buildSelector(Privilege::kernel, Segment::kernel_data))
 			:"memory");
 
@@ -65,7 +61,7 @@ Manager::Manager()
 Manager::~Manager()
 {
 	dbg("your should never destroy the segmentation::Manager, "
-				"your are now in indeterminate state");
+				"you are now in indeterminate state");
 }
 
 } // namespace segmentation

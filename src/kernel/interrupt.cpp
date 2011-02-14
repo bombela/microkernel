@@ -14,8 +14,9 @@
 #include KERNEL_INTERRUPT_CHECK
 
 namespace kernel {
+namespace interrupt {
 
-InterruptManager::InterruptManager()
+Manager::Manager()
 {
 	dbg("starting");
 
@@ -31,14 +32,14 @@ InterruptManager::InterruptManager()
 	dbg("started");
 }
 
-InterruptManager::~InterruptManager()
+Manager::~Manager()
 {
 	dbg("stopping");
 	clsInts();
 	dbg("stopped");
 }
 
-//int	InterruptManager::setInterruptManagerHandler(uint16_t NbInt, void* Offset)
+//int	Manager::setManagerHandler(uint16_t NbInt, void* Offset)
 //{
 //        if (NbInt > IDT_SIZE)
 //            return -1;
@@ -65,13 +66,14 @@ InterruptManager::~InterruptManager()
 //    return 0;
 //}
 
-//void*	InterruptManager::getInterruptManagerHandler(uint16_t NbInt)
+//void*	Manager::getManagerHandler(uint16_t NbInt)
 //{
 //        if (NbInt > IDT_SIZE)
 //            return nullptr;
 //        return (void*)(uint32_t)(this->_idt[NbInt].Offset_Low | (this->_idt[NbInt].Offset_High << 16));
 //}
 
-//INIT_PRIORITY(65533) InterruptManager interrupt;
+//INIT_PRIORITY(65533) Manager interrupt;
 
+} // namespace interrupt
 } // namespace kernel

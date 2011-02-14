@@ -87,10 +87,6 @@ struct Selector
 	uint8_t  tableIndicator: 1;          // Table
 	uint16_t index: 12;                  // 4 bytes aligned
 
-	operator uint16_t() const {
-		return *reinterpret_cast<const uint16_t*>(this);
-	}
-
 	inline Privilege getRequestPrivilegeLevel() const {
 		return std::enum_cast<Privilege>(requestedPrivilegeLevel);
 	}
