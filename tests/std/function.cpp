@@ -68,3 +68,15 @@ BOOST_AUTO_TEST_CASE(fct_big_functor)
 	one.set('a');
 	f('c');
 }
+
+BOOST_AUTO_TEST_CASE(fct_value)
+{
+	kstd::function<int (char, float)> f(&adder);
+	const char  a = 1;
+	const float b = 2;
+	BOOST_CHECK(f(a, b) == 3);
+
+	f = &adder2;
+	float c = 2;
+	BOOST_CHECK(f(1, c) == 4);
+}

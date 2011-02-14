@@ -35,7 +35,7 @@ template <typename S, unsigned SIZE = details::minsize>
 template <typename R, unsigned SIZE, typename... Args>
 	struct function<R (Args...), SIZE>
 	{
-		typedef R (*PF)(void*, Args&&...);
+		typedef R (*PF)(void*, Args...);
 
 		function(): _f(0) {}
 
@@ -59,47 +59,31 @@ template <typename R, unsigned SIZE, typename... Args>
 				return *this;
 			}
 		
-		template <typename... Args2>
-			auto operator()(Args2&&... args)
-			-> decltype(
-					(*(PF*)0)(0, forward<Args2>((*(Args2*)0))...)
-					)
-			{
-				assert(this->_f != 0);
-				return this->_f(this->_data, forward<Args2>(args)...);
-			}
-
+		auto operator()(Args... args)
+		-> decltype(
+				(*(PF*)0)(0, (*(Args*)0)...)
+				)
+		{
+			assert(this->_f != 0);
+			return this->_f(this->_data, args...);
+		}
+		
 		template <typename F>
 			struct holder
 			{
 				template <typename F2>
 					holder(F2&& f): f(forward<F2>(f)) {}
 
-				template <typename... Args2>
-					inline auto docall(Args2&&... args)
-					-> decltype(
-								(*(F*)0)(forward<Args2>((*(Args2*)0))...)
-							)
-					{
-						return this->f(forward<Args2>(args)...);
-					}
+				inline R docall(Args... args)
+				{
+					return this->f(args...);
+				}
 
-				// gcc-4.6 (GCC) 4.6.0 20110205 (experimental) hack.
-				template <typename... Args2>
-					struct return_t {
-						typedef decltype(
-								((holder*)0)
-								->docall(forward<Args2>(*(Args2*)0)...)
-								) type;
-					};
-
-				template <typename... Args2>
-					static auto call(void* h, Args2&&... args)
-					-> typename return_t<Args2...>::type
-					{
-						return static_cast<holder*>(h)
-							->docall(forward<Args2>(args)...);
-					}
+				static R call(void* h, Args... args)
+				{
+					return static_cast<holder*>(h)
+						->docall(args...);
+				}
 
 				F f;
 			};
