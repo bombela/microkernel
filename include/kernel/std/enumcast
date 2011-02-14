@@ -86,16 +86,17 @@ template <typename D,
 		 unsigned BITS = 0,
 		 typename S>
 inline D enum_cast(S e, typename enable_if<not is_enum<D>::value>::type = 0) {
+	const D r = static_cast<D>(e);
+
+#ifdef CHECK_ON
 	typedef typename details::make_unsigned<S>::type unsigned_type;
 
 	static const unsigned bits = BITS > 0 ? BITS :
 		details::enum_bits<S>::value;
 
-	const D r = static_cast<D>(e) bitand (details::pow<2, bits>::value -1);
-
-#ifdef CHECK_ON
 	unsigned_type original_value = static_cast<unsigned_type>(e);
-	unsigned_type casted_value = static_cast<unsigned_type>(r);
+	unsigned_type casted_value = static_cast<unsigned_type>(r bitand
+			(details::pow<2, bits>::value -1));
 	assert(original_value == casted_value);
 #endif
 	return r;
@@ -105,13 +106,14 @@ template <typename D,
 		 unsigned BITS = 0,
 		 typename S>
 inline D enum_cast(S s, typename enable_if<is_enum<D>::value>::type = 0) {
+	const D r = static_cast<D>(s);
+
+#ifdef CHECK_ON
 	typedef typename details::make_unsigned<D>::type unsigned_type;
 	
 	static const unsigned bits = BITS > 0 ? BITS :
 		details::enum_bits<D>::value;
 
-	const D r = static_cast<D>(s);
-#ifdef CHECK_ON
 	unsigned_type original_value = static_cast<unsigned_type>(s);
 	unsigned_type casted_value = static_cast<unsigned_type>(r)
 		bitand (details::pow<2, bits>::value -1);

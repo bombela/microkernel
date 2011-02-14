@@ -11,6 +11,10 @@
 #include <kernel/std/bits/config.h>
 #include <kernel/std/range>
 
+#ifndef USER_EXTERNAL_STL
+#include <kernel/types.h>
+#endif
+
 namespace std {
 namespace kernel_std {
 

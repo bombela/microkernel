@@ -10,9 +10,8 @@
 #include <kernel/console.h>
 #include <kernel/die.h>
 #include <cxxruntime.h>
+#include <kernel/segmentation.h>
 #include <kernel/interrupt.h>
-#include <kernel/pic_i8259.h>
-#include <kernel/exception.h>
 #include <iostream>
 #include <iomanip>
 #include <bind>
@@ -25,12 +24,7 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 
 } // namespace kernel
 
-void divide_error(UNUSED int nb)
-{
-	using namespace ::std;
-	cout << color::red << "divide error" << color::ltgray << endl;
-	::kernel::die();
-}
+kernel::segmentation::Manager segmentationManager;
 
 extern "C" void kernel_main(UNUSED int magic,
 		UNUSED const multiboot::info* const mbi)
