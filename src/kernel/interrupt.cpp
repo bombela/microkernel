@@ -194,8 +194,14 @@ Manager::Manager()
 						<< e << " errval=" << ec
 						<< std::color::ltgray
 						<< std::endl;
-					if (e.type == documentation::Type::abort)
-						die();
+					switch (e.type) {
+						case documentation::Type::abort:
+						case documentation::Type::fault:
+						case documentation::Type::trap:
+							die();
+						case documentation::Type::interrupt:
+							;
+							}
 				}));
 	
 	// load IDT

@@ -82,6 +82,7 @@ extern "C" void kernel_main(UNUSED int magic,
 	const int max = 3;
 	for (int i = 1; i <= max; ++i)
 	{
+		int a = 1 / 0;
 		std::cout << "Waiting wakeup..."
 			<< std::format(" (%//%)", i, max) << std::endl;
 		asm ("hlt");
