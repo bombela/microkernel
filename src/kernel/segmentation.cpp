@@ -49,11 +49,11 @@ Manager::Manager()
 			/* jump to clean the CPU prefetch queue */
 			ljmpl $0x8, $1f /* 0x8 == kernel_code segment */
 			1:
-			movw %%ax,  %%ss
-			movw %%ax,  %%ds
-			movw %%ax,  %%es
-			movw %%ax,  %%fs
-			movw %%ax,  %%gs
+			movw %%ax, %%ss
+			movw %%ax, %%ds
+			movw %%ax, %%es
+			movw %%ax, %%fs
+			movw %%ax, %%gs
 			)ASM"
 			::
 			"m"  (gdt_reg),

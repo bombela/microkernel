@@ -32,12 +32,12 @@ fi
 cat >>gdbexec <<EOF
 	break kernel_main
 	continue
-	layout split
+	layout asm
 	focus cmd
-	break kernel::segmentation::Manager::Manager
+	break kernel::enableSSESupport
 	continue
-	break 47
-	continue
+	#break kernel::segmentation::Manager::Manager
+	#continue
 EOF
 
 gdb -tui -x gdbexec

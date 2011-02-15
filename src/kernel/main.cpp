@@ -23,6 +23,33 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 	multiboot_header(MULTIBOOT_PAGE_ALIGN bitor MULTIBOOT_MEMORY_INFO);
 
 // essential harware management
+
+NOINLINE void enableFPU() {
+	   	main_console->write("FPU support...");
+		asm(R"ASM(
+			mov %%cr0, %%eax
+			and   $~2, %%eax /* clear EM (no emulation) */
+			or     $1, %%eax /* set MP (#NM exception support) */
+			or    $16, %%eax /* set NE (#MF exception handled internally) */
+			mov %%eax, %%cr0
+			fninit /* init FPU */
+			)ASM" ::: "eax");
+	   	main_console->write(" enabled\n");
+}
+
+NOINLINE void enableSSE() {
+	   	main_console->write("SEE support...");
+		asm(R"ASM(
+			mov  %%cr4, %%eax
+			/* or  $0x100, %%eax */ /* set OSFXSR (OS support FXSAVE/FXRSTOR) */
+			or  $0x200, %%eax /* set OSXMMEXCPT (OS support #XF exception) */
+			mov  %%eax, %%cr4
+			
+			pxor %%xmm0, %%xmm0 /* should pass */
+			)ASM" ::: "eax");
+	   	main_console->write(" enabled\n");
+}
+
 segmentation::Manager segmentationManager;
 interrupt::Manager    interruptManager;
 
@@ -51,6 +78,9 @@ extern "C" void kernel_main(UNUSED int magic,
 		main_console->write("\n");
 	}
 
+	kernel::enableFPU();
+	kernel::enableSSE();
+
 	cxxruntime::Run running;
 	
 	std::cout("Kernel %running%...",
@@ -78,12 +108,10 @@ extern "C" void kernel_main(UNUSED int magic,
 	std::cout("APIC version=%c maxlvtentry=%c\n",
 			avr->version, avr->maxlvtentry);
 
-	//kernel::interrupt::Manager    interruptManager;
-
 	const int max = 3;
 	for (int i = 1; i <= max; ++i)
 	{
-		int a = 1 / 0;
+		//int a = 1 / 0;
 		std::cout << "Waiting wakeup..."
 			<< std::format(" (%//%)", i, max) << std::endl;
 		asm ("hlt");
