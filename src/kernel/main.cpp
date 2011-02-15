@@ -55,6 +55,9 @@ interrupt::Manager    interruptManager;
 
 } // namespace kernel
 
+NOINLINE int getZero() { return 0; }
+NOINLINE int getDix() { return 10; }
+
 extern "C" void kernel_main(UNUSED int magic,
 		UNUSED const multiboot::info* const mbi)
 {
@@ -83,9 +86,6 @@ extern "C" void kernel_main(UNUSED int magic,
 
 	cxxruntime::Run running;
 	
-	std::cout("Kernel %running%...",
-			std::color::green, std::color::ltgray) << std::endl;
-
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
 	{
 		std::cout("%Not loaded by a multiboot compliant loader%\n",
@@ -108,10 +108,13 @@ extern "C" void kernel_main(UNUSED int magic,
 	std::cout("APIC version=%c maxlvtentry=%c\n",
 			avr->version, avr->maxlvtentry);
 
+	std::cout("Kernel %running%...",
+			std::color::green, std::color::ltgray) << std::endl;
+
 	const int max = 3;
 	for (int i = 1; i <= max; ++i)
 	{
-		//int a = 1 / 0;
+		std::cout("<%>\n", 10 / 0);
 		std::cout << "Waiting wakeup..."
 			<< std::format(" (%//%)", i, max) << std::endl;
 		asm ("hlt");

@@ -5,9 +5,11 @@
 */
 
 #include <kernel/interrupt.h>
+#include <iostream>
 #include <iomanip>
 #include <kernel/console.h>
 #include <kernel/vga_console.h>
+#include <kernel/die.h>
 #include <attributes.h>
 
 #include KERNEL_INTERRUPT_DEBUG

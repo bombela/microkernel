@@ -10,6 +10,7 @@
 
 #include <array>
 #include <enumcast>
+#include <attributes.h>
 #include <kernel/memory.h>
 
 #include KERNEL_SEGMENTATION_DEBUG

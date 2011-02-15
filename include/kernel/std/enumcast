@@ -9,6 +9,7 @@
 #define ENUMCAST_H
 
 #include <static_if.hpp>
+#include <enable_if.hpp>
 
 #include KERNEL_STD_ENUMCAST_DEBUG
 #include KERNEL_STD_ENUMCAST_CHECK
