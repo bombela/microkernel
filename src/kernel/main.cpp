@@ -15,6 +15,7 @@
 #include <iostream>
 #include <iomanip>
 #include <bind>
+#include <kernel/pic_i8259.h>
 
 namespace kernel {
 
@@ -84,6 +85,7 @@ extern "C" void kernel_main(UNUSED int magic,
 	kernel::enableFPU();
 	kernel::enableSSE();
 
+	driver::PIC_i8259::init();
 	cxxruntime::Run running;
 	
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
@@ -110,15 +112,16 @@ extern "C" void kernel_main(UNUSED int magic,
 
 	std::cout("Kernel %running%...",
 			std::color::green, std::color::ltgray) << std::endl;
+	
+	kernel::interruptManager.testInterrupts();
 
-	const int max = 3;
+	/*const int max = 3;
 	for (int i = 1; i <= max; ++i)
 	{
-		std::cout("<%>\n", 10 / 0);
 		std::cout << "Waiting wakeup..."
 			<< std::format(" (%//%)", i, max) << std::endl;
 		asm ("hlt");
-	}
+	}*/
 
 	std::cout("kernel stopping...\n");
 }

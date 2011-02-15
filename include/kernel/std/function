@@ -39,10 +39,16 @@ template <typename R, unsigned SIZE, typename... Args>
 		typedef R (*PF)(void*, Args...);
 
 		function(): _f(0) {}
+		function(const function& from) = default;
+		function(function&& from) = default;
+		function& operator=(const function& from) = default;
+		function& operator=(function&& from) = default;
+		
+		function& assign(const function& from) {
+			return this->operator=(from);
+		}
 
 		inline operator bool() const { return _f != 0; }
-
-		function(const function& from) = default;
 
 		template <typename F>
 			explicit function(F&& f): _f(&holder<F>::call)

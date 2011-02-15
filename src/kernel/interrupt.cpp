@@ -141,8 +141,8 @@ const ExceptionDoc exceptionReserveddoc = {
 	};
 
 const ExceptionDoc exceptionDoNotKnowdoc = {
-	32 /* .. 256 */, "-", "Not an exception. User defined interrupt.",
-		Type::fault, ErrorCode::no,
+	32 /* .. 255 */, "-", "Not an exception. User defined interrupt.",
+		Type::interrupt, ErrorCode::no,
 		"User defined interrupt." 
 	};
 
@@ -161,7 +161,7 @@ ExceptionDoc get(unsigned idx) {
 extern "C" void interrupt_wrapper();
 
 void Manager::setHandler(uint8_t idx, const handler_t& h) {
-	_trampolines[idx].buildCode(interrupt_wrapper, idx,
+	_trampolines[idx].buildCode(&interrupt_wrapper, idx,
 			(documentation::get(idx).errorCode == documentation::ErrorCode::no)
 			? Trampoline::ErrorCode::no
 			: Trampoline::ErrorCode::yes
@@ -172,11 +172,37 @@ void Manager::setHandler(uint8_t idx, const handler_t& h) {
 				),
 			_trampolines[idx].addr(), Type::interrupt, memory::Privilege::kernel
 			);
-	_handlers[idx] = h;
+	_handlers[idx].assign(h);
 }
 
-void toto(int a, int b) {
-	std::cout("%-%", a, b);
+void Manager::testInterrupts() {
+	unsigned triggered;
+
+	struct {
+		uint8_t _int;
+		uint8_t idx;
+		uint8_t _ret;
+	} PACKED intcode { 0xcd, 0, 0xc3 };
+
+	std::cout("Checking interruptions");
+	for (unsigned i = 32; i < size(); ++i)
+	{
+		std::cout(".");
+		auto backup = getHandler(i);
+
+		(*this)[i] = [&triggered](int i, int) {
+			triggered = i;
+		};
+
+		triggered = size();
+		intcode.idx = i;
+		((void (*)()) &intcode)();
+		while (triggered != i)
+			asm volatile ("hlt");
+
+		(*this)[i] = backup;
+	}
+	std::cout(" success!\n");
 }
 
 Manager::Manager()
@@ -213,7 +239,7 @@ Manager::Manager()
 		uint16_t idt_size;
 		void*    idt_addr;
 	} PACKED ptrIDTR{
-		static_cast<uint16_t>(_idt.size() / sizeof _idt[0] - 1), &_idt[0]
+		static_cast<uint16_t>((_idt.size() * sizeof _idt[0]) - 1), &_idt[0]
 	};
 	asm volatile ("lidtl %0" :: "m" (ptrIDTR));
 	enable();

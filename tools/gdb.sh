@@ -34,6 +34,8 @@ cat >>gdbexec <<EOF
 	continue
 	layout split
 	focus cmd
+	break 78
+	continue
 EOF
 
 gdb -tui -x gdbexec
