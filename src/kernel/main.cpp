@@ -79,15 +79,13 @@ extern "C" void kernel_main(UNUSED int magic,
 	std::cout("APIC version=%c maxlvtentry=%c\n",
 			avr->version, avr->maxlvtentry);
 
-	//kernel::InterruptManager interrupManager;
-
-	/*const int max = 3;
+	const int max = 3;
 	for (int i = 1; i <= max; ++i)
 	{
 		std::cout << "Waiting wakeup..."
 			<< std::format(" (%//%)", i, max) << std::endl;
 		asm ("hlt");
-	}*/
+	}
 
 	std::cout("kernel stopping...\n");
 }

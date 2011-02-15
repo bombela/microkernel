@@ -12,6 +12,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=gnu++0x -m32 -fPIC")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostdlib -nostdinc")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-pmf-conversions")
 	
 	set(CMAKE_ASM-ATT_FLAGS "${CMAKE_ASM-ATT_FLAGS} --32")
 
@@ -48,6 +49,7 @@ set(SRCS
 	${SRC_KERNEL_DIR}/ostream.cpp
 	${SRC_KERNEL_DIR}/segmentation.cpp
 	${SRC_KERNEL_DIR}/interrupt.cpp
+	${SRC_KERNEL_DIR}/interrupt_wrapper.s
 	#${SRC_KERNEL_DIR}/exception.cpp
 	#${SRC_KERNEL_DIR}/exception_wrapper.s
 	#${SRC_KERNEL_DIR}/irq.cpp

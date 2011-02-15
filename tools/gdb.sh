@@ -33,6 +33,9 @@ cat >>gdbexec <<EOF
 	break kernel_main
 	continue
 	layout split
+	focus cmd
+	break interrupt_wrapper
+	continue
 EOF
 
 gdb -tui -x gdbexec

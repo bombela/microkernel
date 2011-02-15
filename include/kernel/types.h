@@ -16,4 +16,9 @@ typedef unsigned long long      uint64_t;
 typedef uint32_t                uintptr_t;
 typedef uint32_t                size_t;
 
+typedef signed char             int8_t;
+typedef signed short            int16_t;
+typedef signed int              int32_t;
+typedef signed long long        int64_t;
+
 #endif /* TYPES_H */

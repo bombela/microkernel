@@ -5,7 +5,7 @@
 */
 
 #include <kernel/interrupt.h>
-
+#include <iomanip>
 #include <kernel/console.h>
 #include <kernel/vga_console.h>
 #include <attributes.h>
@@ -18,7 +18,7 @@ namespace interrupt {
 
 namespace documentation {
 
-enum class Type      { fault, trap, interrupt, abort };
+enum class Type      { fault, trap, abort, interrupt };
 enum class ErrorCode { yes, zero, no };
 
 struct ExceptionDoc {
@@ -30,6 +30,24 @@ struct ExceptionDoc {
 	ErrorCode   errorCode;
 	const char* source;
 
+	friend std::ostream& operator<<(std::ostream& os, const ExceptionDoc& e)
+	{
+		static const char* const types[] = {
+			"fault", "trap", "abort", "interrupt"
+		};
+		static const char* const errors[] = {
+			"yes", "zero", "no"
+		};
+		os(R"(interrup #%c "%" "%" type="%" errcode="%" src="%")",
+				e.idx,
+				e.mnemnonic,
+				e.desc,
+				types[static_cast<int>(e.type)],
+				errors[static_cast<int>(e.errorCode)],
+				e.source
+				);
+		return os;		
+	}
 } const exceptionsDoc[] = {
 
 	{  0, "#DE", "Divide Error",
@@ -121,9 +139,9 @@ const ExceptionDoc exceptionReserveddoc = {
 	};
 
 const ExceptionDoc exceptionDoNotKnowdoc = {
-	32 /* .. 256 */, "-", "Not a valid exception.",
+	32 /* .. 256 */, "-", "Not an exception. User defined interrupt.",
 		Type::fault, ErrorCode::no,
-		"Not a valid exception." 
+		"User defined interrupt." 
 	};
 
 ExceptionDoc get(unsigned idx) {
@@ -138,17 +156,55 @@ ExceptionDoc get(unsigned idx) {
 
 } // namespace documentation
 
+void Manager::setHandler(uint8_t idx, const handler_t& h) {
+	buildTrampoline(idx,
+			(documentation::get(idx).errorCode == documentation::ErrorCode::no)
+			? Trampoline::ErrorCode::no
+			: Trampoline::ErrorCode::yes
+			);
+	_idt[idx] = Description(
+			segmentation::Manager::buildSelector(
+				memory::Privilege::kernel, segmentation::Manager::Segment::kernel_code
+				),
+			_trampolines[idx].addr(), Type::interrupt, memory::Privilege::kernel
+			);
+	_handlers[idx] = h;
+}
+
+void toto(int a, int b) {
+	std::cout("%-%", a, b);
+}
+
 Manager::Manager()
 {
 	dbg("starting");
+	disable();
 
+	_this = this;
+
+	// setup default handler
+	for (size_t i = 0; i < _idt.size(); ++i)
+		setHandler(i, handler_t( [](int idx, int ec) {
+					auto e = documentation::get(idx);
+					if (e.type == documentation::Type::abort)
+						std::cout << std::color::red;
+					else
+						std::cout << std::color::yellow;
+					std::cout
+						<< e << " errval=" << ec
+						<< std::color::ltgray
+						<< std::endl;
+					if (e.type == documentation::Type::abort)
+						die();
+				}));
+	
+	// load IDT
 	struct {
 		uint16_t idt_size;
 		void*    idt_addr;
 	} PACKED ptrIDTR{
-		static_cast<uint16_t>(_idt.size() / sizeof _idt[0]), &_idt[0]
+		static_cast<uint16_t>(_idt.size() / sizeof _idt[0] - 1), &_idt[0]
 	};
-
 	asm volatile ("lidtl %0" :: "m" (ptrIDTR));
 	enable();
 	dbg("started");
@@ -159,6 +215,17 @@ Manager::~Manager()
 	dbg("stopping");
 	disable();
 	dbg("stopped");
+}
+
+inline void Manager::interruptHandler(int intCode, int errCode)
+{
+	_handlers[intCode](intCode, errCode);
+}
+
+Manager* Manager::_this = 0;
+extern "C" void _interrupt_handler(int intCode, int errCode)
+{
+	Manager::_this->interruptHandler(intCode, errCode);
 }
 
 } // namespace interrupt
