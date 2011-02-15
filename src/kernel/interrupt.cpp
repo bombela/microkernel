@@ -156,8 +156,10 @@ ExceptionDoc get(unsigned idx) {
 
 } // namespace documentation
 
+extern "C" void interrupt_wrapper();
+
 void Manager::setHandler(uint8_t idx, const handler_t& h) {
-	buildTrampoline(idx,
+	_trampolines[idx].buildCode(interrupt_wrapper, idx,
 			(documentation::get(idx).errorCode == documentation::ErrorCode::no)
 			? Trampoline::ErrorCode::no
 			: Trampoline::ErrorCode::yes

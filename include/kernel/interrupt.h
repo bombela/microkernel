@@ -61,8 +61,6 @@ struct Description
 		{}
 } PACKED ALIGNED(8);
 
-extern "C" const uint32_t* const __b_load;
-
 class Trampoline
 {
 	public:
@@ -104,8 +102,6 @@ class Trampoline
 		int32_t        _function;
 } PACKED ALIGNED(16);
 
-extern "C" void interrupt_wrapper();
-
 class Manager
 {
 	public:
@@ -132,12 +128,6 @@ class Manager
 		std::array<Description, 256> _idt;
 		std::array<Trampoline,  256> _trampolines;
 		std::array<handler_t,   256> _handlers;
-
-		inline void buildTrampoline(uint8_t idx,
-				Trampoline::ErrorCode ec)
-		{
-			_trampolines[idx].buildCode(interrupt_wrapper, idx, ec);
-		}
 };
 
 } // namespace interrupt
