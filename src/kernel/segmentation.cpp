@@ -41,21 +41,24 @@ Manager::Manager()
 		reinterpret_cast<uint32_t>(&_gdt[0])
 	};
 
-	asm volatile (
-			"lgdt %0          \n"
-			"jmp 1f           \n"
-			"1:               \n"
-			"movw %%ax,  %%ss \n"
-			"movw %%ax,  %%ds \n"
-			"movw %%ax,  %%es \n"
-			"movw %%ax,  %%fs \n"
-			"movw %%ax,  %%gs \n"
+	uint16_t data_sel = buildSelector(memory::Privilege::kernel,
+			Segment::kernel_data);
+
+	asm volatile (R"ASM(
+			lgdt %0
+			/* jump to clean the CPU prefetch queue */
+			ljmpl $0x8, $1f /* 0x8 == kernel_code segment */
+			1:
+			movw %%ax,  %%ss
+			movw %%ax,  %%ds
+			movw %%ax,  %%es
+			movw %%ax,  %%fs
+			movw %%ax,  %%gs
+			)ASM"
 			::
 			"m"  (gdt_reg),
-			"ax" (buildSelector(memory::Privilege::kernel,
-					Segment::kernel_data))
+			"ax" (data_sel)
 			:"memory");
-
 	dbg("started");
 }
 

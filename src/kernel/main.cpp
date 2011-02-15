@@ -23,7 +23,6 @@ SECTION(".multiboot") ALIGNED(4) multiboot::header_short
 	multiboot_header(MULTIBOOT_PAGE_ALIGN bitor MULTIBOOT_MEMORY_INFO);
 
 // essential harware management
-
 segmentation::Manager segmentationManager;
 interrupt::Manager    interruptManager;
 
@@ -78,6 +77,8 @@ extern "C" void kernel_main(UNUSED int magic,
 
 	std::cout("APIC version=%c maxlvtentry=%c\n",
 			avr->version, avr->maxlvtentry);
+
+	//kernel::interrupt::Manager    interruptManager;
 
 	const int max = 3;
 	for (int i = 1; i <= max; ++i)
