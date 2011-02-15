@@ -85,7 +85,8 @@ extern "C" void kernel_main(UNUSED int magic,
 	kernel::enableFPU();
 	kernel::enableSSE();
 
-	driver::PIC_i8259::init();
+	driver::PIC_i8259::init(); // temporary, to disable it
+
 	cxxruntime::Run running;
 	
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
