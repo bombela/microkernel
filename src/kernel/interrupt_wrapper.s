@@ -16,7 +16,7 @@ interrupt_wrapper:
 
 	/* backup context */
 
-	pushl (%esp)
+	pushl 4(%esp)
 	pushl 4(%esp)
 	call _interrupt_handler
 	addl $8, %esp
