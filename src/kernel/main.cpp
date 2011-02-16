@@ -71,7 +71,7 @@ interrupt::Manager      interruptManager;
 extern "C" uint8_t* ret_addr[];
 struct AutoPrintBootStackUsage
 {
-	static void trap(int i, int e, void** _eip)
+	static void trap(int, int, void** _eip)
 	{
 		uint8_t** eip = (uint8_t**)_eip;
 		*(*eip -1) = 0xC3;
@@ -98,7 +98,7 @@ struct AutoPrintBootStackUsage
 				die();
 			}
 			uint8_t* start = (uint8_t*)&init;
-			uint8_t* end = start + 80000;
+			uint8_t* end = start + 90000;
 			if ((addr >= start) and (addr < end))
 				continue;
 			instr = 0xCC;
@@ -111,9 +111,9 @@ struct AutoPrintBootStackUsage
 	{
 		init();
 	}
-};
-
-//AutoPrintBootStackUsage _apbs;
+}
+_apbs
+;
 
 } // namespace kernel
 
@@ -178,10 +178,22 @@ extern "C" void kernel_main(UNUSED int magic,
 	auto old =
 		kernel::interruptManager.getHandler(kernel::picManager.irq2int(0));
 
+	int cnt = 0;
 	kernel::interruptManager.setHandler(kernel::picManager.irq2int(0),
-		[&old](int i, int e, void** eip) {
-			//old(i, e, eip);
+		[&old, &cnt](int i, int, void**) {
 			kernel::printBootStackUsage();
+
+			if (++cnt > 10)
+			{
+				std::cout("stop playing!");
+				kernel::interruptManager.setHandler(
+					kernel::picManager.irq2int(0),
+					[&old, &cnt](int i, int, void**) {
+					std::cout(".");
+					kernel::picManager.eoi(kernel::picManager.int2irq(i));
+					});
+			}
+
 			kernel::picManager.eoi(kernel::picManager.int2irq(i));
 			});
 	kernel::picManager.enable(0);
@@ -190,7 +202,6 @@ extern "C" void kernel_main(UNUSED int magic,
 
 	for (;;)
 	{
-		std::cout << "Waiting wakeup..." << std::endl;
 		asm ("hlt");
 	}
 
