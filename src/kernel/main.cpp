@@ -10,6 +10,7 @@
 #include <kernel/segmentation.h>
 #include <kernel/interrupt.h>
 #include <kernel/pic.h>
+#include <kernel/phymem.h>
 
 #include <cxxruntime.h>
 #include <iostream>
@@ -67,6 +68,7 @@ void printBootStackUsage()
 segmentation::Manager   segmentationManager;
 pic::Manager            picManager;
 interrupt::Manager      interruptManager;
+phymem::Manager         phymemManager;
 
 #ifdef STACK_USAGE_PATCH
 extern "C" uint8_t* ret_addr[];
@@ -158,6 +160,8 @@ extern "C" void kernel_main(UNUSED int magic,
 	std::cout("Mem = %MB (upper limit = %xkB)\n",
 			(mbi->mem_upper >> 10), mbi->mem_upper);
 
+	kernel::phymemManager.init(mbi->mem_lower, mbi->mem_upper);
+
 	struct APICVersionRegister {
 		uint8_t version;
 		uint8_t reserved1;
@@ -196,7 +200,7 @@ extern "C" void kernel_main(UNUSED int magic,
 
 			kernel::picManager.eoi(kernel::picManager.int2irq(i));
 			});
-	kernel::picManager.enable(0);
+	//kernel::picManager.enable(0);
 
 	kernel::printBootStackUsage();
 

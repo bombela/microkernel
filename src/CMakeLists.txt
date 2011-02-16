@@ -59,11 +59,7 @@ set(SRCS
 	${SRC_KERNEL_DIR}/interrupt.cpp
 	${SRC_KERNEL_DIR}/interrupt_wrapper.s
 	${SRC_KERNEL_DIR}/pic.cpp
-
-	#${SRC_KERNEL_DIR}/exception.cpp
-	#${SRC_KERNEL_DIR}/exception_wrapper.s
-	#${SRC_KERNEL_DIR}/irq.cpp
-	#${SRC_KERNEL_DIR}/irq_wrapper.s
+	${SRC_KERNEL_DIR}/phymem.cpp
 	)
 if (STACK_USAGE_PATCH)
 	list(APPEND SRCS "${CMAKE_CURRENT_BINARY_DIR}/retidx.cpp")

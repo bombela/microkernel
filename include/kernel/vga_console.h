@@ -10,6 +10,7 @@
 
 #include <array>
 #include <kernel/console.h>
+#include <kernel/memory.h>
 
 /*
  * Enable REENTRENT check if array compiling with debug/check on.
@@ -33,11 +34,16 @@ class VGAConsole: public Console {
 	public:
 		static VGAConsole& getInstance();
 
-		virtual void write(const char*);
-		virtual void write(const char*, size_t);
-		virtual void write(char);
-		virtual void setAttr(const Attr&);
-		virtual void resetAttr();
+		void write(const char*);
+		void write(const char*, size_t);
+		void write(char);
+		void setAttr(const Attr&);
+		void resetAttr();
+
+		inline memory::Range<const uint8_t*> memRange() const {
+			return memory::range(&_video_mem[0],
+					&_video_mem[0] + _video_mem.size()).cast<const uint8_t*>();
+		}
 
 		VGAConsole(const VGAConsole&) = delete;
 		VGAConsole& operator=(const VGAConsole&) = delete;
@@ -54,11 +60,12 @@ class VGAConsole: public Console {
 			uint8_t attr;
 		} PACKED;
 
+		static const uint32_t vmem_base_addr = 0xB8000;
 		static const size_t line_len = 80;
 		static const size_t line_cnt = 25;
 
 		std::array<vga_char, line_len * line_cnt,
-			std::buffer::absolute, 0xB8000> _video_mem;
+			std::buffer::absolute, vmem_base_addr> _video_mem;
 		size_t _idx;
 		char   _attr;
 

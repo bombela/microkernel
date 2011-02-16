@@ -139,7 +139,6 @@ class Manager
 
 	private:
 		static const unsigned MAX_INTS = 256;
-
 		std::array<Description, MAX_INTS> _idt;
 		std::array<Trampoline,  MAX_INTS> _trampolines;
 		std::array<handler_t,   MAX_INTS> _handlers;
