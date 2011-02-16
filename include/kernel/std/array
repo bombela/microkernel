@@ -25,20 +25,22 @@ template <typename T, size_t SIZE, uintptr_t ADDR>
 struct inplace {
 	static_assert(ADDR == 0, "ADDR shouldn't be used!");
 	T buffer[SIZE];
+	static const size_t size = SIZE;
 };
 
 template <typename T, size_t SIZE, uintptr_t ADDR>
 struct absolute {
-	static_assert(ADDR != 0, "ADDR shouldn't be null!");
 	constexpr static T* buffer = reinterpret_cast<T*>(ADDR);
 	constexpr absolute() = default;
 	absolute(const absolute&) = delete;
 	absolute& operator=(const absolute& from) = delete;
+	static const size_t size = SIZE;
 };
 
 template <typename T, size_t SIZE, uintptr_t ADDR>
 struct dynamic {
 	static_assert(ADDR == 0, "ADDR shouldn't be used!");
+	static const size_t size = SIZE;
 	T* buffer;
 #ifdef CHECK_ON
 	constexpr dynamic(): buffer(nullptr) { }
@@ -54,6 +56,15 @@ struct dynamic {
 				buffer[i] = from.buffer[i];
 		return *this;
 	}
+};
+
+template <typename T, size_t SIZE, uintptr_t ADDR>
+struct absolute_resizeable {
+	constexpr static T* buffer = reinterpret_cast<T*>(ADDR);
+	constexpr absolute_resizeable(): size(SIZE) {}
+	absolute_resizeable(const absolute_resizeable&) = delete;
+	absolute_resizeable& operator=(const absolute_resizeable& from) = delete;
+	size_t size;
 };
 
 } // namespace buffer
@@ -94,11 +105,11 @@ class array
 			size_t i = 0;
 			for (auto item : list)
 			{
-				if (i >= SIZE)
+				if (i >= _buffer.size)
 				{
 					dbg("constructor(::std::initializer_list<T> %)"
 							" list too big (% > %), truncated!",
-							list, list.size(), SIZE);
+							list, list.size(), _buffer.size);
 					break;
 				}
 				(*this)[i++] = item;
@@ -111,7 +122,7 @@ class array
 				size_t i = 0;
 				while (begin != end)
 				{
-					if (i >= SIZE)
+					if (i >= _buffer.size)
 					{
 						dbg("constructor(begin %, end %)"
 								" list too big, truncated!", begin, end);
@@ -137,7 +148,7 @@ class array
 
 		reference operator[](size_t idx)
 		{
-			assert(idx < SIZE);
+			assert(idx < _buffer.size);
 			assert(_buffer.buffer != 0);
 			dbg("operator[](%) -> %", idx, _buffer.buffer[idx]);
 			return _buffer.buffer[idx];
@@ -145,22 +156,26 @@ class array
 
 		const_reference operator[](size_t idx) const
 		{
-			assert(idx < SIZE);
+			assert(idx < _buffer.size);
 			assert(_buffer.buffer != 0);
 			dbg("operator[](%) const -> %", idx, _buffer.buffer[idx]);
 			return _buffer.buffer[idx];
 		}
 
-		constexpr size_t size() const { return SIZE; }
+		constexpr size_t size() const { return _buffer.size; }
+		void resize(size_t ns) {
+			dbg("resize % -> %", _buffer.size, ns);
+			_buffer.size = ns;
+		}
 
 #ifndef CHECK_ON
 		typedef       T* iterator;
 		typedef const T* const_iterator;
 
 		iterator begin() { return &_buffer.buffer[0]; }
-		iterator end() { return &_buffer.buffer[SIZE]; }
+		iterator end() { return &_buffer.buffer[_buffer.size]; }
 		const_iterator begin() const { return &_buffer.buffer[0]; }
-		const_iterator end() const { return &_buffer.buffer[SIZE]; }
+		const_iterator end() const { return &_buffer.buffer[_buffer.size]; }
 #else
 		template <typename ARRAY, typename REF, typename PTR>
 		struct iterator_impl
@@ -263,9 +278,9 @@ class array
 			return a._array == b._array and a._idx >= b._idx; }
 
 		iterator begin() { return iterator(this, 0); }
-		iterator end() { return iterator(this, SIZE); }
+		iterator end() { return iterator(this, _buffer.size); }
 		const_iterator begin() const { return const_iterator(this, 0); }
-		const_iterator end() const { return const_iterator(this, SIZE); }
+		const_iterator end() const { return const_iterator(this, _buffer.size); }
 #endif
 
 	private:
