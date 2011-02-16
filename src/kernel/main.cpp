@@ -68,6 +68,7 @@ segmentation::Manager   segmentationManager;
 pic::Manager            picManager;
 interrupt::Manager      interruptManager;
 
+#ifdef STACK_USAGE_PATCH
 extern "C" uint8_t* ret_addr[];
 struct AutoPrintBootStackUsage
 {
@@ -95,10 +96,10 @@ struct AutoPrintBootStackUsage
 			{
 				std::cout("Instruction differ, you should"
 						" update the database with 'make genretidx' !\n");
-				die();
+				continue;
 			}
 			uint8_t* start = (uint8_t*)&init;
-			uint8_t* end = start + 90000;
+			uint8_t* end = start + 10000000;
 			if ((addr >= start) and (addr < end))
 				continue;
 			instr = 0xCC;
@@ -111,9 +112,8 @@ struct AutoPrintBootStackUsage
 	{
 		init();
 	}
-}
-_apbs
-;
+} _apbs ;
+#endif
 
 } // namespace kernel
 

@@ -34,10 +34,6 @@ cat >>gdbexec <<EOF
 	continue
 	layout split
 	focus cmd
-	break kernel::segmentation::Manager::Manager
-	continue
-	break 44
-	continue
 EOF
 
 gdb -tui -x gdbexec

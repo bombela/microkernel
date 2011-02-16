@@ -36,6 +36,14 @@ include_directories("${CMAKE_SOURCE_DIR}/include/kernel/std")
 set(SRC_KERNEL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/kernel")
 set(SRC_DRIVER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/driver")
 
+set(STACK_USAGE_PATCH CACHE BOOL
+	"Patch kernel on the fly to show stack usage progression")
+message(STATUS "Kernel stack usage patch: ${STACK_USAGE_PATCH}")
+string(TOUPPER "${STACK_USAGE_PATCH}" STACK_USAGE_PATCH)
+if (STACK_USAGE_PATCH)
+	list(APPEND KERNEL_DEFINES "STACK_USAGE_PATCH=${STACK_USAGE_PATCH}")
+endif()
+
 set(SRCS
 	kernel.lds
 	multiboot.s
@@ -56,9 +64,10 @@ set(SRCS
 	#${SRC_KERNEL_DIR}/exception_wrapper.s
 	#${SRC_KERNEL_DIR}/irq.cpp
 	#${SRC_KERNEL_DIR}/irq_wrapper.s
-
-	${CMAKE_CURRENT_BINARY_DIR}/retidx.cpp
 	)
+if (STACK_USAGE_PATCH)
+	list(APPEND SRCS "${CMAKE_CURRENT_BINARY_DIR}/retidx.cpp")
+endif()
 
 set_property(SOURCE ${SRCS} APPEND
 	PROPERTY COMPILE_DEFINITIONS ${KERNEL_DEFINES}

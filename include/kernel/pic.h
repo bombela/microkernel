@@ -29,7 +29,7 @@ class Manager
 		static inline uint8_t irq2int(uint8_t irqIdx) {
 			return irqIdx + BASE_INT; }
 
-		NOINLINE void enable(uint8_t irqIdx) {
+		void enable(uint8_t irqIdx) {
 			assert(irqIdx <= 15);
 			assert(irqIdx != 2); // don't touch the master/slave link IRQ2
 			if (irqIdx < 8)
