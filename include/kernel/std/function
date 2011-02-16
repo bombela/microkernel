@@ -14,6 +14,7 @@
 #include <kernel/std/memfn>
 #include <kernel/std/bind>
 #include <new>
+#include <enable_if.hpp>
 
 #include KERNEL_STD_FUNCTION_DEBUG
 #include KERNEL_STD_FUNCTION_CHECK
@@ -33,10 +34,28 @@ static const unsigned minsize
 template <typename S, unsigned SIZE = details::minsize>
 	struct function;
 
+namespace details {
+
+template <typename F>
+struct is_function {
+	static const bool value = false;
+};
+
+template <typename S, unsigned SIZE>
+struct is_function<function<S, SIZE>> {
+	static const bool value = true;
+};
+
+} // namespace details
+
+template <typename F>
+struct is_function:
+	details::is_function<typename decay<F>::type> {};
+
 template <typename R, unsigned SIZE, typename... Args>
 	struct function<R (Args...), SIZE>
 	{
-		typedef R (*PF)(void*, Args...);
+		typedef R (*PF)(const void*, Args...);
 
 		function(): _f(0) {}
 		function(const function& from) = default;
@@ -51,7 +70,10 @@ template <typename R, unsigned SIZE, typename... Args>
 		inline operator bool() const { return _f != 0; }
 
 		template <typename F>
-			explicit function(F&& f): _f(&holder<F>::call)
+			explicit function(F&& f,
+					typename enable_if<
+					not details::is_function<F>::value, void*>::type = 0
+					): _f(&holder<F>::call)
 			{
 				static_assert(SIZE >= sizeof (holder<F>),
 						"function to hold too big for the holder! "
@@ -70,7 +92,7 @@ template <typename R, unsigned SIZE, typename... Args>
 				return *this;
 			}
 		
-		auto operator()(Args... args)
+		auto operator()(Args... args) const
 		-> decltype(
 				(*(PF*)0)(0, (*(Args*)0)...)
 				)
@@ -85,18 +107,18 @@ template <typename R, unsigned SIZE, typename... Args>
 				template <typename F2>
 					holder(F2&& f): f(forward<F2>(f)) {}
 
-				inline R docall(Args... args)
+				inline R docall(Args... args) const
 				{
 					return this->f(args...);
 				}
 
-				static R call(void* h, Args... args)
+				static R call(const void* h, Args... args)
 				{
-					return static_cast<holder*>(h)
+					return static_cast<const holder*>(h)
 						->docall(args...);
 				}
 
-				F f;
+				typename remove_ref<F>::type f;
 			};
 
 		PF   _f;

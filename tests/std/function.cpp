@@ -86,5 +86,5 @@ BOOST_AUTO_TEST_CASE(fct_copy)
 	kstd::function<int (char, float)> f(&adder);
 	kstd::function<int (char, float)> f2 = f;
 	f2(1, 2);
-	f2 = f;
+	f2.assign(f);
 }

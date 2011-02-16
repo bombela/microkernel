@@ -12,7 +12,7 @@ KERNEL_BOOT_STACK_SIZE = 0x4000
 .globl _start
 _start:
 	/* Setup the stack */
-	movl $(kernel_boot_stack + KERNEL_BOOT_STACK_SIZE), %ebp
+	movl $(__e_kernel_boot_stack), %ebp
 	movl %ebp, %esp
 
 	/* clean EFLAGS */
@@ -36,5 +36,4 @@ _start:
 
 .section ".stack", "aw", @nobits
 .size kernel_boot_stack, KERNEL_BOOT_STACK_SIZE
-kernel_boot_stack:
 	.space KERNEL_BOOT_STACK_SIZE

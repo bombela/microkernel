@@ -50,11 +50,14 @@ set(SRCS
 	${SRC_KERNEL_DIR}/segmentation.cpp
 	${SRC_KERNEL_DIR}/interrupt.cpp
 	${SRC_KERNEL_DIR}/interrupt_wrapper.s
-	${SRC_DRIVER_DIR}/pic_i8259.cpp
+	${SRC_KERNEL_DIR}/pic.cpp
+
 	#${SRC_KERNEL_DIR}/exception.cpp
 	#${SRC_KERNEL_DIR}/exception_wrapper.s
 	#${SRC_KERNEL_DIR}/irq.cpp
 	#${SRC_KERNEL_DIR}/irq_wrapper.s
+
+	${CMAKE_CURRENT_BINARY_DIR}/retidx.cpp
 	)
 
 set_property(SOURCE ${SRCS} APPEND
@@ -108,5 +111,14 @@ add_custom_command(OUTPUT kern0x.S kern0x.dump
 	DEPENDS kern0x
 	)
 add_custom_target(dumpkern
+	DEPENDS kern0x.S
+	)
+
+add_custom_command(OUTPUT retidx.cpp
+	COMMAND "${TOOLS_DIRECTORY}/buildretidx.sh" "kern0x.S" > "retidx.cpp"
+	)
+
+add_custom_target(genretidx
+	COMMAND "${TOOLS_DIRECTORY}/buildretidx.sh" "kern0x.S" > "retidx.cpp"
 	DEPENDS kern0x.S
 	)

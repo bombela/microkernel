@@ -38,10 +38,12 @@ interrupt_wrapper:
 	/* change stack */
 
 	/* call interrupt_handler */
-	pushl 8(%ebp)
-	pushl 4(%ebp)
+	lea 12(%ebp), %eax
+	pushl %eax    /* &eip */
+	pushl 8(%ebp) /* exception code */
+	pushl 4(%ebp) /* interrupt idx */
 	call _interrupt_handler
-	addl $8, %esp
+	addl $12, %esp
 
 	/* restore segments
 	popw  %gs

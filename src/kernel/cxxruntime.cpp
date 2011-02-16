@@ -24,7 +24,8 @@ void operator delete(UNUSED void* ptr) noexcept
 
 extern "C" void __cxa_pure_virtual(void)
 {
-	// cout toussa... ("pure virtual method called\n");
+	if (kernel::main_console)
+		kernel::main_console->write("/!\\pure virtual method called/!\\\n");
 	kernel::die();
 }
 

@@ -34,7 +34,7 @@ cat >>gdbexec <<EOF
 	continue
 	layout split
 	focus cmd
-	break 78
+	break 131
 	continue
 EOF
 

@@ -191,9 +191,9 @@ void Manager::testInterrupts() {
 		std::cout(".");
 		auto backup = getHandler(i);
 
-		(*this)[i] = [&triggered](int i, int) {
+		setHandler(i, [&triggered](int i, int, void*) {
 			triggered = i;
-		};
+		});
 
 		triggered = size();
 		intcode.idx = i;
@@ -201,7 +201,7 @@ void Manager::testInterrupts() {
 		while (triggered != i)
 			asm volatile ("hlt");
 
-		(*this)[i] = backup;
+		setHandler(i, backup);
 	}
 	std::cout(" success!\n");
 }
@@ -215,7 +215,7 @@ Manager::Manager()
 
 	// setup default handler
 	for (size_t i = 0; i < _idt.size(); ++i)
-		setHandler(i, handler_t( [](int idx, int ec) {
+		setHandler(i, handler_t( [](int idx, int ec, void** eip) {
 					auto e = documentation::get(idx);
 					if (e.type == documentation::Type::abort)
 						std::cout << std::color::red;
@@ -223,6 +223,7 @@ Manager::Manager()
 						std::cout << std::color::yellow;
 					std::cout
 						<< e << " errval=" << ec
+						<< " eip=" << eip
 						<< std::color::ltgray
 						<< std::endl;
 					switch (e.type) {
@@ -254,16 +255,16 @@ Manager::~Manager()
 	dbg("stopped");
 }
 
-inline void Manager::interruptHandler(int intCode, int errCode)
+inline void Manager::interruptHandler(int intCode, int errCode, void** eip)
 {
 	dbg("interrupt #%c with errorCode=%c", intCode, errCode);
-	_handlers[intCode](intCode, errCode);
+	_handlers[intCode](intCode, errCode, eip);
 }
 
 Manager* Manager::_this = 0;
-extern "C" void _interrupt_handler(int intCode, int errCode)
+extern "C" void _interrupt_handler(int intCode, int errCode, void** eip)
 {
-	Manager::_this->interruptHandler(intCode, errCode);
+	Manager::_this->interruptHandler(intCode, errCode, eip);
 }
 
 } // namespace interrupt

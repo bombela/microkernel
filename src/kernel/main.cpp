@@ -4,18 +4,17 @@
  *
 */
 
-#include <cxxruntime.h>
-
 #include <kernel/multiboot.h>
 #include <kernel/console.h>
 #include <kernel/die.h>
-#include <cxxruntime.h>
 #include <kernel/segmentation.h>
 #include <kernel/interrupt.h>
+#include <kernel/pic.h>
+
+#include <cxxruntime.h>
 #include <iostream>
 #include <iomanip>
 #include <bind>
-#include <kernel/pic_i8259.h>
 
 namespace kernel {
 
@@ -51,8 +50,70 @@ NOINLINE void enableSSE() {
 	   	main_console->write(" enabled\n");
 }
 
-segmentation::Manager segmentationManager;
-interrupt::Manager    interruptManager;
+extern "C" uint8_t __b_kernel_boot_stack;
+extern "C" uint8_t __e_kernel_boot_stack;
+void printBootStackUsage()
+{
+	uint8_t* esp;
+	asm("mov %%esp, %0":"=g"(esp));
+	std::cout("kernel boot stack usage: %/%% (%//% Bytes)\n",
+			(&__e_kernel_boot_stack - esp) * 100 /
+			(&__e_kernel_boot_stack - &__b_kernel_boot_stack),
+			&__e_kernel_boot_stack - esp,
+			&__e_kernel_boot_stack - &__b_kernel_boot_stack
+			);
+}
+
+segmentation::Manager   segmentationManager;
+pic::Manager            picManager;
+interrupt::Manager      interruptManager;
+
+extern "C" uint8_t* ret_addr[];
+struct AutoPrintBootStackUsage
+{
+	static void trap(int i, int e, void** _eip)
+	{
+		uint8_t** eip = (uint8_t**)_eip;
+		*(*eip -1) = 0xC3;
+		--*eip;
+
+		if (std::cout_initialized)
+			printBootStackUsage();
+	}
+
+	NOINLINE static void init()
+	{
+		std::cout("Auto print stack usage, patching kernel...");
+		kernel::interruptManager.setHandler(3, &trap);
+
+		unsigned cnt = 0;
+		for (uint8_t** i = ret_addr; *i; ++i)
+		{
+			uint8_t*& addr = *i;
+			uint8_t& instr = *addr;
+			if (instr != 0xC3)
+			{
+				std::cout("Instruction differ, you should"
+						" update the database with 'make genretidx' !\n");
+				die();
+			}
+			uint8_t* start = (uint8_t*)&init;
+			uint8_t* end = start + 80000;
+			if ((addr >= start) and (addr < end))
+				continue;
+			instr = 0xCC;
+			++cnt;
+		}
+		std::cout(" done, % ret patched.\n", cnt);
+	}
+
+	AutoPrintBootStackUsage()
+	{
+		init();
+	}
+};
+
+//AutoPrintBootStackUsage _apbs;
 
 } // namespace kernel
 
@@ -85,8 +146,6 @@ extern "C" void kernel_main(UNUSED int magic,
 	kernel::enableFPU();
 	kernel::enableSSE();
 
-	driver::PIC_i8259::init(); // temporary, to disable it
-
 	cxxruntime::Run running;
 	
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
@@ -115,6 +174,20 @@ extern "C" void kernel_main(UNUSED int magic,
 			std::color::green, std::color::ltgray) << std::endl;
 	
 	kernel::interruptManager.testInterrupts();
+
+	//auto old =
+	//	kernel::interruptManager.getHandler(kernel::picManager.irq2int(0));
+
+	/*kernel::interruptManager.setHandler(kernel::picManager.irq2int(0),
+		[&old](int i, int e) {
+			old(i, e);
+			//kernel::picManager.eoi(kernel::picManager.int2irq(i));
+			});*/
+	//kernel::picManager.enable(0);
+	
+	//kernel::picManager.eoi(0);
+
+	kernel::printBootStackUsage();
 
 	/*const int max = 3;
 	for (int i = 1; i <= max; ++i)

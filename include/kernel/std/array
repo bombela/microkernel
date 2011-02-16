@@ -58,7 +58,7 @@ struct dynamic {
 
 } // namespace buffer
 
-inline namespace details {
+namespace details {
 
 template <typename T>
 struct fill_info { const T& value; };

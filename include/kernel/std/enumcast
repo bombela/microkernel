@@ -86,7 +86,8 @@ struct is_enum {
 template <typename D,
 		 unsigned BITS = 0,
 		 typename S>
-inline D enum_cast(S e, typename enable_if<not is_enum<D>::value>::type = 0) {
+inline D enum_cast(S e,
+		typename enable_if<not details::is_enum<D>::value>::type = 0) {
 	const D r = static_cast<D>(e);
 
 #ifdef CHECK_ON
@@ -106,7 +107,8 @@ inline D enum_cast(S e, typename enable_if<not is_enum<D>::value>::type = 0) {
 template <typename D,
 		 unsigned BITS = 0,
 		 typename S>
-inline D enum_cast(S s, typename enable_if<is_enum<D>::value>::type = 0) {
+inline D enum_cast(S s,
+		typename enable_if<details::is_enum<D>::value>::type = 0) {
 	const D r = static_cast<D>(s);
 
 #ifdef CHECK_ON

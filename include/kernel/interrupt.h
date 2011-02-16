@@ -102,11 +102,11 @@ class Trampoline
 		int32_t        _function;
 } PACKED ALIGNED(4);
 
+typedef std::function<void (int, int, void**)> handler_t;
+
 class Manager
 {
 	public:
-		typedef std::function<void (int, int)> handler_t;
-
 		Manager();
 		~Manager();
 
@@ -122,45 +122,20 @@ class Manager
 			return _handlers[idx];
 		}
 
-		const handler_t& operator[](uint8_t idx) const {
-			return _handlers[idx];
-		}
-
-		struct Proxy
-		{
-			friend class Manager;
-
-			Proxy(Manager* m, unsigned idx): _m(m), _idx(idx) {}
-			operator const handler_t&() { return (*_m)[_idx]; };
-			
-			template <typename F>
-				Proxy& operator=(const F& h) {
-					_m->setHandler(_idx, h);
-					return *this;
-				}
-
-			Proxy& operator=(const Proxy& from) = delete;
-			Proxy& operator=(Proxy&& from) = delete;
-			
-			private:
-				Manager* _m;
-				unsigned _idx;
-
-				Proxy(const Proxy& from) = default;
-				Proxy(Proxy&& from) = default;
-		};
+		void setHandler(uint8_t idx, const handler_t& h);
 		
-		Proxy operator[](uint8_t idx) {
-			return Proxy(this, idx);
-		}
-
+		template <typename F>
+			void setHandler(uint8_t idx, const F& h) {
+				setHandler(idx, handler_t(h));
+			}
+		
 		static constexpr unsigned size() { return MAX_INTS; }
 
 		void testInterrupts();
 
 		// really ugly
 		static Manager* _this;
-		void interruptHandler(int intCode, int errCode);
+		void interruptHandler(int intCode, int errCode, void** eip);
 
 	private:
 		static const unsigned MAX_INTS = 256;
@@ -168,13 +143,6 @@ class Manager
 		std::array<Description, MAX_INTS> _idt;
 		std::array<Trampoline,  MAX_INTS> _trampolines;
 		std::array<handler_t,   MAX_INTS> _handlers;
-		
-		void setHandler(uint8_t idx, const handler_t& h);
-		
-		template <typename F>
-			void setHandler(uint8_t idx, const F& h) {
-				setHandler(idx, handler_t(h));
-			}
 };
 
 } // namespace interrupt

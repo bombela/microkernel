@@ -48,6 +48,7 @@ SECTIONS
 	.text ALIGN(4096):
 	{	
 		/* This section includes the code */
+		__b_text = .;
 		*(.text*)
 		/* Defines the end symbol */
 		__e_text = .;
@@ -98,7 +99,9 @@ SECTIONS
 		
 		/* We put the bootstrap stack */
 		. = ALIGN(4096);
+		__b_kernel_boot_stack = .;
 		*(.stack)
+		__e_kernel_boot_stack = .;
 
 		/* Defines the end symbol */
 		__e_bss = .;

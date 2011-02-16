@@ -61,6 +61,7 @@ kern0x_add_define(CXXRUNTIME  "C++ runtime support")
 kern0x_add_define(CONSOLE  "standard console")
 kern0x_add_define(SEGMENTATION  "segmentation manager")
 kern0x_add_define(INTERRUPT  "interrupt manager")
+kern0x_add_define(PIC  "PIC manager")
 
 set(MEM_FN_VERSION "static" CACHE STRING
 	"mem_fn implemetation version (storepmf or static)")
