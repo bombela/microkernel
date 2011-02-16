@@ -183,8 +183,9 @@ extern "C" void kernel_main(UNUSED int magic,
 			old(i, e);
 			//kernel::picManager.eoi(kernel::picManager.int2irq(i));
 			});*/
-	//kernel::picManager.enable(0);
-	
+	std::cout("wtf?");
+	kernel::picManager.enable(0);
+	std::cout("wtf...");
 	//kernel::picManager.eoi(0);
 
 	kernel::printBootStackUsage();

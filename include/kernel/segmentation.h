@@ -81,14 +81,17 @@ union Descriptor
 	}
 } PACKED ALIGNED(8);
 
-struct Selector
+union Selector
 {
-	uint8_t  requestedPrivilegeLevel: 2; // memory::Privilege
-	uint8_t  tableIndicator: 1;          // Table
-	uint16_t index: 12;                  // 4 bytes aligned
+	uint16_t value;
+	struct {
+		uint8_t  requestedPrivilegeLevel: 2; // memory::Privilege
+		uint8_t  tableIndicator: 1;          // Table
+		uint16_t index: 12;                  // 4 bytes aligned
+	};
 
 	operator uint16_t() const {
-		return *reinterpret_cast<const uint16_t*>(this);
+		return value;
 	}
 
 	inline memory::Privilege getRequestPrivilegeLevel() const {
@@ -112,6 +115,7 @@ struct Selector
 	Selector() = default;
 	constexpr Selector(memory::Privilege requestedPrivilegeLevel,
 			Table table, uint16_t index):
+		value(0),
 		requestedPrivilegeLevel(
 				static_cast<uint8_t>(requestedPrivilegeLevel)),
 		tableIndicator(static_cast<uint8_t>(table)),
