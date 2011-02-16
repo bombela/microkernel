@@ -175,28 +175,24 @@ extern "C" void kernel_main(UNUSED int magic,
 	
 	kernel::interruptManager.testInterrupts();
 
-	//auto old =
-	//	kernel::interruptManager.getHandler(kernel::picManager.irq2int(0));
+	auto old =
+		kernel::interruptManager.getHandler(kernel::picManager.irq2int(0));
 
-	/*kernel::interruptManager.setHandler(kernel::picManager.irq2int(0),
-		[&old](int i, int e) {
-			old(i, e);
-			//kernel::picManager.eoi(kernel::picManager.int2irq(i));
-			});*/
-	std::cout("wtf?");
+	kernel::interruptManager.setHandler(kernel::picManager.irq2int(0),
+		[&old](int i, int e, void** eip) {
+			//old(i, e, eip);
+			kernel::printBootStackUsage();
+			kernel::picManager.eoi(kernel::picManager.int2irq(i));
+			});
 	kernel::picManager.enable(0);
-	std::cout("wtf...");
-	//kernel::picManager.eoi(0);
 
 	kernel::printBootStackUsage();
 
-	/*const int max = 3;
-	for (int i = 1; i <= max; ++i)
+	for (;;)
 	{
-		std::cout << "Waiting wakeup..."
-			<< std::format(" (%//%)", i, max) << std::endl;
+		std::cout << "Waiting wakeup..." << std::endl;
 		asm ("hlt");
-	}*/
+	}
 
 	std::cout("kernel stopping...\n");
 }
