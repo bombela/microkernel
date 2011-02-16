@@ -161,6 +161,7 @@ ExceptionDoc get(unsigned idx) {
 extern "C" void interrupt_wrapper();
 
 void Manager::setHandler(uint8_t idx, const handler_t& h) {
+	dbg("set handler to #%c", idx);
 	_trampolines[idx].buildCode(&interrupt_wrapper, idx,
 			(documentation::get(idx).errorCode == documentation::ErrorCode::no)
 			? Trampoline::ErrorCode::no
@@ -255,6 +256,7 @@ Manager::~Manager()
 
 inline void Manager::interruptHandler(int intCode, int errCode)
 {
+	dbg("interrupt #%c with errorCode=%c", intCode, errCode);
 	_handlers[intCode](intCode, errCode);
 }
 
