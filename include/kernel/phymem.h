@@ -158,6 +158,11 @@ class Manager
 		}
 
 		void testAllocator();
+		
+		inline bool used(const memory::Page* p) const {
+			return used(*reinterpret_cast<const Page*>(p));
+		}
+
 	private:
 		union Page
 		{
