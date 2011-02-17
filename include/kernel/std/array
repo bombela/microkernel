@@ -56,7 +56,7 @@ struct dynamic {
 	dynamic& operator=(const dynamic& from)
 	{
 		if (buffer != from.buffer)
-			for (size_t i = 0; i < SIZE; ++i)
+			for (size_t i = 0; i < size; ++i)
 				buffer[i] = from.buffer[i];
 		return *this;
 	}
@@ -89,7 +89,7 @@ struct dynamic_resizable {
 	dynamic_resizable& operator=(const dynamic_resizable& from)
 	{
 		if (buffer != from.buffer)
-			for (size_t i = 0; i < SIZE; ++i)
+			for (size_t i = 0; i < size; ++i)
 				buffer[i] = from.buffer[i];
 		return *this;
 	}

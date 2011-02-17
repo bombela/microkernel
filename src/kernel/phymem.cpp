@@ -6,6 +6,7 @@
 
 #include <kernel/phymem.h>
 #include <kernel/vga_console.h>
+#include <iostream>
 
 #include KERNEL_PHYMEM_DEBUG
 #include KERNEL_PHYMEM_CHECK
@@ -19,11 +20,6 @@ extern "C" memory::Page __e_kernel;
 void Manager::init(unsigned mem_lower_kb, unsigned mem_upper_kb)
 {
 	dbg("initializing");
-
-	auto mem_lower = memory::kilo(mem_lower_kb);
-	auto mem_upper = memory::kilo(mem_upper_kb);
-
-	dbg("lower=% upper=%", mem_lower, mem_upper);
 
 	auto vmem = VGAConsole::getInstance().memRange();
 
@@ -54,12 +50,23 @@ void Manager::init(unsigned mem_lower_kb, unsigned mem_upper_kb)
 	   );
 
 	_map.clear();
-	use(_pages[0].page); // lock first page
-	use(pmgnt.pages());
-	use(biosmem.joined(vmem.pages()));
-	use(kmem);
+	_map.set(_pages[0].page.number()); // lock first page
+
+	auto inituse = [this](const memory::PageRange& range) {
+		assert(range.is_aligned());
+		for (auto& p : range) {
+			_map.set(p.number());
+		}
+	};
+	inituse(pmgnt.pages());
+	inituse(biosmem.joined(vmem.pages()));
+	inituse(kmem);
 
 	rebuildFreeList();
+
+	_kmem = kmem;
+	_vmem = vmem.pages();
+	_biosmem = biosmem;
 
 	dbg("initialized");
 }
@@ -74,8 +81,7 @@ void Manager::printMemUsage() const {
 	};
 	size_t cntused1 = _map.cntset();
 	print(cntused1);
-	size_t cntused2 = _pages.size() - cntFreePage();
-	assert(cntused1 == cntused2);
+	assert(cntused1 == (_pages.size() - cntFreePage()));
 }
 
 void Manager::rebuildFreeList()
@@ -107,6 +113,48 @@ size_t Manager::cntFreePage() const
    	for (; p; p = p->next)
 		++cnt;
 	return cnt;
+}
+
+void Manager::testAllocator() {
+	// backup
+	std::cout("test physical memory allocator...\n");
+	printMemUsage();
+	BoolArray<0x1,
+		std::buffer::dynamic_resizable> map_backup;
+	map_backup.relocate(  _map.range().pages().end() );
+	map_backup.resize(_pages.size());
+
+	// test
+	{
+		map_backup = _map;
+		for (auto& p : map_backup.range().pages().cast<Page*>())
+			_map.set(p.page.number());
+		rebuildFreeList();
+		printMemUsage();
+
+		size_t trigger = 0;
+		Page* p;
+		while ((p = _alloc()) != 0)
+		{
+			if (++trigger > _pages.size() / 10)
+			{
+				printMemUsage();
+				trigger = 0;
+			}
+			p->next = memory::Addr<Page*>(42);
+			p->prev = memory::Addr<Page*>(42);
+			p->page.data[42] = 42;
+			p->page.data[0] = 42;
+			p->page.data[memory::page_size - 1] = 42;
+		}
+		
+		// restore
+		printMemUsage();
+		_map = map_backup;
+		rebuildFreeList();
+	}
+
+	std::cout("test physical memory allocator succed!\n");
 }
 
 } // namespace phymem

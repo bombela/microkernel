@@ -104,6 +104,8 @@ class BoolArray
 		void clear() {
 			std::fill(_buffer, 0);
 		}
+
+		void assign(const BoolArray& o) { _buffer.assign(o); }
 	private:
 		buffer_t _buffer;
 
@@ -115,29 +117,47 @@ class BoolArray
 		}
 };
 
+#ifndef CHECK_ON
+	#define assertCanBeFree(x)
+#endif
+
 class Manager
 {
 	public:
 		void init(unsigned mem_lower_kb, unsigned mem_upper_kb);
 
-		inline void free(const memory::Page& p) {
-			dbg("page=%", p.number());
-			_free(p);
+		inline void free(memory::Page* p) {
+			dbg("page=%", p->number());
+			assertCanBeFree(p);
+			_free(reinterpret_cast<Page*>(p));
 		}
 
 		void free(const memory::PageRange& range) {
 			assert(range.is_aligned());
 			dbg("range=%", range);
-			for (auto& p : range) {
-				_free(p);
-			}
+			_free(range.cast<Page*>());
 		}
 		
-		inline bool used(const memory::Page& p) {
-			return _map.isset(p.number());
+		void printMemUsage() const;
+
+		// return 0 if failed.
+		memory::Page* alloc() {
+			Page* page = _alloc();
+			dbg("allocated page=%", page->page.number());
+			return &page->page;
+		}
+		
+		memory::PageRange alloc(size_t cnt) {
+			if (_free_begin == 0)
+			{
+				dbg("out of memory");
+				return memory::PageRange();
+			}
+			// TODO
+			return memory::PageRange();
 		}
 
-		void printMemUsage() const;
+		void testAllocator();
 	private:
 		union Page
 		{
@@ -147,6 +167,16 @@ class Manager
 				Page* prev;
 				Page* next;
 			};
+
+			inline void hook(Page* prev, Page* next)
+			{
+				this->prev = prev;
+				this->next = next;
+				if (prev)
+					prev->next = this;
+				if (next)
+					next->prev = this;
+			}
 		};
 
 		std::array<Page, 0x1,
@@ -155,25 +185,56 @@ class Manager
 			std::buffer::dynamic_resizable>_map;
 		Page* _free_begin;
 
-		inline void use(const memory::Page& p) {
-			dbg("page=%", p.number());
-			_use(p);
+#ifdef CHECK_ON
+		memory::PageRange _kmem;
+		memory::PageRange _vmem;
+		memory::PageRange _biosmem;
+
+		void assertCanBeFree(memory::Page* p) const {
+			assert(p != nullptr);
+			assert(not _kmem.contain(p));
+			assert(not _biosmem.contain(p));
+			assert(not _map.range().pages().contain(p));
+		}
+#endif // CHECK_ON
+
+		inline void _use(const Page* p) {
+			_map.set(p->page.number());
+			if (p->prev != 0)
+				p->prev->next = p->next;
+			if (p->next != 0)
+				p->next->prev = p->prev;
 		}
 
-		void use(const memory::PageRange& range) {
-			assert(range.is_aligned());
-			dbg("range=%", range);
+		inline Page* _find_prev_free(Page* p) {
+			for (size_t i = p->page.number() - 1; i > 0; --i)
+				if (not _map.isset(i))
+					return &_pages[i];
+			return nullptr;
+		}
+		
+		inline Page* _find_next_free(Page* p) {
+			for (size_t i = p->page.number() + 1; i < _pages.size(); ++i)
+				if (not _map.isset(i))
+					return &_pages[i];
+			return nullptr;
+		}
+
+		inline void _free(Page* p) {
+			Page* prev = _find_prev_free(p);
+			Page* next = _find_next_free(p);
+
+			p->hook(prev, next);
+
+			if (_free_begin == next)
+				_free_begin = p;
+			_map.clr(p->page.number());
+		}
+
+		void _free(const memory::Range<Page*>& range) {
 			for (auto& p : range) {
-				_use(p);
+				_free(&p);
 			}
-		}
-
-		inline void _free(const memory::Page& p) {
-			_map.clr(p.number());
-		}
-
-		inline void _use(const memory::Page& p) {
-			_map.set(p.number());
 		}
 
 		inline bool used(const Page& p) const {
@@ -182,10 +243,26 @@ class Manager
 
 		void rebuildFreeList();
 		size_t cntFreePage() const;
+
+		Page* _alloc() {
+			if (_free_begin == 0)
+			{
+				dbg("out of memory");
+				return 0;
+			}
+			Page* page = _free_begin;
+			_free_begin = _free_begin->next;
+			_use(page);
+			return page;
+		}
 };
 
 } // namespace phymem
 } // namespace kernel
+
+#ifdef CHECK_ON
+#undef assertCanBeFree
+#endif
 
 #include <check_off.h>
 #include <debug_off.h>

@@ -28,7 +28,7 @@ static const uintptr_t page_size = 4096;
 struct Octet
 {
 	size_t value;
-	inline constexpr Octet(size_t v): value(v) {}
+	inline constexpr explicit Octet(size_t v): value(v) {}
 	inline Octet& operator=(size_t v) { value = v; return *this; }
 	inline operator size_t() const { return value; }
 
