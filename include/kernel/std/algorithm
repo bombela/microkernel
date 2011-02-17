@@ -10,6 +10,7 @@
 
 #include <kernel/std/bits/config.h>
 #include <kernel/std/range>
+#include <kernel/std/forward>
 
 #ifndef USER_EXTERNAL_STL
 #include <kernel/types.h>
@@ -42,6 +43,28 @@ template <typename C1, typename C2>
 	void copy(const C1& src, C2& out)
 	{
 		copy(begin(src), end(src), begin(out));
+	}
+
+template <typename A, typename B>
+	auto max(A&& a, B&& b) -> decltype(a > b
+			? kernel_std::forward<A>(a)
+			: kernel_std::forward<B>(b)
+			)
+	{
+		return (a > b)
+			? kernel_std::forward<A>(a)
+			: kernel_std::forward<B>(b);
+	}
+
+template <typename A, typename B>
+	auto min(A&& a, B&& b) -> decltype(a < b
+			? kernel_std::forward<A>(a)
+			: kernel_std::forward<B>(b)
+			)
+	{
+		return (a < b)
+			? kernel_std::forward<A>(a)
+			: kernel_std::forward<B>(b);
 	}
 
 } // namespace kernel_std

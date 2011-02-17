@@ -10,6 +10,9 @@
 
 #include <kernel/types.h>
 #include <forward>
+#include <ostream>
+#include <array>
+#include <algorithm>
 
 #include KERNEL_MEM_DEBUG
 #include KERNEL_MEM_CHECK
@@ -21,8 +24,34 @@ enum class Privilege      { BITS = 2, kernel = 0, userland = 3 };
 enum class OperationSize  { BITS = 1, mode16 = 0, mode32 = 1 };
 
 static const uintptr_t page_size = 4096;
+typedef std::array<uint8_t, page_size> Page;
 
-struct Page { uint8_t data[page_size]; };
+struct Octet
+{
+	size_t value;
+	inline constexpr Octet(size_t v): value(v) {}
+	inline Octet& operator=(size_t v) { value = v; return *this; }
+	inline operator size_t() const { return value; }
+
+	inline size_t octet() const { return value; }
+	inline size_t kilo()  const { return octet() / 1024; }
+	inline size_t mega()  const { return kilo() / 1024; }
+	inline size_t giga()  const { return mega() / 1024; }
+		
+	friend std::ostream& operator<<(std::ostream& os, const Octet& r)
+	{
+		if (r.value > 10000000)
+			return os << r.mega() << "M";
+		if (r.value > 10000)
+			return os << r.kilo() << "K";
+		return os << r.octet() << "o";
+	}
+};
+
+inline constexpr Octet octet(size_t v) { return Octet(v); }
+inline constexpr Octet kilo(size_t v)  { return octet(v * 1024); }
+inline constexpr Octet mega(size_t v)  { return kilo(v * 1024); }
+inline constexpr Octet giga(size_t v)  { return mega(v * 1024); }
 
 namespace details {
 
@@ -51,8 +80,13 @@ class Addr
 			typename details::same_constness<ptr_t, uintptr_t>::type
 			addr_t;
 
+		inline constexpr Addr(): _addr(0) {}
+
 		inline constexpr Addr(T addr):
 			_addr(reinterpret_cast<addr_t>(reinterpret_cast<ptr_t>(addr))) {}
+		
+		inline constexpr Addr(Octet addr):
+			_addr(addr) {}
 		
 		inline constexpr Addr(addr_t addr): _addr(addr) {}
 		
@@ -66,7 +100,7 @@ class Addr
 
 		inline Addr aligned_up(uintptr_t bnd) const {
 			assert((bnd bitand (bnd - 1)) == 0);
-			return Addr((_addr + bnd) bitand ~(bnd - 1));
+			return Addr((_addr + (bnd - 1)) bitand ~(bnd - 1));
 		}
 		
 		inline Addr aligned_down(unsigned bnd) const {
@@ -108,14 +142,6 @@ struct def_addr { typedef Addr<T> type; };
 template <typename T>
 struct def_addr<Addr<T>> { typedef Addr<T> type; };
 
-/*
-template <typename T>
-struct def_addr {
-	typedef
-		typename _def_addr<typename std::decay<T>::type, T>::type
-		type;
-};*/
-
 } // namespace details
 
 template <typename T>
@@ -125,9 +151,11 @@ class Range
 		typedef typename details::def_addr<T>::type   addr_t;
 		typedef typename addr_t::ptr_t                ptr_t;
 		
-		constexpr Range(addr_t begin, addr_t end):
-			_begin(begin),
-			_end(end) {}
+		constexpr Range() = default;
+
+		inline constexpr Range(addr_t begin, addr_t end):
+			_begin(ptr_t(begin) < end ? begin : end),
+			_end(ptr_t(end) > begin ? end : begin) {}
 
 		inline addr_t& begin() { return _begin; }
 		constexpr inline const addr_t& begin() const { return _begin; }
@@ -138,15 +166,15 @@ class Range
 		inline size_t size() const { return _end.distance(_begin); }
 		
 		inline Range aligned(unsigned bnd) const {
-			return Range(_begin.aligned_down(bnd), _begin.aligned_up(bnd));
+			return Range(_begin.aligned_down(bnd), _end.aligned_up(bnd));
 		}
 
 		inline Range aligned() const {
-			return Range(_begin.aligned_down(), _begin.aligned_up());
+			return Range(_begin.aligned_down(), _end.aligned_up());
 		}
 
 		template <typename U>
-			Range<U> cast() {
+			inline Range<U> cast() {
 				return Range<U>(
 						_begin.cast<U>(),
 						_end.cast<U>()
@@ -154,7 +182,7 @@ class Range
 			}
 
 		template <typename U>
-			Range<U> cast() const {
+			inline Range<U> cast() const {
 				return Range<U>(
 						_begin.cast<U>(),
 						_end.cast<U>()
@@ -167,6 +195,35 @@ class Range
 
 		inline Range<const Page*> pages() const {
 			return aligned().cast<const Page*>();
+		}
+
+		inline bool contain(addr_t p) const {
+			return (p >= _begin and p < _end);
+		}
+		
+		inline bool contain(const Range& b) const {
+			return (b.begin() >= begin()
+					and b.end() <= end());
+		}
+
+		inline bool adjacent(const Range& b) const {
+			return b.begin() == end() or begin() == b.end();
+		}
+
+		inline Range split(const Range& b) {
+			assert(contain(b));
+			Range r(b.end(), end());
+			_end = b.begin();
+			return r;
+		}
+
+		inline Range joined(const Range& b) {
+			assert(contain(b.begin()) or contain(b.end())
+					or adjacent(b));
+			return {
+				std::min(begin(), b.begin()),
+					std::max(end(), b.end())
+			};
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, const Range& r)
@@ -184,6 +241,8 @@ class Range
 
 template <typename A, typename B>
 constexpr inline Range<A> range(A begin, B end) { return {begin, end}; }
+
+typedef Range<Page*> PageRange;
 
 } // namespace memory
 } // namespace kernel

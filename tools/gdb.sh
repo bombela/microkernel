@@ -34,6 +34,8 @@ cat >>gdbexec <<EOF
 	continue
 	layout split
 	focus cmd
+	break kernel::phymem::Manager::init
+	continue
 EOF
 
 gdb -tui -x gdbexec
