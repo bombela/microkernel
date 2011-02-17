@@ -203,6 +203,7 @@ extern "C" void kernel_main(UNUSED int magic,
 	//kernel::picManager.enable(0);
 
 	kernel::printBootStackUsage();
+	kernel::phymemManager.printMemUsage();
 
 	for (;;)
 	{

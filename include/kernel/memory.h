@@ -24,7 +24,6 @@ enum class Privilege      { BITS = 2, kernel = 0, userland = 3 };
 enum class OperationSize  { BITS = 1, mode16 = 0, mode32 = 1 };
 
 static const uintptr_t page_size = 4096;
-typedef std::array<uint8_t, page_size> Page;
 
 struct Octet
 {
@@ -37,6 +36,7 @@ struct Octet
 	inline size_t kilo()  const { return octet() / 1024; }
 	inline size_t mega()  const { return kilo() / 1024; }
 	inline size_t giga()  const { return mega() / 1024; }
+	inline size_t page()  const { return octet() / page_size; }
 		
 	friend std::ostream& operator<<(std::ostream& os, const Octet& r)
 	{
@@ -52,6 +52,14 @@ inline constexpr Octet octet(size_t v) { return Octet(v); }
 inline constexpr Octet kilo(size_t v)  { return octet(v * 1024); }
 inline constexpr Octet mega(size_t v)  { return kilo(v * 1024); }
 inline constexpr Octet giga(size_t v)  { return mega(v * 1024); }
+inline constexpr Octet page(size_t v)  { return octet(v * page_size); }
+
+struct Page {
+	uint8_t data[page_size];
+	size_t number() const  {
+		return octet(reinterpret_cast<size_t>(this)).page();
+	}
+};
 
 namespace details {
 
@@ -98,7 +106,7 @@ class Addr
 		inline constexpr operator ptr_t() const {
 			return reinterpret_cast<ptr_t>(_addr); }
 
-		inline Addr aligned_up(uintptr_t bnd) const {
+		inline Addr aligned_up(unsigned bnd) const {
 			assert((bnd bitand (bnd - 1)) == 0);
 			return Addr((_addr + (bnd - 1)) bitand ~(bnd - 1));
 		}
@@ -108,8 +116,14 @@ class Addr
 			return Addr(_addr bitand ~(bnd - 1));
 		}
 		
+		inline bool is_aligned(unsigned bnd) const {
+			assert((bnd bitand (bnd - 1)) == 0);
+			return (_addr bitand (bnd - 1)) == 0;
+		}
+		
 		inline Addr aligned_up() const { return aligned_up(page_size); }
 		inline Addr aligned_down() const { return aligned_down(page_size); }
+		inline bool is_aligned() const { return is_aligned(page_size); }
 
 		inline size_t distance(const Addr& b) const {
 			if (_addr > b._addr)
@@ -158,19 +172,27 @@ class Range
 			_end(ptr_t(end) > begin ? end : begin) {}
 
 		inline addr_t& begin() { return _begin; }
-		constexpr inline const addr_t& begin() const { return _begin; }
-		
 		inline addr_t& end() { return _end; }
-		inline const addr_t& end() const { return _end; }
-		
+	
+		constexpr inline ptr_t begin() const { return ptr_t(_begin); }
+		constexpr inline ptr_t end() const { return ptr_t(_end); }
+
 		inline size_t size() const { return _end.distance(_begin); }
 		
 		inline Range aligned(unsigned bnd) const {
 			return Range(_begin.aligned_down(bnd), _end.aligned_up(bnd));
 		}
+		
+		inline bool is_aligned(unsigned bnd) const {
+			return _begin.is_aligned(bnd) and _end.aligned_up(bnd);
+		}
 
 		inline Range aligned() const {
 			return Range(_begin.aligned_down(), _end.aligned_up());
+		}
+		
+		inline bool is_aligned() const {
+			return _begin.is_aligned() and _end.aligned_up();
 		}
 
 		template <typename U>
@@ -198,16 +220,17 @@ class Range
 		}
 
 		inline bool contain(addr_t p) const {
-			return (p >= _begin and p < _end);
+			return (ptr_t(p) >= begin() and ptr_t(p) < end());
 		}
 		
 		inline bool contain(const Range& b) const {
-			return (b.begin() >= begin()
-					and b.end() <= end());
+			return (ptr_t(b.begin()) >= begin()
+					and ptr_t(b.end()) <= end());
 		}
 
 		inline bool adjacent(const Range& b) const {
-			return b.begin() == end() or begin() == b.end();
+			return ptr_t(b.begin()) == end()
+				or ptr_t(begin()) == b.end();
 		}
 
 		inline Range split(const Range& b) {
@@ -220,10 +243,10 @@ class Range
 		inline Range joined(const Range& b) {
 			assert(contain(b.begin()) or contain(b.end())
 					or adjacent(b));
-			return {
-				std::min(begin(), b.begin()),
-					std::max(end(), b.end())
-			};
+			return Range(
+					ptr_t(begin()) < b.begin() ? ptr_t(begin()) : b.begin(),
+					ptr_t(end()) > b.end() ? ptr_t(end()) : b.end()
+					);
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, const Range& r)

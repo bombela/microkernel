@@ -26,6 +26,7 @@ struct inplace {
 	static_assert(ADDR == 0, "ADDR shouldn't be used!");
 	T buffer[SIZE];
 	static const size_t size = SIZE;
+	static const bool nullcheck = true;
 };
 
 template <typename T, size_t SIZE, uintptr_t ADDR>
@@ -35,12 +36,14 @@ struct absolute {
 	absolute(const absolute&) = delete;
 	absolute& operator=(const absolute& from) = delete;
 	static const size_t size = SIZE;
+	static const bool nullcheck = true;
 };
 
 template <typename T, size_t SIZE, uintptr_t ADDR>
 struct dynamic {
 	static_assert(ADDR == 0, "ADDR shouldn't be used!");
 	static const size_t size = SIZE;
+	static const bool nullcheck = true;
 	T* buffer;
 #ifdef CHECK_ON
 	constexpr dynamic(): buffer(nullptr) { }
@@ -48,6 +51,7 @@ struct dynamic {
 	constexpr dynamic() = default;
 #endif
 	constexpr dynamic(uintptr_t addr): buffer(reinterpret_cast<T*>(addr)) { }
+	void relocate(uintptr_t addr) { buffer = reinterpret_cast<T*>(addr); }
 	dynamic(const dynamic&) = delete;
 	dynamic& operator=(const dynamic& from)
 	{
@@ -59,12 +63,37 @@ struct dynamic {
 };
 
 template <typename T, size_t SIZE, uintptr_t ADDR>
-struct absolute_resizeable {
+struct absolute_resizable {
 	constexpr static T* buffer = reinterpret_cast<T*>(ADDR);
-	constexpr absolute_resizeable(): size(SIZE) {}
-	absolute_resizeable(const absolute_resizeable&) = delete;
-	absolute_resizeable& operator=(const absolute_resizeable& from) = delete;
+	constexpr absolute_resizable(): size(SIZE) {}
+	absolute_resizable(const absolute_resizable&) = delete;
+	absolute_resizable& operator=(const absolute_resizable& from) = delete;
 	size_t size;
+	static const bool nullcheck = false;
+};
+
+template <typename T, size_t SIZE, uintptr_t ADDR>
+struct dynamic_resizable {
+	static_assert(ADDR == 0, "ADDR shouldn't be used!");
+	size_t size;
+	T* buffer;
+#ifdef CHECK_ON
+	constexpr dynamic_resizable(): buffer(nullptr) { }
+#else
+	constexpr dynamic_resizable() = default;
+#endif
+	constexpr dynamic_resizable(uintptr_t addr):
+		buffer(reinterpret_cast<T*>(addr)) { }
+	void relocate(uintptr_t addr) { buffer = reinterpret_cast<T*>(addr); }
+	dynamic_resizable(const dynamic_resizable&) = delete;
+	dynamic_resizable& operator=(const dynamic_resizable& from)
+	{
+		if (buffer != from.buffer)
+			for (size_t i = 0; i < SIZE; ++i)
+				buffer[i] = from.buffer[i];
+		return *this;
+	}
+	static const bool nullcheck = true;
 };
 
 } // namespace buffer
@@ -149,7 +178,7 @@ class array
 		reference operator[](size_t idx)
 		{
 			assert(idx < _buffer.size);
-			assert(_buffer.buffer != 0);
+			assert(_buffer.nullcheck ? _buffer.buffer != 0 : true);
 			dbg("operator[](%) -> %", idx, _buffer.buffer[idx]);
 			return _buffer.buffer[idx];
 		}
@@ -157,7 +186,7 @@ class array
 		const_reference operator[](size_t idx) const
 		{
 			assert(idx < _buffer.size);
-			assert(_buffer.buffer != 0);
+			assert(_buffer.nullcheck ? _buffer.buffer != 0 : true);
 			dbg("operator[](%) const -> %", idx, _buffer.buffer[idx]);
 			return _buffer.buffer[idx];
 		}
@@ -166,6 +195,13 @@ class array
 		void resize(size_t ns) {
 			dbg("resize % -> %", _buffer.size, ns);
 			_buffer.size = ns;
+		}
+		void relocate(uintptr_t addr) {
+			dbg("relocate from % to %x", _buffer.buffer, addr);
+			_buffer.relocate(addr);
+		}
+		void relocate(void* addr) {
+			relocate(reinterpret_cast<uintptr_t>(addr));
 		}
 
 #ifndef CHECK_ON
