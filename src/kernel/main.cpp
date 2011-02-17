@@ -177,7 +177,7 @@ extern "C" void kernel_main(UNUSED int magic,
 	std::cout("Kernel %running%...",
 			std::color::green, std::color::ltgray) << std::endl;
 	
-	kernel::interruptManager.testInterrupts();
+	//kernel::interruptManager.testInterrupts();
 
 	auto old =
 		kernel::interruptManager.getHandler(kernel::picManager.irq2int(0));

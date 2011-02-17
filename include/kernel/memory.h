@@ -174,8 +174,8 @@ class Range
 		inline addr_t& begin() { return _begin; }
 		inline addr_t& end() { return _end; }
 	
-		constexpr inline ptr_t begin() const { return ptr_t(_begin); }
-		constexpr inline ptr_t end() const { return ptr_t(_end); }
+		constexpr inline addr_t begin() const { return addr_t(_begin); }
+		constexpr inline addr_t end() const { return addr_t(_end); }
 
 		inline size_t size() const { return _end.distance(_begin); }
 		
@@ -244,8 +244,10 @@ class Range
 			assert(contain(b.begin()) or contain(b.end())
 					or adjacent(b));
 			return Range(
-					ptr_t(begin()) < b.begin() ? ptr_t(begin()) : b.begin(),
-					ptr_t(end()) > b.end() ? ptr_t(end()) : b.end()
+					ptr_t(begin()) < ptr_t(b.begin())
+						? ptr_t(begin()) : ptr_t(b.begin()),
+					ptr_t(end()) > ptr_t(b.end())
+						? ptr_t(end()) : ptr_t(b.end())
 					);
 		}
 
@@ -266,6 +268,26 @@ template <typename A, typename B>
 constexpr inline Range<A> range(A begin, B end) { return {begin, end}; }
 
 typedef Range<Page*> PageRange;
+
+template <typename T>
+	typename Range<T*>::ptr_t begin(Range<T*>& range) {
+		return range.begin();
+	}
+
+template <typename T>
+	typename Range<T*>::ptr_t end(Range<T*>& range) {
+		return range.end();
+	}
+
+template <typename T>
+	typename Range<T*>::ptr_t begin(const Range<T*>& range) {
+		return range.begin();
+	}
+
+template <typename T>
+	typename Range<T*>::ptr_t end(const Range<T*>& range) {
+		return range.end();
+	}
 
 } // namespace memory
 } // namespace kernel

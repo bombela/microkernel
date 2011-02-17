@@ -46,14 +46,14 @@ class BoolArray
 		typedef std::array<type, SIZE, BUFFER, ADDR> buffer_t;
 		
 	private:
-		static const size_t bits  = sizeof (type) << 3;
+		static const size_t bits  = sizeof (type) * 8;
 		static const size_t mask  = bits - 1;
 		static const size_t shift = details::log<type, bits, 2>::value;
 
 	public:
 
 		BoolArray() {}
-		size_t size() const { return _buffer.size() << (shift - 1); }
+		size_t size() const { return _buffer.size() * bits; }
 
 		inline void set(size_t idx) {
 			auto& b = _buffer[idx >> shift];
@@ -65,7 +65,7 @@ class BoolArray
 			b &= ~(1 << (idx & mask));
 		}
 
-		inline void isset(size_t idx) const {
+		inline bool isset(size_t idx) const {
 			auto b = _buffer[idx >> shift];
 			return b bitand (1 << (idx & mask));
 		}
@@ -83,11 +83,26 @@ class BoolArray
 			_buffer.resize((size + (bits - 1)) / bits);
 		}
 
+		size_t cntbit2(size_t v) const
+		{
+			size_t cnt = 0;
+			for (int i = 0; i < 32; ++i)
+			{
+				if (v & (1 << i))
+					++cnt;
+			}
+			return cnt;
+		}
+
 		size_t cntset() const {
 			size_t cnt = 0;
 			for (auto i : _buffer)
 				cnt += cntbit(i);
 			return cnt;
+		}
+
+		void clear() {
+			std::fill(_buffer, 0);
 		}
 	private:
 		buffer_t _buffer;
@@ -106,7 +121,7 @@ class Manager
 		void init(unsigned mem_lower_kb, unsigned mem_upper_kb);
 
 		inline void free(const memory::Page& p) {
-			dbg("page=%", p);
+			dbg("page=%", p.number());
 			_free(p);
 		}
 
@@ -117,24 +132,31 @@ class Manager
 				_free(p);
 			}
 		}
+		
+		inline bool used(const memory::Page& p) {
+			return _map.isset(p.number());
+		}
 
 		void printMemUsage() const;
 	private:
-		std::array<memory::Page, 0x1,
+		union Page
+		{
+			memory::Page page;
+			struct
+			{
+				Page* prev;
+				Page* next;
+			};
+		};
+
+		std::array<Page, 0x1,
 			std::buffer::absolute_resizable, 0x0>_pages;
 		BoolArray<0x1,
 			std::buffer::dynamic_resizable>_map;
+		Page* _free_begin;
 
-		inline void _free(const memory::Page& p) {
-			_map.clr(p.number());
-		}
-
-		inline void _use(const memory::Page& p) {
-			_map.set(p.number());
-		}
-		
 		inline void use(const memory::Page& p) {
-			dbg("page=%", p);
+			dbg("page=%", p.number());
 			_use(p);
 		}
 
@@ -145,6 +167,21 @@ class Manager
 				_use(p);
 			}
 		}
+
+		inline void _free(const memory::Page& p) {
+			_map.clr(p.number());
+		}
+
+		inline void _use(const memory::Page& p) {
+			_map.set(p.number());
+		}
+
+		inline bool used(const Page& p) const {
+			return _map.isset(p.page.number());
+		}
+
+		void rebuildFreeList();
+		size_t cntFreePage() const;
 };
 
 } // namespace phymem

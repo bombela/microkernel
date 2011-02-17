@@ -34,7 +34,7 @@ cat >>gdbexec <<EOF
 	continue
 	layout split
 	focus cmd
-	break kernel::phymem::Manager::init
+	break kernel::phymem::Manager::initFreeList
 	continue
 EOF
 
