@@ -211,14 +211,30 @@ extern "C" void kernel_main(UNUSED int magic,
 	kernel::phymemManager.printMemUsage();
 	
 	//kernel::phymemManager.testAllocator();
+	
+	{
+		auto old =
+			kernel::interruptManager.getHandler(14);
+
+		kernel::interruptManager.setHandler(14,
+				[jump = &&after](int, int err, void** eip) {
+					std::cout(" nullptr deref catched! err=%\n", err);
+					asm ("movl $after, %0" : "=m"(*eip));
+				});
+
+		std::cout("try to catch nullptr access...");
+		asm (R"(
+			movl $42, 0 /* write to address 0 */
+			after:
+			)");
+after:
+		kernel::interruptManager.setHandler(14, old);
+	}
 
 	std::cout("Kernel %running%...",
 			std::color::green, std::color::ltgray) << std::endl;
 	
-	for (;;)
-	{
-		asm ("hlt");
-	}
+	//for (;;) asm ("hlt");
 
 	std::cout("kernel stopping...\n");
 }

@@ -24,6 +24,8 @@ void Manager::init() {
 	dbg("identity mapping physical memory...");
 	for (auto& p: _phymem->mem().cast<Page*>())
 		identity_map(&p);
+
+	unmap(nullptr); // unmap for ptr null
 	
 	dbg("enabling CPU pagination...");
 

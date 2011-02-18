@@ -175,10 +175,15 @@ class BoolArray
 		buffer_t _buffer;
 
 		inline size_t cntbit(type v) const {
+			size_t cnt;
+			asm ("popcnt %1, %0" : "=r" (cnt) : "g" (v));
+			return cnt;
+			/*
 			v = v - ((v >> 1) & (type)~(type)0/3);
 			v = (v & (type)~(type)0/15*3) + ((v >> 2) & (type)~(type)0/15*3);
 			v = (v + (v >> 4)) & (type)~(type)0/255*15;
 			return (type)(v * ((type)~(type)0/255)) >> (sizeof(type) - 1) * 8;
+			*/
 		}
 };
 
