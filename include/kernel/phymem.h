@@ -11,6 +11,7 @@
 #include <kernel/types.h>
 #include <kernel/memory.h>
 #include <array>
+#include <function>
 
 #include KERNEL_PHYMEM_DEBUG
 #include KERNEL_PHYMEM_CHECK
@@ -49,6 +50,7 @@ class BoolArray
 		static const size_t bits  = sizeof (type) * 8;
 		static const size_t mask  = bits - 1;
 		static const size_t shift = details::log<type, bits, 2>::value;
+		static const size_t full  = type(-1);
 
 	public:
 
@@ -83,22 +85,54 @@ class BoolArray
 			_buffer.resize((size + (bits - 1)) / bits);
 		}
 
-		size_t cntbit2(size_t v) const
-		{
-			size_t cnt = 0;
-			for (int i = 0; i < 32; ++i)
-			{
-				if (v & (1 << i))
-					++cnt;
-			}
-			return cnt;
-		}
-
 		size_t cntset() const {
 			size_t cnt = 0;
 			for (auto i : _buffer)
 				cnt += cntbit(i);
 			return cnt;
+		}
+
+		// return >= size() if error
+		inline size_t find_clr_backward(size_t idx) const
+		{
+			if (idx == 0)
+				return size();
+			// iter over bits blocks
+			do
+			{
+				--idx;
+				auto& b = _buffer[idx >> shift];
+				if (b != full)
+				{
+					// found a partially used block, slow search.
+					size_t min = (idx bitand ~mask);
+					for (; idx >= min; --idx)
+						if (0 == (b bitand (1 << (idx & mask))))
+							return idx;
+				}
+				idx = (idx bitand ~mask);
+			}
+			while (idx > 0);
+			return size();
+		}
+
+		// return >= size() if error
+		inline size_t find_clr_forward(size_t idx) const
+		{
+			// iter over bits blocks
+			for (++idx; idx < size(); idx = (idx bitor mask) + 1)
+			{
+				auto& b = _buffer[idx >> shift];
+				if (b != full)
+				{
+					// found a partially used block, slow search.
+					size_t max = (idx bitor mask);
+					for (; idx <= max; ++idx)
+						if (0 == (b bitand (1 << (idx & mask))))
+							return idx;
+				}
+			} 
+			return size();
 		}
 
 		void clear() {
@@ -163,6 +197,14 @@ class Manager
 			return used(*reinterpret_cast<const Page*>(p));
 		}
 
+		template <typename F>
+		void usedPageApply(F f)
+		{
+			for (auto& p : _pages)
+				if (used(p))
+					f(p.page);
+		}
+
 	private:
 		union Page
 		{
@@ -173,17 +215,17 @@ class Manager
 				Page* next;
 			};
 
-			inline void hook(Page* prev, Page* next)
+
+			inline void hook(Page* p, Page* n)
 			{
-				this->prev = prev;
-				this->next = next;
-				if (prev)
-					prev->next = this;
-				if (next)
-					next->prev = this;
+				this->prev = p;
+				this->next = n;
+				if (p)
+					p->next = this;
+				if (n)
+					n->prev = this;
 			}
 		};
-
 		std::array<Page, 0x1,
 			std::buffer::absolute_resizable, 0x0>_pages;
 		BoolArray<0x1,
@@ -212,20 +254,22 @@ class Manager
 		}
 
 		inline Page* _find_prev_free(Page* p) {
-			for (size_t i = p->page.number() - 1; i > 0; --i)
-				if (not _map.isset(i))
-					return &_pages[i];
-			return nullptr;
+			size_t idx = _map.find_clr_backward(p->page.number());
+			if (idx >= _map.size())
+				return nullptr;
+			return &_pages[idx];
 		}
 		
 		inline Page* _find_next_free(Page* p) {
-			for (size_t i = p->page.number() + 1; i < _pages.size(); ++i)
-				if (not _map.isset(i))
-					return &_pages[i];
-			return nullptr;
+			size_t idx = _map.find_clr_forward(p->page.number());
+			if (idx >= _map.size())
+				return nullptr;
+			return &_pages[idx];
 		}
 
 		inline void _free(Page* p) {
+			assert(_map.isset(p->page.number()));
+			
 			Page* prev = _find_prev_free(p);
 			Page* next = _find_next_free(p);
 

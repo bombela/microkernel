@@ -94,7 +94,7 @@ template <typename R, unsigned SIZE, typename... Args>
 		
 		auto operator()(Args... args) const
 		-> decltype(
-				(*(PF*)0)(0, (*(Args*)0)...)
+				(*(PF*)0)(0, (*(typename remove_ref<Args>::type*)0)...)
 				)
 		{
 			assert(this->_f != 0);

@@ -31,7 +31,7 @@ void Manager::init(unsigned mem_lower_kb, unsigned mem_upper_kb)
 			memory::kilo(mem_upper_kb)).aligned();
 	auto kmem = memory::range(&__b_kernel, &__e_kernel).aligned();
 	
-	dbg("lowmem=% biosmem=% vmem=% highmem=% kmem(%)=% ",
+	std::cout("lowmem=% biosmem=% vmem=% highmem=% kmem(%)=%\n",
 			lowmem, biosmem, vmem, highmem,
 			memory::page(kmem.size()), kmem);
 
@@ -45,7 +45,7 @@ void Manager::init(unsigned mem_lower_kb, unsigned mem_upper_kb)
 	_map.resize(pages.size());
 	auto pmgnt = _map.range();
 
-	dbg("physmem managment cost=% on %",
+	std::cout("physmem managment cost=% on %\n",
 			memory::octet(pmgnt.cast<uint8_t>().size()), pmgnt
 	   );
 
@@ -81,7 +81,15 @@ void Manager::printMemUsage() const {
 	};
 	size_t cntused1 = _map.cntset();
 	print(cntused1);
-	assert(cntused1 == (_pages.size() - cntFreePage()));
+#ifdef CHECK_ON
+	size_t cntused2 = _pages.size() - cntFreePage();
+	if (cntused1 != cntused2)
+	{
+		std::cout("err(diff=%)->", cntused2 - cntused1);
+		print(cntused2);
+	}
+	assert(cntused1 == cntused2);
+#endif
 }
 
 void Manager::rebuildFreeList()
@@ -131,6 +139,19 @@ void Manager::testAllocator() {
 			_map.set(p.page.number());
 		rebuildFreeList();
 		printMemUsage();
+
+		std::array<Page*, 256> pages;
+		for (auto& i : pages)
+			i = _alloc();
+		
+		for (auto& i : pages)
+		{
+			i->prev = (Page*)-1;
+			i->next = (Page*)-1;
+		}
+
+		for (auto i : pages)
+			_free(i);
 
 		size_t trigger = 0;
 		Page* p;

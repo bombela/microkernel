@@ -11,6 +11,7 @@
 #include <kernel/interrupt.h>
 #include <kernel/pic.h>
 #include <kernel/phymem.h>
+#include <kernel/pagination.h>
 
 #include <cxxruntime.h>
 #include <iostream>
@@ -69,6 +70,7 @@ segmentation::Manager   segmentationManager;
 pic::Manager            picManager;
 interrupt::Manager      interruptManager;
 phymem::Manager         phymemManager;
+pagination::Manager     paginationManager(&phymemManager);
 
 #ifdef STACK_USAGE_PATCH
 extern "C" uint8_t* ret_addr[];
@@ -205,7 +207,7 @@ extern "C" void kernel_main(UNUSED int magic,
 	kernel::printBootStackUsage();
 	kernel::phymemManager.printMemUsage();
 	
-	//kernel::phymemManager.testAllocator();
+	kernel::phymemManager.testAllocator();
 
 	for (;;)
 	{

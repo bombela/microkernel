@@ -69,6 +69,7 @@ kern0x_add_define(INTERRUPT  "interrupt manager")
 kern0x_add_define(PIC  "PIC manager")
 kern0x_add_define(MEM  "memory tools")
 kern0x_add_define(PHYMEM  "Physical memory manager")
+kern0x_add_define(PAGINATION  "Pagination manager")
 
 set(MEM_FN_VERSION "static" CACHE STRING
 	"mem_fn implemetation version (storepmf or static)")
