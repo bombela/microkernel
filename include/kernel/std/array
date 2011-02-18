@@ -60,6 +60,10 @@ struct dynamic {
 				buffer[i] = from.buffer[i];
 		return *this;
 	}
+	constexpr dynamic(dynamic&& from): buffer(from.buffer) {}
+	dynamic& operator=(dynamic&& from) {
+		buffer = from.buffer; return *this;
+	}
 };
 
 template <typename T, size_t SIZE, uintptr_t ADDR>
@@ -94,6 +98,13 @@ struct dynamic_resizable {
 		return *this;
 	}
 	static const bool nullcheck = true;
+	constexpr dynamic_resizable(dynamic_resizable&& from):
+		buffer(from.buffer), size(from.size) {}
+	dynamic_resizable& operator=(dynamic_resizable&& from) {
+		buffer = from.buffer;
+		size = from.size;
+		return *this;
+	}
 };
 
 } // namespace buffer

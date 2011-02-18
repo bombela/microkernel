@@ -5,6 +5,7 @@
 */
 
 #include <kernel/pagination.h>
+#include <kernel/vga_console.h>
 
 #include KERNEL_PAGINATION_DEBUG
 #include KERNEL_PAGINATION_CHECK
@@ -12,23 +13,45 @@
 namespace kernel {
 namespace pagination {
 
-void Manager::init() {
-	dbg("pagination initializing...");
+void Manager::init(phymem::Manager* phymem)
+{
+	_phymem = phymem;
 
-	_directory.relocate(palloc());
-	std::fill(_directory, DirectoryEntry());
-	dbg("directory=%", &_directory[0]);
-
-	std::fill(_tablesCounter, 0);
-
-	dbg("identity mapping physical memory...");
-	for (auto& p: _phymem->mem().cast<Page*>())
-		identity_map(&p);
-
-	unmap(nullptr); // unmap for ptr null
+	dbg("pagination initializing identity mapping physical memory...");
 	
-	dbg("enabling CPU pagination...");
+	new (&_kernelContext) Context(_phymem);
 
+	for (auto& p: _phymem->mem().cast<Page*>())
+		_kernelContext.map(&p);
+
+	_kernelContext.unmap(nullptr); // unmap for ptr null
+
+	useKernelContext();
+	
+	dbg("activating CPU pagination...");
+
+	asm volatile (R"ASM(
+		movl %%cr0, %%eax
+		orl $0x80010000, %%eax /* pagination + write protection enabled */
+		movl %%eax,%%cr0
+
+		/* flush prefetch */
+		jmp 1f
+		1:
+		movl $2f, %%eax
+		jmp *%%eax
+		2: 
+		)ASM" ::: "memory", "eax");
+
+	dbg("page fault! ahah just kidding ;)");
+	dbg("pagination initialized");
+};
+
+void Manager::useContext(Context& context)
+{
+	dbg("switch to context %", context);
+
+	_currentContext = &context;
 	struct
 	{
 		uint32_t ignored1:        3;
@@ -38,67 +61,33 @@ void Manager::init() {
 		uint32_t directory_addr: 20;
 
 	} PACKED cr3{ 0, false, true, 0,
-		reinterpret_cast<uint32_t>(&_directory[0]) >> 12
+		reinterpret_cast<uint32_t>(
+				&context.getDirectoryAddr()[0]
+				) >> 12
 	};
 
 	asm volatile (R"ASM(
 		movl %0, %%cr3
-		movl %%cr0, %%eax
-		orl $0x80010000, %%eax /* pagination + write protection enabled */
-		movl %%eax,%%cr0
-		
-		/* flush prefetch */
-		jmp 1f
-		1:
-		movl $2f, %%eax
-		jmp *%%eax
-		2: 
-		)ASM" :: "r" (cr3) : "memory", "eax");
+		)ASM" :: "r" (cr3)
+	);
 
-	dbg("page fault! ahah just kidding ;)");
-	dbg("pagination initialized");
-};
-
-void Manager::identity_map(const pagination::Page* pp)
-{
-	auto& page = increfTable(pp);
-	assert(not page.present);
-	page.setPage(pp);
-	page.present = true;
+	dbg("switched to %", context);
 }
 
-TableEntry& Manager::increfTable(const pagination::Page* p)
+Context Manager::buildContext()
 {
-	auto va = vaddr(p);
-	assert(va.is_aligned());
+	Context context(_phymem);
 
-	auto& table = _directory[va.directory()];
-	if (not table.present)
-	{
-		// allocate a table page
-		Table* tablePage = reinterpret_cast<Table*>(palloc());
-		table.setTable(tablePage);
-		table.present = true;
-		std::fill(*tablePage, TableEntry());
-	}
-	++_tablesCounter[va.directory()];
-	return table[va.table()];
-}
-
-void Manager::decrefTable(const Page* p)
-{
-	auto va = vaddr(p);
-	assert(va.is_aligned());
-
-	auto& table = _directory[va.directory()];
-	assert(table.present == true);
+	auto kmem = memory::range(&__b_kernel, &__e_kernel);
+	auto vmem = VGAConsole::mem();
 	
-	assert(_tablesCounter[va.directory()] > 0);
-	if (--_tablesCounter[va.directory()] == 0)
-	{
-		table.present = 0;
-		_phymem->free(&table.getPage());
-	}
+	for (auto& p: kmem.pages().cast<Page*>())
+		context.map(&p);
+
+	for (auto& p: vmem.pages().cast<Page*>())
+		context.map(&p);
+
+	return context;
 }
 
 } // namespace pagination

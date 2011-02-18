@@ -70,7 +70,7 @@ segmentation::Manager   segmentationManager;
 pic::Manager            picManager;
 interrupt::Manager      interruptManager;
 phymem::Manager         phymemManager;
-pagination::Manager     paginationManager(&phymemManager);
+pagination::Manager     paginationManager;
 
 #ifdef STACK_USAGE_PATCH
 extern "C" uint8_t* ret_addr[];
@@ -119,11 +119,6 @@ struct AutoPrintBootStackUsage
 } _apbs ;
 #endif
 
-} // namespace kernel
-
-NOINLINE int getZero() { return 0; }
-NOINLINE int getDix() { return 10; }
-
 extern "C" void kernel_main(UNUSED int magic,
 		UNUSED const multiboot::info* const mbi)
 {
@@ -147,8 +142,8 @@ extern "C" void kernel_main(UNUSED int magic,
 		main_console->write("\n");
 	}
 
-	kernel::enableFPU();
-	kernel::enableSSE();
+	enableFPU();
+	enableSSE();
 
 	cxxruntime::Run running;
 	
@@ -156,14 +151,14 @@ extern "C" void kernel_main(UNUSED int magic,
 	{
 		std::cout("%Not loaded by a multiboot compliant loader%\n",
 				std::color::red, std::color::ltgray);
-		kernel::die();
+		die();
 	}
 
 	std::cout("Mem = %MB (upper limit = %xkB)\n",
 			(mbi->mem_upper >> 10), mbi->mem_upper);
 
-	kernel::phymemManager.init(mbi->mem_lower, mbi->mem_upper);
-	kernel::paginationManager.init();
+	phymemManager.init(mbi->mem_lower, mbi->mem_upper);
+	paginationManager.init(&phymemManager);
 
 	struct APICVersionRegister {
 		uint8_t version;
@@ -174,49 +169,50 @@ extern "C" void kernel_main(UNUSED int magic,
 	} PACKED const * avr
 	= reinterpret_cast<APICVersionRegister*>(0xFEE00030);
 
-	auto am = kernel::paginationManager.map(
-			&kernel::pagination::vaddr(avr).page(),
-			&kernel::phymem::paddr(avr).page()
+	auto& c = paginationManager.kernelContext();
+	auto am = c.map(
+			&pagination::vaddr(avr).page(),
+			&phymem::paddr(avr).page()
 			);
 	std::cout("APIC version=%c maxlvtentry=%c\n",
 			avr->version, avr->maxlvtentry);
-	kernel::paginationManager.unmap(am);
+	c.unmap(am);
 
-	//kernel::interruptManager.testInterrupts();
+	//interruptManager.testInterrupts();
 
 	auto old =
-		kernel::interruptManager.getHandler(kernel::picManager.irq2int(0));
+		interruptManager.getHandler(picManager.irq2int(0));
 
 	int cnt = 0;
-	kernel::interruptManager.setHandler(kernel::picManager.irq2int(0),
+	interruptManager.setHandler(picManager.irq2int(0),
 		[&old, &cnt](int i, int, void**) {
-			kernel::printBootStackUsage();
+			printBootStackUsage();
 
 			if (++cnt > 10)
 			{
 				std::cout("stop playing!");
-				kernel::interruptManager.setHandler(
-					kernel::picManager.irq2int(0),
+				interruptManager.setHandler(
+					picManager.irq2int(0),
 					[&old, &cnt](int i, int, void**) {
 					std::cout(".");
-					kernel::picManager.eoi(kernel::picManager.int2irq(i));
+					picManager.eoi(picManager.int2irq(i));
 					});
 			}
 
-			kernel::picManager.eoi(kernel::picManager.int2irq(i));
+			picManager.eoi(picManager.int2irq(i));
 			});
-	//kernel::picManager.enable(0);
+	//picManager.enable(0);
 
-	kernel::printBootStackUsage();
-	kernel::phymemManager.printMemUsage();
+	printBootStackUsage();
+	phymemManager.printMemUsage();
 	
-	//kernel::phymemManager.testAllocator();
+	//phymemManager.testAllocator();
 	
 	{
 		auto old =
-			kernel::interruptManager.getHandler(14);
+			interruptManager.getHandler(14);
 
-		kernel::interruptManager.setHandler(14,
+		interruptManager.setHandler(14,
 				[jump = &&after](int, int err, void** eip) {
 					std::cout(" nullptr deref catched! err=%\n", err);
 					asm ("movl $after, %0" : "=m"(*eip));
@@ -228,7 +224,7 @@ extern "C" void kernel_main(UNUSED int magic,
 			after:
 			)");
 after:
-		kernel::interruptManager.setHandler(14, old);
+		interruptManager.setHandler(14, old);
 	}
 
 	std::cout("Kernel %running%...",
@@ -238,3 +234,5 @@ after:
 
 	std::cout("kernel stopping...\n");
 }
+
+} // namespace kernel

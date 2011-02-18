@@ -204,6 +204,10 @@ class Manager
 		inline bool used(const phymem::Page* p) const {
 			return used(*reinterpret_cast<const Page*>(p));
 		}
+		
+		inline void free(void* p) {
+			free(reinterpret_cast<phymem::Page*>(p));
+		}
 
 		inline void free(phymem::Page* p) {
 			dbg("page=%", p->number());
@@ -274,7 +278,7 @@ class Manager
 		memory::PageRange _vmem;
 		memory::PageRange _biosmem;
 
-		void assertCanBeFree(phymem::Page* p) const {
+		inline void assertCanBeFree(phymem::Page* p) const {
 			assert(p != nullptr);
 			assert(not _kmem.contain(p));
 			assert(not _biosmem.contain(p));

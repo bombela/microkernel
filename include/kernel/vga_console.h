@@ -40,9 +40,10 @@ class VGAConsole: public Console {
 		void setAttr(const Attr&);
 		void resetAttr();
 
-		inline memory::Range<const uint8_t*> memRange() const {
-			return memory::range(&_video_mem[0],
-					&_video_mem[0] + _video_mem.size()).cast<const uint8_t*>();
+		static inline memory::Range<const uint8_t*> mem() {
+			return memory::range(vmem_base_addr,
+					vmem_base_addr + line_len * line_cnt)
+				.cast<const uint8_t*>();
 		}
 
 		VGAConsole(const VGAConsole&) = delete;

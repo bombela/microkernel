@@ -148,15 +148,48 @@ class VirtualAddr: public memory::Addr<T>
 template <typename T>
 constexpr inline VirtualAddr<T> vaddr(T addr) { return {addr}; }
 
-class Manager
+class Context
 {
 	public:
-		Manager(phymem::Manager* phymem): _phymem(phymem) {}
-		void init();
+		Context() {}
+
+		Context(phymem::Manager* phymem): _phymem(phymem) {
+			_directory.relocate(palloc());
+			std::fill(_directory, DirectoryEntry());
+			dbg("directory=%", &_directory[0]);
+			std::fill(_tablesCounter, 0);
+		}
+
+		~Context() {
+			for (auto& table: _directory)
+				if (table.present)
+					_phymem->free(&table.getPage());
+			_phymem->free(&_directory[0]);
+		}
+
+		Context(const Context& from) = delete;
+		Context& operator=(const Context& from) = delete;
+		
+		Context(Context&& from):
+			_phymem(from._phymem),
+			_directory(std::move(from._directory)),
+			_tablesCounter(std::move(from._tablesCounter))
+		{}
+		
+		Context& operator=(Context&& from)
+		{
+			_phymem = from._phymem;
+			_directory = std::move(from._directory);
+			_tablesCounter = std::move(from._tablesCounter);
+			return *this;
+		}
 
 		const pagination::Page* map(const pagination::Page* vp)
 		{
-			identity_map(vp);
+			auto& page = increfTable(vp);
+			assert(not page.present);
+			page.setPage(vp);
+			page.present = true;
 			return vp;
 		}
 		
@@ -185,25 +218,94 @@ class Manager
 			decrefTable(vp);
 		}
 
+		DirectoryEntry* getDirectoryAddr() {
+			return &_directory[0];
+		}
+
 	private:
 		phymem::Manager* _phymem;
 		
 		std::array<DirectoryEntry,
 				memory::page_size / sizeof (DirectoryEntry),
-				std::buffer::dynamic> _directory;
+				std::buffer::dynamic, 0> _directory;
 
 		std::array<int16_t, memory::page_size / sizeof (TableEntry)
 			> _tablesCounter;
+		
+		TableEntry& increfTable(const pagination::Page* p)
+		{
+			auto va = vaddr(p);
+			assert(va.is_aligned());
 
-		Page* palloc() {
-			Page* page = reinterpret_cast<Page*>(_phymem->alloc());
-			assert(page != nullptr);
+			auto& table = _directory[va.directory()];
+			if (not table.present)
+			{
+				// allocate a table page
+				Table* tablePage = reinterpret_cast<Table*>(palloc());
+				assert(tablePage);
+				table.setTable(tablePage);
+				table.present = true;
+				std::fill(*tablePage, TableEntry());
+			}
+			++_tablesCounter[va.directory()];
+			return table[va.table()];
+		}
+
+		void decrefTable(const Page* p)
+		{
+			auto va = vaddr(p);
+			assert(va.is_aligned());
+
+			auto& table = _directory[va.directory()];
+			assert(table.present == true);
+
+			assert(_tablesCounter[va.directory()] > 0);
+			if (--_tablesCounter[va.directory()] == 0)
+			{
+				table.present = 0;
+				_phymem->free(&table.getPage());
+			}
+		}
+
+		phymem::Page* palloc()
+		{
+			phymem::Page* page = _phymem->alloc();
+			if (page == 0)
+			{
+				std::cout("kernel out of memory");
+				panic();
+			}
 			return page;
 		}
-		
-		void identity_map(const Page*);
-		TableEntry& increfTable(const Page* p);
-		void decrefTable(const Page* p);
+};
+
+extern "C" phymem::Page __b_kernel;
+extern "C" phymem::Page __e_kernel;
+
+class Manager
+{
+	public:
+		void init(phymem::Manager* phymem);
+
+		Context& kernelContext() {
+			return _kernelContext;
+		}
+
+		Context& currentContext() {
+			return *_currentContext;
+		}
+
+		void useContext(Context& c);
+
+		void useKernelContext() {
+			useContext(kernelContext());
+		}
+
+		Context buildContext();
+	private:
+		phymem::Manager* _phymem;
+		Context          _kernelContext;
+		Context*         _currentContext;
 };
 
 } // namespace pagination

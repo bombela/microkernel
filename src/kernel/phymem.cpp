@@ -21,7 +21,7 @@ void Manager::init(unsigned mem_lower_kb, unsigned mem_upper_kb)
 {
 	dbg("initializing");
 
-	auto vmem = VGAConsole::getInstance().memRange();
+	auto vmem = VGAConsole::mem();
 
 	auto lowmem = memory::PageRange(memory::octet(0),
 			memory::kilo(mem_lower_kb)).aligned();

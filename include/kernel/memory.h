@@ -82,6 +82,11 @@ struct def_ptr { typedef typename same_constness<T, uint8_t>::type* type; };
 template <typename T>
 struct def_ptr<T*> { typedef T* type; };
 
+template <typename T>
+struct def_ptr<const T> {
+	const uint8_t* type;
+};
+
 } // namespace details
 
 template <typename T>
@@ -99,7 +104,7 @@ class Addr
 
 		inline constexpr Addr(): _addr(0) {}
 
-		inline constexpr Addr(T addr):
+		inline constexpr Addr(ptr_t addr):
 			_addr(reinterpret_cast<addr_t>(reinterpret_cast<ptr_t>(addr))) {}
 		
 		inline constexpr Addr(Octet addr):
