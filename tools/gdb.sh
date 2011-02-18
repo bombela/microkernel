@@ -34,15 +34,10 @@ cat >>gdbexec <<EOF
 	continue
 	layout split
 	focus cmd
-	break kernel::phymem::Manager::_free
+	break kernel::pagination::Manager::init
 	continue
-	display prev->page.number()
-	display p->page.number()
-	display next->page.number()
-	display prev->next->page.number()
-	display p->prev->page.number()
-	display p->next->page.number()
-	display next->prev->page.number()
+	break 40
+	continue
 EOF
 
 gdb -tui -x gdbexec

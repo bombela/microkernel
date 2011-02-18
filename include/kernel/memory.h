@@ -64,13 +64,20 @@ struct Page {
 namespace details {
 
 template <typename A, typename B>
-struct same_constness { typedef B type; };
+struct _same_constness { typedef B type; };
 
 template <typename A, typename B>
-struct same_constness<const A, B> { typedef const B type; };
+struct _same_constness<const A, B> { typedef const B type; };
+
+template <typename A, typename B>
+struct same_constness:
+	_same_constness<
+	typename std::remove_all_ptr<
+		typename std::remove_ref<A>::type
+	>::type, B> {};
 
 template <typename T>
-struct def_ptr { typedef typename same_constness<T, uint8_t*>::type type; };
+struct def_ptr { typedef typename same_constness<T, uint8_t>::type* type; };
 
 template <typename T>
 struct def_ptr<T*> { typedef T* type; };
@@ -81,12 +88,14 @@ template <typename T>
 class Addr
 {
 	public:
+		typedef uintptr_t addr_t;
+
 		typedef
 			typename details::def_ptr<T>::type
 			ptr_t;
-		typedef
-			typename details::same_constness<ptr_t, uintptr_t>::type
-			addr_t;
+
+		template <typename B>
+			struct same_constness: details::same_constness<T, B> {};
 
 		inline constexpr Addr(): _addr(0) {}
 

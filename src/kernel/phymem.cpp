@@ -64,9 +64,11 @@ void Manager::init(unsigned mem_lower_kb, unsigned mem_upper_kb)
 
 	rebuildFreeList();
 
+#ifdef CHECK_ON
 	_kmem = kmem;
 	_vmem = vmem.pages();
 	_biosmem = biosmem;
+#endif
 
 	dbg("initialized");
 }
@@ -140,7 +142,7 @@ void Manager::testAllocator() {
 		rebuildFreeList();
 		printMemUsage();
 
-		std::array<Page*, 256> pages;
+		std::array<Page*, 1024> pages;
 		for (auto& i : pages)
 			i = _alloc();
 		
@@ -149,9 +151,11 @@ void Manager::testAllocator() {
 			i->prev = (Page*)-1;
 			i->next = (Page*)-1;
 		}
+		printMemUsage();
 
 		for (auto i : pages)
 			_free(i);
+		printMemUsage();
 
 		size_t trigger = 0;
 		Page* p;

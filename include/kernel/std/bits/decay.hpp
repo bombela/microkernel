@@ -12,6 +12,26 @@ namespace std {
 namespace kernel_std {
 
 template <typename T>
+struct remove_ptr {
+   	typedef T type;	
+};
+
+template <typename T>
+struct remove_ptr<T*> {
+   	typedef T type;
+};
+
+template <typename T>
+struct remove_all_ptr {
+   	typedef T type;	
+};
+
+template <typename T>
+struct remove_all_ptr<T*> {
+   	typedef typename remove_all_ptr<T>::type type;
+};
+
+template <typename T>
 struct remove_ref {
    	typedef T type;	
 };
@@ -39,8 +59,11 @@ struct remove_const<const T> {
 template <typename T>
 struct decay {
 	typedef
-		typename remove_const<
-			typename remove_ref<T>::type
+		typename remove_all_ptr<
+			typename remove_const<
+				typename remove_ref<T
+					>::type
+				>::type
 			>::type
 		type;
 };

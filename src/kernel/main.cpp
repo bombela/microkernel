@@ -163,6 +163,7 @@ extern "C" void kernel_main(UNUSED int magic,
 			(mbi->mem_upper >> 10), mbi->mem_upper);
 
 	kernel::phymemManager.init(mbi->mem_lower, mbi->mem_upper);
+	kernel::paginationManager.init();
 
 	struct APICVersionRegister {
 		uint8_t version;
@@ -170,15 +171,17 @@ extern "C" void kernel_main(UNUSED int magic,
 		uint8_t maxlvtentry;
 		uint8_t supportsupressEOIbroadcast:1;
 		uint8_t reserved2:7;
-	} PACKED volatile const * const avr
+	} PACKED const * avr
 	= reinterpret_cast<APICVersionRegister*>(0xFEE00030);
 
+	auto am = kernel::paginationManager.map(
+			&kernel::pagination::vaddr(avr).page(),
+			&kernel::phymem::paddr(avr).page()
+			);
 	std::cout("APIC version=%c maxlvtentry=%c\n",
 			avr->version, avr->maxlvtentry);
+	kernel::paginationManager.unmap(am);
 
-	std::cout("Kernel %running%...",
-			std::color::green, std::color::ltgray) << std::endl;
-	
 	//kernel::interruptManager.testInterrupts();
 
 	auto old =
@@ -207,8 +210,11 @@ extern "C" void kernel_main(UNUSED int magic,
 	kernel::printBootStackUsage();
 	kernel::phymemManager.printMemUsage();
 	
-	kernel::phymemManager.testAllocator();
+	//kernel::phymemManager.testAllocator();
 
+	std::cout("Kernel %running%...",
+			std::color::green, std::color::ltgray) << std::endl;
+	
 	for (;;)
 	{
 		asm ("hlt");

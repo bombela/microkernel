@@ -19,6 +19,37 @@
 namespace kernel {
 namespace phymem {
 
+struct Page: memory::Page {};
+
+template <typename T>
+class Physicaladdr: public memory::Addr<T>
+{
+	public:
+		typedef memory::Addr<T> super_t;
+		typedef typename super_t::addr_t addr_t;
+		typedef typename super_t::ptr_t  ptr_t;
+		typedef
+			typename memory::Addr<T>::template same_constness<Page>::type*
+			page_ptr;
+		typedef
+			typename memory::Addr<T>::template same_constness<Page>::type&
+			page_ref;
+
+		inline constexpr Physicaladdr(): super_t() {}
+		inline constexpr Physicaladdr(T addr): super_t(addr) {}
+		inline constexpr Physicaladdr(memory::Octet addr): super_t(addr) {}
+		inline constexpr Physicaladdr(addr_t addr): super_t(addr) {}
+
+		page_ref& page() const {
+			return *reinterpret_cast<page_ptr>(
+					ptr_t(this->aligned_down())
+					);
+		}
+};
+
+template <typename T>
+constexpr inline Physicaladdr<T> paddr(T addr) { return {addr}; }
+
 namespace details {
 
 template <typename T, T V, T BASE, bool ZERO = (V / BASE == 0)>
@@ -159,8 +190,17 @@ class Manager
 {
 	public:
 		void init(unsigned mem_lower_kb, unsigned mem_upper_kb);
+		
+		inline void use(const phymem::Page* p) {
+			assert(not _map.isset(p->number()));
+			_use(reinterpret_cast<const Page*>(p));
+		}
 
-		inline void free(memory::Page* p) {
+		inline bool used(const phymem::Page* p) const {
+			return used(*reinterpret_cast<const Page*>(p));
+		}
+
+		inline void free(phymem::Page* p) {
 			dbg("page=%", p->number());
 			assertCanBeFree(p);
 			_free(reinterpret_cast<Page*>(p));
@@ -172,10 +212,8 @@ class Manager
 			_free(range.cast<Page*>());
 		}
 		
-		void printMemUsage() const;
-
 		// return 0 if failed.
-		memory::Page* alloc() {
+		phymem::Page* alloc() {
 			Page* page = _alloc();
 			dbg("allocated page=%", page->page.number());
 			return &page->page;
@@ -191,24 +229,18 @@ class Manager
 			return memory::PageRange();
 		}
 
+		void printMemUsage() const;
 		void testAllocator();
-		
-		inline bool used(const memory::Page* p) const {
-			return used(*reinterpret_cast<const Page*>(p));
-		}
 
-		template <typename F>
-		void usedPageApply(F f)
-		{
-			for (auto& p : _pages)
-				if (used(p))
-					f(p.page);
+		memory::PageRange mem() const {
+			return memory::range(
+				&_pages[0], &_pages[0] + _pages.size()
+			).pages();
 		}
-
 	private:
 		union Page
 		{
-			memory::Page page;
+			phymem::Page page;
 			struct
 			{
 				Page* prev;
@@ -237,7 +269,7 @@ class Manager
 		memory::PageRange _vmem;
 		memory::PageRange _biosmem;
 
-		void assertCanBeFree(memory::Page* p) const {
+		void assertCanBeFree(phymem::Page* p) const {
 			assert(p != nullptr);
 			assert(not _kmem.contain(p));
 			assert(not _biosmem.contain(p));
