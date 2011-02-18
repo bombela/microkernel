@@ -161,10 +161,13 @@ class Context
 		}
 
 		~Context() {
-			for (auto& table: _directory)
-				if (table.present)
-					_phymem->free(&table.getPage());
-			_phymem->free(&_directory[0]);
+			if (_directory.addr())
+			{
+				for (auto& table: _directory)
+					if (table.present)
+						_phymem->free(&table.getPage());
+				_phymem->free(&_directory[0]);
+			}
 		}
 
 		Context(const Context& from) = delete;
@@ -285,6 +288,7 @@ extern "C" phymem::Page __e_kernel;
 class Manager
 {
 	public:
+		~Manager();
 		void init(phymem::Manager* phymem);
 
 		Context& kernelContext() {
@@ -298,10 +302,11 @@ class Manager
 		void useContext(Context& c);
 
 		void useKernelContext() {
+			dbg("switch to kernel context");
 			useContext(kernelContext());
 		}
 
-		Context buildContext();
+		Context newContext();
 	private:
 		phymem::Manager* _phymem;
 		Context          _kernelContext;

@@ -214,6 +214,9 @@ class array
 		void relocate(void* addr) {
 			relocate(reinterpret_cast<uintptr_t>(addr));
 		}
+		void* addr() const {
+			return _buffer.buffer;
+		}
 
 #ifndef CHECK_ON
 		typedef       T* iterator;

@@ -119,6 +119,9 @@ struct AutoPrintBootStackUsage
 } _apbs ;
 #endif
 
+extern "C" {
+	uint32_t esp;
+}
 extern "C" void kernel_main(UNUSED int magic,
 		UNUSED const multiboot::info* const mbi)
 {
@@ -213,7 +216,7 @@ extern "C" void kernel_main(UNUSED int magic,
 			interruptManager.getHandler(14);
 
 		interruptManager.setHandler(14,
-				[jump = &&after](int, int err, void** eip) {
+				[](int, int err, void** eip) {
 					std::cout(" nullptr deref catched! err=%\n", err);
 					asm ("movl $after, %0" : "=m"(*eip));
 				});
@@ -223,8 +226,45 @@ extern "C" void kernel_main(UNUSED int magic,
 			movl $42, 0 /* write to address 0 */
 			after:
 			)");
-after:
 		interruptManager.setHandler(14, old);
+	}
+
+	{
+		auto old =
+			interruptManager.getHandler(14);
+
+		interruptManager.setHandler(14,
+				[](int, int err, void** eip) {
+					std::cout("yes, page fault!\n");
+					asm ("movl $after2, %0" : "=m"(*eip));
+				});
+
+		auto c = paginationManager.newContext();
+
+		paginationManager.useContext(c);
+
+		std::cout("try the physical memory allocator while using"
+			   "a fresh context: ");
+
+		void (*test)() = [] {
+			phymem::Page* p = phymemManager.alloc();
+			phymemManager.free(p);
+		};
+
+		asm (R"(
+			pusha
+			movl %%esp, (esp)
+			call *%0
+			after2:
+			mov (esp), %%esp
+			popa
+			)" :: "r" (test));
+		paginationManager.useKernelContext();
+		interruptManager.setHandler(14, old);
+
+		std::cout("try again, but using kernel context... ");
+		test();
+		std::cout("success\n");
 	}
 
 	std::cout("Kernel %running%...",
@@ -234,5 +274,7 @@ after:
 
 	std::cout("kernel stopping...\n");
 }
+
+//extern "C" uint32_t esp;
 
 } // namespace kernel

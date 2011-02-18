@@ -41,8 +41,8 @@ class VGAConsole: public Console {
 		void resetAttr();
 
 		static inline memory::Range<const uint8_t*> mem() {
-			return memory::range(vmem_base_addr,
-					vmem_base_addr + line_len * line_cnt)
+			return memory::range(memory::octet(vmem_base_addr),
+					memory::octet(vmem_base_addr + line_len * line_cnt))
 				.cast<const uint8_t*>();
 		}
 

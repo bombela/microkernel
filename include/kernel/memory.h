@@ -59,7 +59,7 @@ struct Page {
 	size_t number() const  {
 		return octet(reinterpret_cast<size_t>(this)).page();
 	}
-};
+} PACKED;
 
 namespace details {
 
@@ -110,12 +110,12 @@ class Addr
 		inline constexpr Addr(Octet addr):
 			_addr(addr) {}
 		
-		inline constexpr Addr(addr_t addr): _addr(addr) {}
-		
 		inline Addr& operator=(ptr_t addr) {
 			_addr = reinterpret_cast<addr_t>(addr);
 			return *this;
 		}
+
+		inline constexpr Addr(addr_t addr): _addr(addr) {}
 
 		inline constexpr operator ptr_t() const {
 			return reinterpret_cast<ptr_t>(_addr); }

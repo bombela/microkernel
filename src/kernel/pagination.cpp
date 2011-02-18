@@ -47,6 +47,25 @@ void Manager::init(phymem::Manager* phymem)
 	dbg("pagination initialized");
 };
 
+Manager::~Manager()
+{
+	dbg("disabling CPU pagination...");
+
+	asm volatile (R"ASM(
+		movl %%cr0, %%eax
+		andl $~0x80010000, %%eax /* pagination + write protection disabled */
+		movl %%eax,%%cr0
+
+		/* flush prefetch */
+		jmp 1f
+		1:
+		movl $2f, %%eax
+		jmp *%%eax
+		2: 
+		)ASM" ::: "memory", "eax");
+	dbg("pagination disabled");
+}
+
 void Manager::useContext(Context& context)
 {
 	dbg("switch to context %", context);
@@ -62,7 +81,7 @@ void Manager::useContext(Context& context)
 
 	} PACKED cr3{ 0, false, true, 0,
 		reinterpret_cast<uint32_t>(
-				&context.getDirectoryAddr()[0]
+				context.getDirectoryAddr()
 				) >> 12
 	};
 
@@ -74,7 +93,7 @@ void Manager::useContext(Context& context)
 	dbg("switched to %", context);
 }
 
-Context Manager::buildContext()
+Context Manager::newContext()
 {
 	Context context(_phymem);
 
@@ -86,6 +105,8 @@ Context Manager::buildContext()
 
 	for (auto& p: vmem.pages().cast<Page*>())
 		context.map(&p);
+	
+	context.map(&vaddr(_kernelContext.getDirectoryAddr()).page());
 
 	return context;
 }
