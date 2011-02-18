@@ -181,8 +181,6 @@ extern "C" void kernel_main(UNUSED int magic,
 			avr->version, avr->maxlvtentry);
 	c.unmap(am);
 
-	//interruptManager.testInterrupts();
-
 	auto old =
 		interruptManager.getHandler(picManager.irq2int(0));
 
@@ -208,8 +206,6 @@ extern "C" void kernel_main(UNUSED int magic,
 
 	printBootStackUsage();
 	phymemManager.printMemUsage();
-	
-	//phymemManager.testAllocator();
 	
 	{
 		auto old =
@@ -266,12 +262,16 @@ extern "C" void kernel_main(UNUSED int magic,
 		test();
 		std::cout("success\n");
 	}
-
+	
 	std::cout("Kernel %running%...",
 			std::color::green, std::color::ltgray) << std::endl;
 	
-	//for (;;) asm ("hlt");
+#if 0
+	interruptManager.testInterrupts();
+	phymemManager.testAllocator();
+#endif
 
+	//for (;;) asm ("hlt");
 	std::cout("kernel stopping...\n");
 }
 
