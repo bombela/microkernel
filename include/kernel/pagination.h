@@ -16,7 +16,18 @@
 namespace kernel {
 namespace pagination {
 
-struct Page: memory::Page {};
+enum class Privilege {
+	kernel_rw,
+	kernel_ro,
+	user_rw,
+	user_ro,
+};
+
+enum class Present {
+   	yes, no	
+};
+
+struct Page: memory::Page {} PACKED;
 
 // page table
 struct TableEntry
@@ -87,8 +98,8 @@ struct DirectoryEntry
 		return *reinterpret_cast<Table*>(table_addr << 12);
 	}
 	
-	inline phymem::Page& getPage() const {
-		return *reinterpret_cast<phymem::Page*>(table_addr << 12);
+	inline phymem::Page* getPage() const {
+		return reinterpret_cast<phymem::Page*>(table_addr << 12);
 	}
 
 	inline TableEntry& operator[](size_t idx) const {
@@ -129,7 +140,7 @@ class VirtualAddr: public memory::Addr<T>
 			page_ref;
 
 		inline constexpr VirtualAddr(): super_t() {}
-		inline constexpr VirtualAddr(T addr): super_t(addr) {}
+		inline constexpr VirtualAddr(ptr_t addr): super_t(addr) {}
 		inline constexpr VirtualAddr(memory::Octet addr): super_t(addr) {}
 		inline constexpr VirtualAddr(addr_t addr): super_t(addr) {}
 
@@ -138,8 +149,8 @@ class VirtualAddr: public memory::Addr<T>
 		inline uint32_t table() const { return LinearAddr(*this).table; }
 		inline uint32_t directory() const { return LinearAddr(*this).directory; }
 
-		page_ref& page() const {
-			return *reinterpret_cast<page_ptr>(
+		page_ptr page() const {
+			return reinterpret_cast<page_ptr>(
 					ptr_t(this->aligned_down())
 					);
 		}
@@ -158,6 +169,7 @@ class Context
 			std::fill(_directory, DirectoryEntry());
 			dbg("directory=%", &_directory[0]);
 			std::fill(_tablesCounter, 0);
+			map(pagination::vaddr(getDirectoryAddr()).page());
 		}
 
 		~Context() {
@@ -165,7 +177,7 @@ class Context
 			{
 				for (auto& table: _directory)
 					if (table.present)
-						_phymem->free(&table.getPage());
+						_phymem->free(table.getPage());
 				_phymem->free(&_directory[0]);
 			}
 		}
@@ -187,25 +199,54 @@ class Context
 			return *this;
 		}
 
-		const pagination::Page* map(const pagination::Page* vp)
+		const pagination::Page* map(const pagination::Page* vp,
+				Privilege p = Privilege::kernel_rw,
+				Present m = Present::yes)
 		{
-			auto& page = increfTable(vp);
-			assert(not page.present);
-			page.setPage(vp);
-			page.present = true;
-			return vp;
+			return map(vp, phymem::paddr(vp).cast<phymem::Page*>(), p, m);
 		}
 		
 		const pagination::Page* map(const pagination::Page* vp,
-				const phymem::Page* pp)
+				const phymem::Page* pp,
+				Privilege p = Privilege::kernel_rw,
+				Present m = Present::yes)
 		{
 			auto& page = increfTable(vp);
 			assert(not page.present);
-			page.setPage(pp);
-			page.present = true;
+			remap(vp, pp, p, m);
 			return vp;
 		}
-		
+
+		const pagination::Page* remap(const pagination::Page* vp,
+				Privilege p = Privilege::kernel_rw,
+				Present m = Present::yes)
+		{
+			return remap(vp, 0, p, m);
+		}
+
+		const pagination::Page* remap(const pagination::Page* vp,
+				const phymem::Page* pp,
+				Privilege p = Privilege::kernel_rw,
+				Present m = Present::yes)
+		{
+			auto va = vaddr(vp);
+			assert(va.is_aligned());
+
+			auto& table = _directory[va.directory()];
+			assert(table.present);
+			
+			auto& page = table[va.table()];
+
+			if (pp)
+				page.setPage(pp);
+			page.present = (m == Present::yes);
+			page.useraccess = (p == Privilege::user_rw
+					or p == Privilege::user_ro);
+			page.write = (p == Privilege::kernel_rw
+					or p == Privilege::user_rw);
+			return vp;
+		}
+
 		void unmap(const pagination::Page* vp)
 		{
 			auto va = vaddr(vp);
@@ -266,7 +307,7 @@ class Context
 			if (--_tablesCounter[va.directory()] == 0)
 			{
 				table.present = 0;
-				_phymem->free(&table.getPage());
+				_phymem->free(table.getPage());
 			}
 		}
 

@@ -174,8 +174,8 @@ extern "C" void kernel_main(UNUSED int magic,
 
 	auto& c = paginationManager.kernelContext();
 	auto am = c.map(
-			&pagination::vaddr(avr).page(),
-			&phymem::paddr(avr).page()
+			pagination::vaddr(avr).page(),
+			phymem::paddr(avr).page()
 			);
 	std::cout("APIC version=%c maxlvtentry=%c\n",
 			avr->version, avr->maxlvtentry);
@@ -226,11 +226,9 @@ extern "C" void kernel_main(UNUSED int magic,
 	}
 
 	{
-		auto old =
-			interruptManager.getHandler(14);
-
+		auto old = interruptManager.getHandler(14);
 		interruptManager.setHandler(14,
-				[](int, int err, void** eip) {
+				[](int, int, void** eip) {
 					std::cout("yes, page fault!\n");
 					asm ("movl $after2, %0" : "=m"(*eip));
 				});
@@ -240,7 +238,7 @@ extern "C" void kernel_main(UNUSED int magic,
 		paginationManager.useContext(c);
 
 		std::cout("try the physical memory allocator while using"
-			   "a fresh context: ");
+			   " a fresh context: ");
 
 		void (*test)() = [] {
 			phymem::Page* p = phymemManager.alloc();
@@ -263,6 +261,45 @@ extern "C" void kernel_main(UNUSED int magic,
 		std::cout("success\n");
 	}
 	
+	{
+		auto c = paginationManager.newContext();
+
+		phymem::Page* pp = phymemManager.alloc();
+		c.map(pagination::vaddr(memory::giga(2)).page(),
+				pp, pagination::Privilege::kernel_ro);
+		paginationManager.useContext(c);
+
+		auto old = interruptManager.getHandler(14);
+		interruptManager.setHandler(14,
+				[&c](int, int, void**) {
+				std::cout("changing to rw...\n");
+
+				paginationManager.useKernelContext();
+				c.remap(pagination::vaddr(memory::giga(2)).page(),
+					pagination::Privilege::kernel_rw
+					);
+				paginationManager.useContext(c);
+				});
+
+		std::cout("try to write in a readonly page with"
+				" a fresh context: ");
+
+		void (*test)() = [] {
+			auto p = pagination::vaddr(memory::giga(2)).page();
+
+			volatile char* c = reinterpret_cast<volatile char*>(p);
+			c[42] = 42; // write
+			int v = c[42]; // read
+			std::cout("writed=% ", v == 42);
+		};
+		test();
+
+		paginationManager.useKernelContext();
+		phymemManager.free(pp);
+		interruptManager.setHandler(14, old);
+		std::cout("success\n");
+	}
+
 	std::cout("Kernel %running%...",
 			std::color::green, std::color::ltgray) << std::endl;
 	

@@ -21,6 +21,9 @@ void Manager::init(phymem::Manager* phymem)
 	
 	new (&_kernelContext) Context(_phymem);
 
+	_kernelContext.unmap(pagination::vaddr(
+				_kernelContext.getDirectoryAddr()).page());
+
 	for (auto& p: _phymem->mem().cast<Page*>())
 		_kernelContext.map(&p);
 
@@ -106,7 +109,7 @@ Context Manager::newContext()
 	for (auto& p: vmem.pages().cast<Page*>())
 		context.map(&p);
 	
-	context.map(&vaddr(_kernelContext.getDirectoryAddr()).page());
+	context.map(vaddr(_kernelContext.getDirectoryAddr()).page());
 
 	return context;
 }

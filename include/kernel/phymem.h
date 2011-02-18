@@ -40,8 +40,8 @@ class Physicaladdr: public memory::Addr<T>
 		inline constexpr Physicaladdr(memory::Octet addr): super_t(addr) {}
 		inline constexpr Physicaladdr(addr_t addr): super_t(addr) {}
 
-		page_ref& page() const {
-			return *reinterpret_cast<page_ptr>(
+		page_ptr page() const {
+			return reinterpret_cast<page_ptr>(
 					ptr_t(this->aligned_down())
 					);
 		}
@@ -226,7 +226,7 @@ class Manager
 			return &page->page;
 		}
 		
-		memory::PageRange alloc(size_t cnt) {
+		memory::PageRange alloc(size_t) {
 			if (_free_begin == 0)
 			{
 				dbg("out of memory");
