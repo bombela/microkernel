@@ -34,10 +34,6 @@ cat >>gdbexec <<EOF
 	continue
 	layout split
 	focus cmd
-	break kernel::pagination::Manager::init
-	continue
-	break 40
-	continue
 EOF
 
 gdb -tui -x gdbexec

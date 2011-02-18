@@ -19,6 +19,8 @@ void Manager::init() {
 	std::fill(_directory, DirectoryEntry());
 	dbg("directory=%", &_directory[0]);
 
+	std::fill(_tablesCounter, 0);
+
 	dbg("identity mapping physical memory...");
 	for (auto& p: _phymem->mem().cast<Page*>())
 		identity_map(&p);
@@ -51,19 +53,19 @@ void Manager::init() {
 		2: 
 		)ASM" :: "r" (cr3) : "memory", "eax");
 
-	dbg("page fault ! ahah just kidding ;)");
+	dbg("page fault! ahah just kidding ;)");
 	dbg("pagination initialized");
 };
 
 void Manager::identity_map(const pagination::Page* pp)
 {
-	auto& page = resolveTableEntry(pp);
+	auto& page = increfTable(pp);
 	assert(not page.present);
 	page.setPage(pp);
 	page.present = true;
 }
 
-TableEntry& Manager::resolveTableEntry(const pagination::Page* p)
+TableEntry& Manager::increfTable(const pagination::Page* p)
 {
 	auto va = vaddr(p);
 	assert(va.is_aligned());
@@ -77,7 +79,24 @@ TableEntry& Manager::resolveTableEntry(const pagination::Page* p)
 		table.present = true;
 		std::fill(*tablePage, TableEntry());
 	}
+	++_tablesCounter[va.directory()];
 	return table[va.table()];
+}
+
+void Manager::decrefTable(const Page* p)
+{
+	auto va = vaddr(p);
+	assert(va.is_aligned());
+
+	auto& table = _directory[va.directory()];
+	assert(table.present == true);
+	
+	assert(_tablesCounter[va.directory()] > 0);
+	if (--_tablesCounter[va.directory()] == 0)
+	{
+		table.present = 0;
+		_phymem->free(&table.getPage());
+	}
 }
 
 } // namespace pagination

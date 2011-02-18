@@ -49,10 +49,6 @@ struct TableEntry
 	inline void setPage(const void* p_addr) {
 		page_addr = reinterpret_cast<uint32_t>(p_addr) >> 12;
 	}
-	
-	inline Page& getPage() const {
-		return *reinterpret_cast<Page*>(page_addr << 12);
-	}
 } PACKED;
 
 typedef std::array<TableEntry,
@@ -89,6 +85,10 @@ struct DirectoryEntry
 
 	inline Table& getTable() const {
 		return *reinterpret_cast<Table*>(table_addr << 12);
+	}
+	
+	inline phymem::Page& getPage() const {
+		return *reinterpret_cast<phymem::Page*>(table_addr << 12);
 	}
 
 	inline TableEntry& operator[](size_t idx) const {
@@ -160,18 +160,29 @@ class Manager
 			return vp;
 		}
 		
-		pagination::Page* map(const pagination::Page* vp,
+		const pagination::Page* map(const pagination::Page* vp,
 				const phymem::Page* pp)
 		{
-			auto& page = resolveTableEntry(vp);
+			auto& page = increfTable(vp);
 			assert(not page.present);
 			page.setPage(pp);
 			page.present = true;
+			return vp;
 		}
 		
 		void unmap(const pagination::Page* vp)
 		{
-			//TODO
+			auto va = vaddr(vp);
+			assert(va.is_aligned());
+
+			auto& table = _directory[va.directory()];
+			assert(table.present);
+
+			auto& page = table[va.table()];
+			assert(page.present);
+			page.present = false;
+
+			decrefTable(vp);
 		}
 
 	private:
@@ -181,14 +192,18 @@ class Manager
 				memory::page_size / sizeof (DirectoryEntry),
 				std::buffer::dynamic> _directory;
 
+		std::array<int16_t, memory::page_size / sizeof (TableEntry)
+			> _tablesCounter;
+
 		Page* palloc() {
 			Page* page = reinterpret_cast<Page*>(_phymem->alloc());
 			assert(page != nullptr);
 			return page;
 		}
-
+		
 		void identity_map(const Page*);
-		TableEntry& resolveTableEntry(const Page* p);
+		TableEntry& increfTable(const Page* p);
+		void decrefTable(const Page* p);
 };
 
 } // namespace pagination
