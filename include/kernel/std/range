@@ -25,6 +25,79 @@ auto end(C&& container) -> decltype(container.end())
 	return container.end();
 }
 
+template <typename C>
+struct reverser
+{
+	C* container;
+	reverser(C& c): container(&c) {}
+
+	template <typename I>
+	struct rev_iterator
+	{
+		typedef I realit_t;
+		realit_t real_iterator;
+
+		typedef decltype(real_iterator.operator*())  ref_t;
+		typedef decltype(real_iterator.operator->()) ptr_t;
+
+		rev_iterator(const I& it):
+			real_iterator(it)
+		{
+			--real_iterator;
+		}
+
+		rev_iterator& operator++() {
+			--real_iterator; return *this;
+		}
+		rev_iterator operator++(int) {
+			auto tmp = *this; --real_iterator; return tmp;
+		}
+
+		rev_iterator& operator--() {
+			++real_iterator; return *this; }
+		rev_iterator operator--(int) {
+			auto tmp = *this; ++real_iterator; return tmp;
+		}
+
+		ref_t operator*() { return real_iterator.operator*(); }
+		ref_t operator*() const { return real_iterator.operator*(); }
+
+		ptr_t operator->() { return real_iterator.operator->(); }
+		ptr_t operator->() const { return real_iterator.operator->(); }
+
+		bool operator==(const rev_iterator& b) {
+			return real_iterator == b.real_iterator;
+		}
+		
+		bool operator!=(const rev_iterator& b) {
+			return real_iterator != b.real_iterator;
+		}
+	};
+	
+	typedef rev_iterator<decltype(container->begin())>
+		iterator;
+	typedef rev_iterator<decltype(const_cast<const C*>(container)->begin())>
+		const_iterator;
+
+	inline iterator begin() {
+		return iterator(container->end());
+	}
+	inline const_iterator begin() const {
+		return const_iterator(container->end());
+	}
+	inline iterator end() {
+		return iterator(container->begin());
+	}
+	inline const_iterator end() const {
+		return const_iterator(container->begin());
+	}
+};
+
+template <typename C>
+reverser<C> revrange(C& c) {
+	return reverser<C>(c);
+}
+
 } // namespace kernel_std
 } // namespace std
 
