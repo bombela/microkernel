@@ -62,7 +62,7 @@ void Manager::reshedule(int idx, int, void**)
 			ti = _kthreads.begin();
 
 		if (ti->state() == State::destroying)
-			destroyKernelThread(&*ti);
+				destroyKernelThread(&*ti);
 
 		if (ti->state() == State::running)
 			break;
@@ -154,6 +154,8 @@ Thread* Manager::createKernelThread(const entrypoint_t& ep,
 
 void Manager::destroyKernelThread(Thread* t)
 {
+	_mem->useKernelContext();
+
 	auto ti = _kthreads.begin() + (t - &_kthreads[0]);
 	assert(ti >= _kthreads.begin() and ti < _kthreads.end());
 	
@@ -167,7 +169,8 @@ void Manager::destroyKernelThread(Thread* t)
 
 	for (auto& p : ti->getStack())
 	{
-		ti->mem().unmap(&p);
+		if (ti->mem() != _mem->kernelContext())
+			ti->mem().unmap(&p);
 		_phymem->free(&p);
 	}
 	ti->setState(State::noninit);

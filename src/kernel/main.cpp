@@ -378,9 +378,11 @@ extern "C" void kernel_main(UNUSED int magic,
 		auto buffer = phymemManager.alloc();
 		pagination::Context* c = (pagination::Context*)buffer;
 		new (c) pagination::Context(paginationManager.newContext());
+	
 		c->map(pagination::vaddr<pagination::Page*>(0x0), buffer);
+
 		auto f = [c, buffer] {
-			for (;;)
+			for (int i = 0; i < 10; ++i)
 			{
 				std::cout("ready! pagefault... ");
 				asm volatile ("movl $42, 0");
@@ -388,8 +390,6 @@ extern "C" void kernel_main(UNUSED int magic,
 				for (int i = 0; i < 100;++i)
 					taskManager.yield();
 			}
-			c->unmap(pagination::vaddr<pagination::Page*>(0x0));
-			phymemManager.free(buffer);
 		};
 		auto t = taskManager.createKernelThread(f, c);
 		t->start();
@@ -405,7 +405,7 @@ extern "C" void kernel_main(UNUSED int magic,
 					asm ("movl $after4, %0" : "=m"(*eip));
 					});
 
-			for (;;)
+			for (int i = 0; i < 10; ++i)
 			{
 				std::cout("try to catch nullptr access...");
 				asm (R"(
@@ -418,7 +418,7 @@ extern "C" void kernel_main(UNUSED int magic,
 
 			interruptManager.setHandler(14, old);
 		};
-		
+
 		auto t2 = taskManager.createKernelThread(f2);
 		t2->start();
 	}

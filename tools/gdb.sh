@@ -34,8 +34,7 @@ cat >>gdbexec <<EOF
 	continue
 	layout split
 	focus cmd
-	break main.cpp:384
-	break task.cpp:96
+	break task.cpp:174
 	continue
 EOF
 
