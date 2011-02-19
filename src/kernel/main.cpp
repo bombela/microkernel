@@ -351,6 +351,4 @@ extern "C" void kernel_main(UNUSED int magic,
 	std::cout("kernel stopping...\n");
 }
 
-//extern "C" uint32_t esp;
-
 } // namespace kernel
