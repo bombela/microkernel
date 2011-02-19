@@ -61,6 +61,7 @@ set(SRCS
 	${SRC_KERNEL_DIR}/pic.cpp
 	${SRC_KERNEL_DIR}/phymem.cpp
 	${SRC_KERNEL_DIR}/pagination.cpp
+	${SRC_KERNEL_DIR}/task.cpp
 	)
 if (STACK_USAGE_PATCH)
 	list(APPEND SRCS "${CMAKE_CURRENT_BINARY_DIR}/retidx.cpp")

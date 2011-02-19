@@ -71,8 +71,11 @@ template <typename IT, typename P>
 	IT find_if(IT first, IT last, P pred)
 	{
 		while (first != last)
-			if (pred(*first++))
+		{
+			if (pred(*first))
 				return first;
+			++first;
+		}
 		return last;
 	}
 

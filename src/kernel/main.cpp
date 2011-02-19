@@ -12,6 +12,7 @@
 #include <kernel/pic.h>
 #include <kernel/phymem.h>
 #include <kernel/pagination.h>
+#include <kernel/task.h>
 
 #include <cxxruntime.h>
 #include <iostream>
@@ -71,6 +72,7 @@ pic::Manager            picManager;
 interrupt::Manager      interruptManager;
 phymem::Manager         phymemManager;
 pagination::Manager     paginationManager;
+task::Manager           taskManager;
 
 #ifdef STACK_USAGE_PATCH
 extern "C" uint8_t* ret_addr[];
@@ -202,8 +204,11 @@ extern "C" void kernel_main(UNUSED int magic,
 
 			picManager.eoi(picManager.int2irq(i));
 			});
-	//picManager.enable(0);
-
+#if 0
+	picManager.enable(0);
+	for (int i = 0; i < 30; ++i) asm ("hlt");
+#endif
+	
 	printBootStackUsage();
 	phymemManager.printMemUsage();
 	
@@ -300,6 +305,24 @@ extern "C" void kernel_main(UNUSED int magic,
 		std::cout("success\n");
 	}
 
+	taskManager.init(
+			&phymemManager,
+			&paginationManager,
+			&interruptManager,
+			&picManager
+			);
+
+	auto stars = taskManager.createKernelThread([]() {
+		for (;;)
+		{
+			std::cout("*");
+			for (size_t i = 0; i < 0xFFFFFF; ++i)
+			;
+		}
+	});
+
+	stars->start();
+
 	std::cout("Kernel %running%...",
 			std::color::green, std::color::ltgray) << std::endl;
 	
@@ -308,7 +331,11 @@ extern "C" void kernel_main(UNUSED int magic,
 	phymemManager.testAllocator();
 #endif
 
-	//for (;;) asm ("hlt");
+	for (;;)
+	{
+		std::cout("kthread...");
+		asm ("hlt");
+	}
 	std::cout("kernel stopping...\n");
 }
 

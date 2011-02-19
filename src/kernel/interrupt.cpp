@@ -206,6 +206,30 @@ void Manager::testInterrupts() {
 	std::cout(" success!\n");
 }
 
+void Manager::resetHandler(uint8_t idx)
+{
+	setHandler(idx, handler_t( [](int idx, int ec, void** eip) {
+				auto e = documentation::get(idx);
+				if (e.type == documentation::Type::abort)
+					std::cout << std::color::red;
+				else
+					std::cout << std::color::yellow;
+				std::cout
+					<< e << " errval=" << ec
+					<< " eip=" << eip
+					<< std::color::ltgray
+					<< std::endl;
+				switch (e.type) {
+					case documentation::Type::abort:
+					case documentation::Type::fault:
+					case documentation::Type::trap:
+						die();
+					case documentation::Type::interrupt:
+						;
+						}
+			}));
+}
+
 Manager::Manager()
 {
 	dbg("starting");
@@ -215,26 +239,7 @@ Manager::Manager()
 
 	// setup default handler
 	for (size_t i = 0; i < _idt.size(); ++i)
-		setHandler(i, handler_t( [](int idx, int ec, void** eip) {
-					auto e = documentation::get(idx);
-					if (e.type == documentation::Type::abort)
-						std::cout << std::color::red;
-					else
-						std::cout << std::color::yellow;
-					std::cout
-						<< e << " errval=" << ec
-						<< " eip=" << eip
-						<< std::color::ltgray
-						<< std::endl;
-					switch (e.type) {
-						case documentation::Type::abort:
-						case documentation::Type::fault:
-						case documentation::Type::trap:
-							die();
-						case documentation::Type::interrupt:
-							;
-							}
-				}));
+		resetHandler(i);
 	
 	// load IDT
 	struct {

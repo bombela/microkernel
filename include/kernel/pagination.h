@@ -262,8 +262,29 @@ class Context
 			decrefTable(vp);
 		}
 
+		bool present(const pagination::Page* vp) const
+		{
+			auto va = vaddr(vp);
+			assert(va.is_aligned());
+
+			auto& table = _directory[va.directory()];
+			if (not table.present)
+				return false;
+			
+			auto& page = table[va.table()];
+			return page.present;
+		}
+
 		DirectoryEntry* getDirectoryAddr() {
 			return &_directory[0];
+		}
+
+		bool operator==(const Context& other) const {
+			return this == &other;
+		}
+		
+		bool operator!=(const Context& other) const {
+			return not (*this == other);
 		}
 
 	private:

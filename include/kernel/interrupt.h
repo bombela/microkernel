@@ -129,6 +129,8 @@ class Manager
 				setHandler(idx, handler_t(h));
 			}
 		
+		void resetHandler(uint8_t idx);
+		
 		static constexpr unsigned size() { return MAX_INTS; }
 
 		void testInterrupts();
