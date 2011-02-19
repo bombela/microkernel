@@ -93,7 +93,7 @@ void Manager::switchTo(kthreads_t::iterator ti)
 	_current = ti;
 
 	// change memory context
-	if (previous->mem() != _current->mem())
+	if (_current->mem() != _mem->currentContext())
 		_mem->useContext(_current->mem());
 	
 	asm volatile (R"(
@@ -130,7 +130,8 @@ void Manager::switchTo(kthreads_t::iterator ti)
 			);
 }
  
-Thread* Manager::createKernelThread(const entrypoint_t& ep)
+Thread* Manager::createKernelThread(const entrypoint_t& ep,
+		pagination::Context* pc)
 {
 	auto ti = newThread();
 	assert(ti != _kthreads.end());
@@ -141,10 +142,13 @@ Thread* Manager::createKernelThread(const entrypoint_t& ep)
 	assert(stackpage != nullptr);
 	auto stack = stack_t(stackpage, stackpage + 1);
 
-	if (not _mem->kernelContext().present(stackpage))
-		_mem->kernelContext().map(stackpage);
+	if (pc == 0)
+		pc = &_mem->kernelContext();
+
+	if (not pc->present(stackpage))
+		pc->map(stackpage);
 	
-	kthread = Thread(&_mem->kernelContext(), stack, ep);
+	kthread = Thread(pc, stack, ep);
 	return &kthread;
 }
 

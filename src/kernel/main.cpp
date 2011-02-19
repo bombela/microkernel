@@ -317,7 +317,7 @@ extern "C" void kernel_main(UNUSED int magic,
 			&picManager
 			);
 
-
+#if 0
 	auto noiser = [](char c) {
 		for (;;) {
 			std::cout("%", c);
@@ -326,7 +326,6 @@ extern "C" void kernel_main(UNUSED int magic,
 		}
 	};
 	
-#if 0
 	taskManager.createKernelThread(std::bind(noiser, '*'))->start();
 	taskManager.createKernelThread(std::bind(noiser, '/'))->start();
 	taskManager.createKernelThread(std::bind(noiser, '\\'))->start();
@@ -372,6 +371,57 @@ extern "C" void kernel_main(UNUSED int magic,
 					taskManager.yield();
 			}
 	} )->start();
+#endif
+
+#if 1
+	{
+		auto buffer = phymemManager.alloc();
+		pagination::Context* c = (pagination::Context*)buffer;
+		new (c) pagination::Context(paginationManager.newContext());
+		c->map(pagination::vaddr<pagination::Page*>(0x0), buffer);
+		auto f = [c, buffer] {
+			for (;;)
+			{
+				std::cout("ready! pagefault... ");
+				asm volatile ("movl $42, 0");
+				std::cout("ahah just kidding, I can map any page I want :)\n");
+				for (int i = 0; i < 100;++i)
+					taskManager.yield();
+			}
+			c->unmap(pagination::vaddr<pagination::Page*>(0x0));
+			phymemManager.free(buffer);
+		};
+		auto t = taskManager.createKernelThread(f, c);
+		t->start();
+
+		auto f2 = [] {
+			auto old =
+				interruptManager.getHandler(14);
+
+			interruptManager.setHandler(14,
+					[](int, int err, void** eip) {
+					paginationManager.useKernelContext();
+					std::cout(" nullptr deref catched! err=%\n", err);
+					asm ("movl $after4, %0" : "=m"(*eip));
+					});
+
+			for (;;)
+			{
+				std::cout("try to catch nullptr access...");
+				asm (R"(
+					movl $42, 0 /* write to address 0 */
+					after4:
+					)");
+				for (int i = 0; i < 100;++i)
+					taskManager.yield();
+			}
+
+			interruptManager.setHandler(14, old);
+		};
+		
+		auto t2 = taskManager.createKernelThread(f2);
+		t2->start();
+	}
 #endif
 
 #if 0

@@ -44,7 +44,7 @@ class Thread
 		{}
 		
 		Thread(
-				pagination::Context*  mem,
+				pagination::Context* mem,
 				stack_t stack,
 				const entrypoint_t& ep = entrypoint_t()
 				):
@@ -110,11 +110,13 @@ class Manager
 				pic::Manager* pic
 				);
 
-		Thread* createKernelThread(const entrypoint_t&);
+		Thread* createKernelThread(const entrypoint_t&,
+				pagination::Context* pc = 0);
 		
 		template <typename F>
-			Thread* createKernelThread(const F& f) {
-				return createKernelThread(entrypoint_t(f));
+			Thread* createKernelThread(const F& f,
+				pagination::Context* pc = 0) {
+				return createKernelThread(entrypoint_t(f), pc);
 			}
 
 		void destroyKernelThread(Thread* t);
