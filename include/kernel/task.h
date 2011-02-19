@@ -120,6 +120,14 @@ class Manager
 		void destroyKernelThread(Thread* t);
 		void yield();
 		Thread* current() const { return &*_current; }
+
+		size_t runningThreads() const {
+			size_t cnt = 0;
+			for (auto& t: _kthreads)
+				if (t.state() == State::running)
+					++cnt;
+			return cnt;
+		}
 	private:
 		typedef std::array<Thread, 256> kthreads_t;
 

@@ -383,7 +383,10 @@ extern "C" void kernel_main(UNUSED int magic,
 
 	for (;;)
 	{
-		taskManager.yield();
+		if (taskManager.runningThreads() == 1)
+			asm("hlt");
+		else
+			taskManager.yield();
 	}
 	std::cout("kernel stopping...\n");
 }
