@@ -326,26 +326,63 @@ extern "C" void kernel_main(UNUSED int magic,
 		}
 	};
 	
+#if 0
 	taskManager.createKernelThread(std::bind(noiser, '*'))->start();
 	taskManager.createKernelThread(std::bind(noiser, '/'))->start();
 	taskManager.createKernelThread(std::bind(noiser, '\\'))->start();
 	taskManager.createKernelThread(std::bind(noiser, '+'))->start();
 	taskManager.createKernelThread(std::bind(noiser, '$'))->start();
 	taskManager.createKernelThread(std::bind(noiser, '='))->start();
-	taskManager.createKernelThread([] { for (;;) {
-				std::cout("42\n");
-				for (int i = 0; i < 20;++i)
+	taskManager.createKernelThread([]() {
+		for (;;)
+		{
+			std::cout("\b");
+			for (int i = 0; i < 2;++i)
+				taskManager.yield();
+		}
+		})->start();
+	
+	taskManager.yield();
+
+#endif
+
+#if 0
+	auto gourmant = [] {
+			for (;;)
+			{
+				phymem::Page* data[256];
+				for (auto& p: data)
+					p = phymemManager.alloc();
+				for (auto p: data)
+				{
+					phymemManager.free(p);
 					taskManager.yield();
-			} } )->start();
+				}
+			}
+	};
+	
+	for (int i = 0; i < 40; ++i)
+		taskManager.createKernelThread(gourmant)->start();
+
+	taskManager.createKernelThread([] {
+			for (;;)
+			{
+				phymemManager.printMemUsage();
+				for (int i = 0; i < 1000;++i)
+					taskManager.yield();
+			}
+	} )->start();
+#endif
+
+#if 0
+	phymemManager.testAllocator();
+#endif
 
 	std::cout("Kernel %running%...",
 			std::color::green, std::color::ltgray) << std::endl;
-	
-	phymemManager.testAllocator();
 
 	for (;;)
 	{
-		std::cout("\b");
 		taskManager.yield();
 	}
 	std::cout("kernel stopping...\n");

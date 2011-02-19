@@ -9,6 +9,8 @@
 #define PAGINATION_H
 
 #include <kernel/phymem.h>
+#include <kernel/die.h>
+#include <iostream>
 
 #include KERNEL_PAGINATION_DEBUG
 #include KERNEL_PAGINATION_CHECK
@@ -211,8 +213,11 @@ class Context
 				Privilege p = Privilege::kernel_rw,
 				Present m = Present::yes)
 		{
+#ifdef CHECK_ON
 			auto& page = increfTable(vp);
 			assert(not page.present);
+#endif
+			increfTable(vp);
 			remap(vp, pp, p, m);
 			return vp;
 		}

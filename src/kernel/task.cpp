@@ -177,7 +177,7 @@ void Manager::yield()
 		uint8_t _int;
 		uint8_t idx;
 		uint8_t _ret;
-	} PACKED intcode { 0xcd, _pic->irq2int(0) , 0xc3 };
+	} PACKED volatile intcode { 0xcd, _pic->irq2int(0) , 0xc3 };
 	((void (*)()) &intcode)();
 }
 
