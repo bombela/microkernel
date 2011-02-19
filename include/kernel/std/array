@@ -233,6 +233,9 @@ class array
 			ARRAY* _array;
 			size_t _idx;
 
+			constexpr iterator_impl():
+				_array(0), _idx(0) {}
+
 			constexpr iterator_impl(ARRAY* a, size_t idx):
 				_array(a), _idx(idx) {}
 			iterator_impl(const iterator_impl&) = default;
@@ -276,7 +279,8 @@ class array
 			}
 
 			bool operator==(const iterator_impl& from) const {
-				return _array == from._array and _idx == from._idx; }
+				return _array == from._array and
+					(_idx == from._idx or _array == nullptr); }
 			bool operator!=(const iterator_impl& from) const {
 				return not (*this == from); }
 
@@ -301,7 +305,8 @@ class array
 		typedef iterator_impl<const array, const T&, const T*> const_iterator;
 
 		friend bool operator==(const iterator& a, const const_iterator& b) {
-			return a._array == b._array and a._idx == b._idx; }
+			return a._array == b._array and
+				(a._idx == b._idx or a._array == nullptr); }
 		friend bool operator!=(const iterator& a, const const_iterator& b) {
 			return not (a == b); }
 		friend bool operator==(const const_iterator& a, const iterator& b) {
