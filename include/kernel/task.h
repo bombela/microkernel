@@ -76,17 +76,19 @@ class Thread
 			return os("thread(%) status=% stack=%", &t, t._state, t._stack);
 		}
 
-		void start() {
+		Thread* start() {
 			assert(_state == State::init or _state == State::stopped);
 			if (_state == State::init)
 				_state = State::starting;
 			else if (_state == State::stopped)
 				_state = State::running;
+			return this;
 		}
-		void stop() {
+		Thread* stop() {
 			assert(_state == State::running);
 			if (_state == State::running)
 				_state = State::stopped;
+			return this;
 		}
 
 	private:
@@ -108,10 +110,10 @@ class Manager
 				pic::Manager* pic
 				);
 
-		Thread* createKernelThread(entrypoint_t);
+		Thread* createKernelThread(const entrypoint_t&);
 		
 		template <typename F>
-			Thread* createKernelThread(F f) {
+			Thread* createKernelThread(const F& f) {
 				return createKernelThread(entrypoint_t(f));
 			}
 

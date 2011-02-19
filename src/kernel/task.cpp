@@ -76,9 +76,10 @@ void Manager::reshedule(int idx, int, void**)
 		switchTo(ti);
 }
 
-extern "C" void task_trampoline(Thread* t) {
+extern "C" void task_trampoline(Thread* t, Manager* m) {
 	t->setState(State::running);
 	t->ep()();
+	m->destroyKernelThread(t);
 	panic(); // should never reach here
 };
 
@@ -97,14 +98,15 @@ void Manager::switchTo(kthreads_t::iterator ti)
 	
 	asm volatile (R"(
 		/* exchange stack */
-		mov %%esp, (%2)
-		mov (%3), %%esp
+		mov %%esp, (%3)
+		mov (%4), %%esp
 
 		cmp $0, %0
 		je 1f
 		
 		/* starting, bootstrap on the new stack */
-		push %1 /* push &thread */
+		push %1 /* push &manager */
+		push %2 /* push &thread */
 		pushl $0 /* fake eip for task_trampoline */
 		
 		pushf /* EFLAGS with cli */
@@ -121,13 +123,14 @@ void Manager::switchTo(kthreads_t::iterator ti)
 			)"
 			::
 				"a" (ti->state() == State::starting),
+				"r" (this),
 				"r" (&*ti),
 				"r" (&previous->sp()),
 				"r" (&_current->sp())
 			);
 }
  
-Thread* Manager::createKernelThread(entrypoint_t ep)
+Thread* Manager::createKernelThread(const entrypoint_t& ep)
 {
 	auto ti = newThread();
 	assert(ti != _kthreads.end());

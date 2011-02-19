@@ -270,6 +270,12 @@ void VGAConsole::putChar(const char c)
 				_idx = (_idx / line_len) * line_len;
 				break;
 			}
+		case '\b':
+			{
+				if (_idx)
+					--_idx;
+				break;
+			}
 		default: 
 			{
 				_video_mem[_idx++] = { c, _attr };

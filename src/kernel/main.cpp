@@ -165,34 +165,38 @@ extern "C" void kernel_main(UNUSED int magic,
 	phymemManager.init(mbi->mem_lower, mbi->mem_upper);
 	paginationManager.init(&phymemManager);
 
-	struct APICVersionRegister {
-		uint8_t version;
-		uint8_t reserved1;
-		uint8_t maxlvtentry;
-		uint8_t supportsupressEOIbroadcast:1;
-		uint8_t reserved2:7;
-	} PACKED const * avr
-	= reinterpret_cast<APICVersionRegister*>(0xFEE00030);
+	{
+		struct APICVersionRegister {
+			uint8_t version;
+			uint8_t reserved1;
+			uint8_t maxlvtentry;
+			uint8_t supportsupressEOIbroadcast:1;
+			uint8_t reserved2:7;
+		} PACKED const * avr
+		= reinterpret_cast<APICVersionRegister*>(0xFEE00030);
 
-	auto& c = paginationManager.kernelContext();
-	auto am = c.map(
-			pagination::vaddr(avr).page(),
-			phymem::paddr(avr).page()
-			);
-	std::cout("APIC version=%c maxlvtentry=%c\n",
-			avr->version, avr->maxlvtentry);
-	c.unmap(am);
+		auto& c = paginationManager.kernelContext();
+		auto am = c.map(
+				pagination::vaddr(avr).page(),
+				phymem::paddr(avr).page()
+				);
+		std::cout("APIC version=%c maxlvtentry=%c\n",
+				avr->version, avr->maxlvtentry);
+		c.unmap(am);
+	}
 
-	auto old =
-		interruptManager.getHandler(picManager.irq2int(0));
+	interruptManager.testInterrupts();
+	{
+		auto old =
+			interruptManager.getHandler(picManager.irq2int(0));
 
-	int cnt = 0;
-	interruptManager.setHandler(picManager.irq2int(0),
-		[&old, &cnt](int i, int, void**) {
-			printBootStackUsage();
+		int cnt = 0;
+		interruptManager.setHandler(picManager.irq2int(0),
+				[&old, &cnt](int i, int, void**) {
+				printBootStackUsage();
 
-			if (++cnt > 10)
-			{
+				if (++cnt > 10)
+				{
 				std::cout("stop playing!");
 				interruptManager.setHandler(
 					picManager.irq2int(0),
@@ -200,10 +204,11 @@ extern "C" void kernel_main(UNUSED int magic,
 					std::cout(".");
 					picManager.eoi(picManager.int2irq(i));
 					});
-			}
+				}
 
-			picManager.eoi(picManager.int2irq(i));
-			});
+				picManager.eoi(picManager.int2irq(i));
+				});
+	}
 #if 0
 	picManager.enable(0);
 	for (int i = 0; i < 30; ++i) asm ("hlt");
@@ -312,29 +317,36 @@ extern "C" void kernel_main(UNUSED int magic,
 			&picManager
 			);
 
-	auto stars = taskManager.createKernelThread([]() {
-		for (;;)
-		{
-			std::cout("*");
-			for (size_t i = 0; i < 0xFFFFFF; ++i)
-			;
-		}
-	});
 
-	stars->start();
+	auto noiser = [](char c) {
+		for (;;) {
+			std::cout("%", c);
+			for (int i = 0; i < 10;++i)
+				taskManager.yield();
+		}
+	};
+	
+	taskManager.createKernelThread(std::bind(noiser, '*'))->start();
+	taskManager.createKernelThread(std::bind(noiser, '/'))->start();
+	taskManager.createKernelThread(std::bind(noiser, '\\'))->start();
+	taskManager.createKernelThread(std::bind(noiser, '+'))->start();
+	taskManager.createKernelThread(std::bind(noiser, '$'))->start();
+	taskManager.createKernelThread(std::bind(noiser, '='))->start();
+	taskManager.createKernelThread([] { for (;;) {
+				std::cout("42\n");
+				for (int i = 0; i < 20;++i)
+					taskManager.yield();
+			} } )->start();
 
 	std::cout("Kernel %running%...",
 			std::color::green, std::color::ltgray) << std::endl;
 	
-#if 0
-	interruptManager.testInterrupts();
 	phymemManager.testAllocator();
-#endif
 
 	for (;;)
 	{
-		std::cout("kthread...");
-		asm ("hlt");
+		std::cout("\b");
+		taskManager.yield();
 	}
 	std::cout("kernel stopping...\n");
 }

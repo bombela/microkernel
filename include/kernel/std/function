@@ -72,7 +72,7 @@ template <typename R, unsigned SIZE, typename... Args>
 		template <typename F>
 			explicit function(F&& f,
 					typename enable_if<
-					not details::is_function<F>::value, void*>::type = 0
+						not is_function<F>::value, void*>::type = 0
 					): _f(&holder<F>::call)
 			{
 				static_assert(SIZE >= sizeof (holder<F>),
