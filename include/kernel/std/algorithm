@@ -67,6 +67,23 @@ template <typename A, typename B>
 			: kernel_std::forward<B>(b);
 	}
 
+template <typename IT, typename P>
+	IT find_if(IT first, IT last, P pred)
+	{
+		while (first != last)
+			if (pred(*first++))
+				return first;
+		return last;
+	}
+
+template <typename C, typename P>
+	auto find_if(C& container, P pred) -> decltype(
+			find_if(begin(container), end(container), pred)
+			)
+	{
+		return find_if(begin(container), end(container), pred);
+	}
+
 } // namespace kernel_std
 } // namespace std
 
